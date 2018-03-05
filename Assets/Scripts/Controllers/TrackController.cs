@@ -1210,7 +1210,8 @@ public class TrackController : UnitySingleton<TrackController> {
         }
     }
 
-    private TrafEntry GetCurrentTrafEntry()
+    //ANTONELLO inizialmente era private
+    public TrafEntry GetCurrentTrafEntry()
     {
         Vector3 carPos = car.transform.position;
 
