@@ -207,23 +207,37 @@ public class TrafSpawner : MonoBehaviour, ITrafficSpawner {
         //ANTONELLO
         else if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.S)
         {
-            //potremmo fare una finestra che chiede sei sicuro di voler avviare lo scenario di test?
-            Debug.Log("Scenario di test avviato");
-            ScenarioTestUrbano scenario = new ScenarioTestUrbano(system, prefabs);
+            if (!scenarioUrbano)
+            {
+                //potremmo fare una finestra che chiede sei sicuro di voler avviare lo scenario di test?
+                Debug.Log("Scenario di test avviato");
+                scenario = new ScenarioTestUrbano(system, prefabs);
+                scenarioUrbano = true;
+            } else
+            {
+                fineTestScenarioUrbano();
+            }
+            
         }
     }
     //ANTONELLO
     private bool guidaAutomatica = false;
+    private bool scenarioUrbano = false;
+    private ScenarioTestUrbano scenario;
+    
     //ANTONELLO
-    private void fineGuidaAutomaticaSF()
+    private void fineGuidaAutomaticaSF()  
     {
-        GameObject go = GameObject.Find("XE_Rigged");
-        if (go == null)
-        {
-            go = GameObject.Find("XE_Rigged(Clone)");
-        }
+        GameObject go = ottieniRiferimentoPlayer();
         Destroy(go.GetComponent<TrafAIMotor>());
         guidaAutomatica = false;
+    }
+    //ANTONELLO
+    private void fineTestScenarioUrbano()
+    {
+        GameObject go = ottieniRiferimentoPlayer();
+        scenario.fineGuidaAutomatica();
+        scenarioUrbano = false;
     }
     //ANTONELLO
     private void guidaAutomaticaSF()
@@ -233,14 +247,10 @@ public class TrafSpawner : MonoBehaviour, ITrafficSpawner {
         int id = Random.Range(0, maxIdent);
         int subId = Random.Range(0, maxSub);
         //float distance = Random.value * 0.8f + 0.1f;
-        
 
 
-        GameObject go = GameObject.Find("XE_Rigged");
-        if (go == null)
-        {
-            go = GameObject.Find("XE_Rigged(Clone)");
-        }
+
+        GameObject go = ottieniRiferimentoPlayer();
         TrackController trackController = TrackController.Instance;
         TrafEntry entry = trackController.GetCurrentTrafEntry(); //-> ottengo la entry corrente
         //TrafEntry entryOk = null;
@@ -380,6 +390,23 @@ public class TrafSpawner : MonoBehaviour, ITrafficSpawner {
         
     }
 
+    private GameObject ottieniRiferimentoPlayer()
+    {
+        GameObject go = GameObject.Find("XE_Rigged");
+        if (go == null)
+        {
+            go = GameObject.Find("XE_Rigged(Clone)");
+        }
+        if (go == null)
+        {
+            go = GameObject.Find("TeslaModelS_2_Rigged (1)");
+        }
+        if (go == null)
+        {
+            go = GameObject.Find("TeslaModelS_2_Rigged (1)(Clone)");
+        }
+        return go;
+    }
 
 
 

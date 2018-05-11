@@ -105,15 +105,6 @@ public class VehicleController : MonoBehaviour {
     //steering input
     public float steerInput = 0f;
 
-    //DARIO
-    private GameObject speedoMeter;
-    private GameObject numberDisplay;
-    private float targetAngle;
-    private Quaternion rot0;
-    private Renderer rend;
-    private float offsetX;
-    private float offsetY;
-    private Dictionary<int, float> CSVDictionary;
 
     public float RPM
     {
@@ -231,6 +222,16 @@ public class VehicleController : MonoBehaviour {
     public float rtraction = 0f;
     public float rtractionR = 0f;
     public string roadType;
+
+    //DARIO
+    public GameObject volant;
+    public AnimationCurve angle_x_Velocity = new AnimationCurve(new Keyframe(0, 1), new Keyframe(100, 0.6f), new Keyframe(500, 0.3f));
+    float angle1Ref;
+    float angle2Volant;
+    float volantStartRotation;
+    float angleRefVolant;
+    float maxAngleVolant;
+
 
     void OnEnable()
     {
@@ -358,8 +359,8 @@ public class VehicleController : MonoBehaviour {
         AutoGearBox();
 
         //record current speed in MPH  DARIO
-        currentSpeed = rb.velocity.magnitude * 2.23693629f;
-        //currentSpeed = rb.velocity.magnitude * 3.6f;
+        //currentSpeed = rb.velocity.magnitude * 2.23693629f; //to obtain velocity from metersPerSecond to MilesPerHour
+        currentSpeed = rb.velocity.magnitude * 3.6f; //to obtain velocity from metersPerSecond to KmPerHour
 
         //find current road surface type
         WheelHit hit;
@@ -400,61 +401,9 @@ public class VehicleController : MonoBehaviour {
         {
             rtraction = 0f;
         }
-
-        //DARIO
-        //targetAngle = Mathf.Lerp(targetAngle, currentSpeed, Time.deltaTime);
-        CSVDictionary.TryGetValue(Mathf.RoundToInt(currentSpeed), out targetAngle);
-        speedoMeter.transform.localRotation = Quaternion.Euler(0, 0, -targetAngle )*rot0;
-        numberDisplay = GameObject.Find("NumberDisplay");
-        rend = numberDisplay.GetComponent<Renderer>();
-
-        if(Mathf.RoundToInt(currentSpeed) <= 15f)
-        {
-            offsetX = Mathf.RoundToInt(currentSpeed) * 0.0625f;
-            offsetY = 0f;
-        }
-
-        else if (Mathf.RoundToInt(currentSpeed) <= 31f)
-        {
-            offsetX = 0.0625f * (Mathf.RoundToInt(currentSpeed) - 16f);
-            offsetY = 0.0625f * 15f;
-        }
-        else if (Mathf.RoundToInt(currentSpeed) <= 47f)
-        {
-            offsetX = 0.0625f * (Mathf.RoundToInt(currentSpeed) - 32f);
-            offsetY = 0.0625f * 14f;
-        }
-        else if (Mathf.RoundToInt(currentSpeed) <= 63f)
-        {
-            offsetX = 0.0625f * (Mathf.RoundToInt(currentSpeed) - 48f);
-            offsetY = 0.0625f * 13f;
-        }
-        else if (Mathf.RoundToInt(currentSpeed) <= 79f)
-        {
-            offsetX = 0.0625f * (Mathf.RoundToInt(currentSpeed) - 64f);
-            offsetY = 0.0625f * 12f;
-        }
-        else if (Mathf.RoundToInt(currentSpeed) <= 95f)
-        {
-            offsetX = 0.0625f * (Mathf.RoundToInt(currentSpeed) - 80f);
-            offsetY = 0.0625f * 11f;
-        }
-        else if (Mathf.RoundToInt(currentSpeed) <= 111f)
-        {
-            offsetX = 0.0625f * (Mathf.RoundToInt(currentSpeed) - 96f);
-            offsetY = 0.0625f * 10f;
-        }
-        else if (Mathf.RoundToInt(currentSpeed) >= 112f )
-        {
-            offsetX = 0.0625f * (Mathf.RoundToInt(currentSpeed) - 112f);
-            offsetY = 0.0625f * 9f;
-        }
-
-        rend.material.mainTextureOffset = new Vector2(offsetX, offsetY);
         
-        //speedoMeter.transform.localRotation = Quaternion.AngleAxis(targetAngle*Time.deltaTime, speedoMeter.transform.up);
-        //speedoMeter.transform.RotateAround(speedoMeter.transform.position, Vector3.right, targetAngle * Time.deltaTime);
-        //speedoMeter.transform.Rotate(0, 0, -targetAngle, Space.Self);
+        //DARIO
+        Volant();
 
     }
 
@@ -587,21 +536,6 @@ public class VehicleController : MonoBehaviour {
         visualWheel.transform.rotation = rotation;
     }
 
-    //DARIO
-
-    private Dictionary<int, float> ReadCSVFile(string path)
-    {
-        StreamReader inputStream = new StreamReader(path);
-        Dictionary<int, float> CSVDictionary = new Dictionary<int, float>();
-        while (!inputStream.EndOfStream)
-        {
-            string line = inputStream.ReadLine();
-            string[] values = line.Split(',');
-            CSVDictionary.Add(int.Parse(values[0]), float.Parse(values[1]));
-        }
-        inputStream.Close();
-        return CSVDictionary;
-    }
 
     private void OnGUI()
     {
@@ -618,14 +552,97 @@ public class VehicleController : MonoBehaviour {
 
     }
 
-    //DARIO
-    private void Start()
+    void Start()
     {
-        speedoMeter = GameObject.Find("SpeedNeedle");
-        rot0 = speedoMeter.transform.localRotation;
-        CSVDictionary = new Dictionary<int, float>();
-        CSVDictionary = ReadCSVFile(Application.dataPath + Path.DirectorySeparatorChar + "Textures" + Path.DirectorySeparatorChar + "TeslaModelS" + Path.DirectorySeparatorChar + "angle(speed).csv");
-        //Debug.Log(CSVDictionary);
+        if (volant)
+        {
+            volantStartRotation = volant.transform.localEulerAngles.z;
+        }
     }
+
+    void Volant()
+    {
+        angle1Ref = Mathf.MoveTowards(angle1Ref, steerInput, 2 * Time.deltaTime);
+        angle2Volant = Mathf.MoveTowards(angle2Volant, steerInput, 2 * Time.deltaTime);
+        //
+        maxAngleVolant = 35.0f * angle_x_Velocity.Evaluate(currentSpeed);
+        angleRefVolant = Mathf.Clamp(angle1Ref * maxAngleVolant, -maxAngleVolant, maxAngleVolant);
+
+        //if (angle1Ref > 0.2f)
+        //{
+        //    if (axles[0].steering /*_wheels.rightFrontWheel.wheelTurn*/)
+        //    {
+        //        //_wheels.rightFrontWheel.wheelCollider.steerAngle = angleRefVolant * 1.2f;
+        //        axles[0].right.steerAngle = angleRefVolant * 1.2f;
+        //    }
+        //    if (axles[0].steering /*_wheels.leftFrontWheel.wheelTurn*/)
+        //    {
+        //        //_wheels.leftFrontWheel.wheelCollider.steerAngle = angleRefVolant;
+        //        axles[0].left.steerAngle = angleRefVolant;
+        //    }
+        //    if (axles[1].steering/*_wheels.rightRearWheel.wheelTurn*/)
+        //    {
+        //        //_wheels.rightRearWheel.wheelCollider.steerAngle = angleRefVolant * 1.2f;
+        //        axles[1].right.steerAngle = angleRefVolant * 1.2f;
+        //    }
+        //    if (axles[1].steering /*_wheels.leftRearWheel.wheelTurn*/)
+        //    {
+        //        //_wheels.leftRearWheel.wheelCollider.steerAngle = angleRefVolant;
+        //        axles[1].left.steerAngle = angleRefVolant;
+        //    }
+        //}
+        //else if (angle1Ref < -0.2f)
+        //{
+        //    if (axles[0].steering/*_wheels.rightFrontWheel.wheelTurn*/)
+        //    {
+        //        axles[0].right.steerAngle = angleRefVolant;
+        //        //_wheels.rightFrontWheel.wheelCollider.steerAngle = angleRefVolant;
+        //    }
+        //    if (axles[0].steering/*_wheels.leftFrontWheel.wheelTurn*/)
+        //    {
+        //        axles[0].left.steerAngle = angleRefVolant * 1.2f;
+        //        //_wheels.leftFrontWheel.wheelCollider.steerAngle = angleRefVolant * 1.2f;
+        //    }
+        //    if (axles[1].steering/*_wheels.rightRearWheel.wheelTurn*/)
+        //    {
+        //        axles[1].right.steerAngle = angleRefVolant;
+        //        //_wheels.rightRearWheel.wheelCollider.steerAngle = angleRefVolant;
+        //    }
+        //    if (axles[1].steering/*_wheels.leftRearWheel.wheelTurn*/)
+        //    {
+        //        axles[1].left.steerAngle = angleRefVolant * 1.2f;
+        //        //_wheels.leftRearWheel.wheelCollider.steerAngle = angleRefVolant * 1.2f;
+        //    }
+        //}
+        //else
+        //{
+        //    if (axles[0].steering/*_wheels.rightFrontWheel.wheelTurn*/)
+        //    {
+        //        axles[0].right.steerAngle = angleRefVolant;
+        //        //_wheels.rightFrontWheel.wheelCollider.steerAngle = angleRefVolant;
+        //    }
+        //    if (axles[0].steering/*_wheels.leftFrontWheel.wheelTurn*/)
+        //    {
+        //        axles[0].left.steerAngle = angleRefVolant;
+        //        //_wheels.leftFrontWheel.wheelCollider.steerAngle = angleRefVolant;
+        //    }
+        //    if (axles[1].steering/*_wheels.rightRearWheel.wheelTurn*/)
+        //    {
+        //        axles[1].right.steerAngle = angleRefVolant;
+        //        //_wheels.rightRearWheel.wheelCollider.steerAngle = angleRefVolant;
+        //    }
+        //    if (axles[1].steering/*_wheels.leftRearWheel.wheelTurn*/)
+        //    {
+        //        axles[1].left.steerAngle = angleRefVolant;
+        //        //_wheels.leftRearWheel.wheelCollider.steerAngle = angleRefVolant;
+        //    }
+        //}
+
+        if (volant)
+        {
+            volant.transform.localEulerAngles = new Vector3(volant.transform.localEulerAngles.x, volant.transform.localEulerAngles.y, volantStartRotation + (angle2Volant * 540.0f));
+        }
+    }
+
 }
 

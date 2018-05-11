@@ -246,7 +246,7 @@ public class TrafSystem : MonoBehaviour {
         }
     }
 
-    [HideInInspector]
+    //[HideInInspector]
     public TrafRoadGraph roadGraph;
 
     public void Awake()

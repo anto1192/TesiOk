@@ -73,26 +73,13 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public static void gestisciEvento(int idPrecedente, int nuovoId)
     {
-        /*Debug.Log("Id cambiato da " + idPrecedente + " a " + nuovoId);
-        
-        if (nuovoId == 18 && idPrecedente == 1049)
-        {
-            ScenarioTestUrbano.getInstance().evento100();
-            return;
-        }*/
         string nomeMetodo = "evento" + nuovoId;
-        //ScenarioTestUrbano.getInstance().Invoke(nomeMetodo, 2f);
         MethodInfo mi = ScenarioTestUrbano.getInstance().GetType().GetMethod(nomeMetodo);
         Debug.Log("Sono in gestisciEvento " + nomeMetodo + "; mi == null? " + mi == null);
         if (mi != null)
         {
             mi.Invoke(ScenarioTestUrbano.getInstance(), null);
         }
-        /*if (nuovoId == 3)
-        {
-            ScenarioTestUrbano.getInstance().evento200();
-        }*/
-
     }
 
 
@@ -143,6 +130,33 @@ public class ScenarioTestUrbano : MonoBehaviour
             contenitore2.Set(TrafLightState.YELLOW);
             yield return new WaitForSeconds(3f);
             contenitore2.Set(TrafLightState.RED);
+            yield return new WaitForSeconds(2f);
+            contenitore1.Set(TrafLightState.GREEN);
+            yield return new WaitForSeconds(10f);
+        }
+    }
+
+    IEnumerator courutineSemaforoArancionePasso3Lights(TrafficLightContainer contenitore1, TrafficLightContainer contenitore2, TrafficLightContainer contenitore3)
+    {
+        while (true)
+        {
+            //yield return null;
+            contenitore1.Set(TrafLightState.GREEN);
+            contenitore2.Set(TrafLightState.RED);
+            contenitore3.Set(TrafLightState.RED);
+            yield return new WaitForSeconds(5f);
+            contenitore1.Set(TrafLightState.YELLOW);
+            yield return new WaitForSeconds(3f);
+            contenitore1.Set(TrafLightState.RED);
+            yield return new WaitForSeconds(2f);
+            contenitore2.Set(TrafLightState.GREEN);
+            contenitore3.Set(TrafLightState.GREEN);
+            yield return new WaitForSeconds(15f);
+            contenitore2.Set(TrafLightState.YELLOW);
+            contenitore3.Set(TrafLightState.YELLOW);
+            yield return new WaitForSeconds(3f);
+            contenitore2.Set(TrafLightState.RED);
+            contenitore3.Set(TrafLightState.RED);
             yield return new WaitForSeconds(2f);
             contenitore1.Set(TrafLightState.GREEN);
             yield return new WaitForSeconds(10f);
@@ -391,8 +405,8 @@ public class ScenarioTestUrbano : MonoBehaviour
         TrafficLightContainer container3 = entry3.light;
         TrafficLight[] lights1 = container2.gameObject.GetComponentsInParent<TrafficLight>();
         lights1[0].StopAllCoroutines();
-        lights1[0].StartCoroutine(courutineSemaforoRosso(container2));
-        lights1[0].StartCoroutine(courutineSemaforoVerde(container3));
+        lights1[0].StartCoroutine(courutineSemaforoVerde(container2));
+        lights1[0].StartCoroutine(courutineSemaforoRosso(container3));
     }
 
     public void semaforo5a()
@@ -415,26 +429,211 @@ public class ScenarioTestUrbano : MonoBehaviour
         TrafficLightContainer container1 = entry1.light;
         TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
         lights[0].StopAllCoroutines();
+        lights[0].StartCoroutine(courutineSemaforoRosso(container));
+        lights[0].StartCoroutine(courutineSemaforoVerde(container1));
+    }
+
+    public void semaforo4a()
+    {
+        TrafEntry entry = system.GetEntry(1014, 7);
+        TrafEntry entry1 = system.GetEntry(1014, 0);
+        TrafEntry entry2 = system.GetEntry(1014, 2);
+        TrafficLightContainer container = entry.light;
+        TrafficLightContainer container1 = entry1.light;
+        TrafficLightContainer container2 = entry2.light;
+        TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+        lights[0].StopAllCoroutines();
         lights[0].StartCoroutine(courutineSemaforoVerde(container));
         lights[0].StartCoroutine(courutineSemaforoRosso(container1));
+        lights[0].StartCoroutine(courutineSemaforoRosso(container2));
     }
 
-    public void semaforo3()
+    public void semaforo4b()
     {
-        evento3a();
+        TrafEntry entry = system.GetEntry(1014, 7);
+        TrafEntry entry1 = system.GetEntry(1014, 0);
+        TrafEntry entry2 = system.GetEntry(1014, 2);
+        TrafficLightContainer container = entry.light;
+        TrafficLightContainer container1 = entry1.light;
+        TrafficLightContainer container2 = entry2.light;
+        TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+        lights[0].StopAllCoroutines();
+        lights[0].StartCoroutine(courutineSemaforoRosso(container));
+        lights[0].StartCoroutine(courutineSemaforoVerde(container1));
+        lights[0].StartCoroutine(courutineSemaforoVerde(container2));
+    }
+
+    public void semaforo4()
+    {
+        semaforo4a();
+    }
+
+    public void semaforo125a()
+    {
+        TrafEntry entry = system.GetEntry(1008, 4);
+        TrafEntry entry1 = system.GetEntry(1008, 0);
+        TrafEntry entry2 = system.GetEntry(1008, 2);
+        TrafficLightContainer container = entry.light;
+        TrafficLightContainer container1 = entry1.light;
+        TrafficLightContainer container2 = entry2.light;
+        TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+        lights[0].StopAllCoroutines();
+        lights[0].StartCoroutine(courutineSemaforoRosso(container));
+        lights[0].StartCoroutine(courutineSemaforoVerde(container1));
+        lights[0].StartCoroutine(courutineSemaforoVerde(container2));
+    }
+
+    public void semaforo125()
+    {
+        //semaforo125a();
+        semaforo159a();
+    }
+
+    public void semaforo159a()
+    {
+        TrafEntry entry = system.GetEntry(1011, 8);
+        TrafEntry entry1 = system.GetEntry(1011, 2);
+        TrafEntry entry2 = system.GetEntry(1011, 4);
+        TrafficLightContainer container = entry.light;
+        TrafficLightContainer container1 = entry1.light;
+        TrafficLightContainer container2 = entry2.light;
+        TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+        lights[0].StopAllCoroutines();
+        lights[0].StartCoroutine(courutineSemaforoRosso(container));
+        lights[0].StartCoroutine(courutineSemaforoRosso(container1));
+        lights[0].StartCoroutine(courutineSemaforoVerde(container2));
+    }
+
+    public void semaforo159b()
+    {
+        TrafEntry entry = system.GetEntry(1011, 8);
+        TrafEntry entry1 = system.GetEntry(1011, 2);
+        TrafEntry entry2 = system.GetEntry(1011, 4);
+        TrafficLightContainer container = entry.light;
+        TrafficLightContainer container1 = entry1.light;
+        TrafficLightContainer container2 = entry2.light;
+        TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+        lights[0].StopAllCoroutines();
+        lights[0].StartCoroutine(courutineSemaforoVerde(container));
+        lights[0].StartCoroutine(courutineSemaforoVerde(container1));
+        lights[0].StartCoroutine(courutineSemaforoRosso(container2));
+    }
+
+    public void semaforo159()
+    {
+        semaforo159b();
+
+        List<RoadGraphEdge> percorso159_5 = ottieniPercorso159_5();
+        List<RoadGraphEdge> percorso159_0 = ottieniPercorso159_0();
+
+        CreaMacchinaTraffico(158, 2, 0f, percorso159_0);
+
+        TrafAIMotor macchinaTrafficoScorretta = CreaMacchinaTraffico(162, 0, 0.899f, percorso159_5); //macchinaTraffico che non rispetta il semaforo e va piu veloce
+        //macchinaTrafficoScorretta.maxSpeed = 15f;
+        macchinaTrafficoScorretta.autoScorretta = true;
+        SetLayer(12, macchinaTrafficoScorretta.transform);
+
+
+       
+    }
+
+    public void semaforo163()
+    {
+        TrafEntry entry = system.GetEntry(1017, 17);
+        TrafEntry entry1 = system.GetEntry(1017, 0);
+        TrafEntry entry2 = system.GetEntry(1017, 2);
+        TrafficLightContainer container = entry.light;
+        TrafficLightContainer container1 = entry1.light;
+        TrafficLightContainer container2 = entry2.light;
+        TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+        lights[0].StopAllCoroutines();
+        lights[0].StartCoroutine(courutineSemaforoRosso(container));
+        lights[0].StartCoroutine(courutineSemaforoVerde(container1));
+        lights[0].StartCoroutine(courutineSemaforoVerde(container2));
+    }
+
+    public void semaforo30a()
+    {
+        TrafEntry entry = system.GetEntry(1052, 10);
+        TrafEntry entry1 = system.GetEntry(1052, 0);
+        TrafEntry entry2 = system.GetEntry(1052, 2);
+        TrafficLightContainer container = entry.light;
+        TrafficLightContainer container1 = entry1.light;
+        TrafficLightContainer container2 = entry2.light;
+        TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+        lights[0].StopAllCoroutines();
+        lights[0].StartCoroutine(courutineSemaforoVerde(container));
+        lights[0].StartCoroutine(courutineSemaforoRosso(container1));
+        lights[0].StartCoroutine(courutineSemaforoRosso(container2));
+    }
+
+    public void semaforo30()
+    {
+        semaforo30a();
+    }
+
+    public void semaforo158()
+    {
+        TrafEntry entry = system.GetEntry(1011, 8);
+        TrafEntry entry1 = system.GetEntry(1011, 2);
+        TrafEntry entry2 = system.GetEntry(1011, 4);
+        TrafficLightContainer container = entry.light;
+        TrafficLightContainer container1 = entry1.light;
+        TrafficLightContainer container2 = entry2.light;
+        TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+        lights[0].StopAllCoroutines();
+        lights[0].StartCoroutine(courutineSemaforoVerde(container));
+        lights[0].StartCoroutine(courutineSemaforoVerde(container1));
+        lights[0].StartCoroutine(courutineSemaforoRosso(container2));
+    }
+
+    public void semaforo159_2()
+    {
+        TrafEntry entry = system.GetEntry(1008, 4);
+        TrafEntry entry1 = system.GetEntry(1008, 0);
+        TrafEntry entry2 = system.GetEntry(1008, 2);
+        TrafficLightContainer container = entry.light;
+        TrafficLightContainer container1 = entry1.light;
+        TrafficLightContainer container2 = entry2.light;
+        TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+        lights[0].StopAllCoroutines();
+        lights[0].StartCoroutine(courutineSemaforoRosso(container));
+        lights[0].StartCoroutine(courutineSemaforoVerde(container1));
+        lights[0].StartCoroutine(courutineSemaforoVerde(container2));
     }
 
 
-
+    public void evento1089()
+    {
+        List<Vector3> listaWaypoint = ottieniListaWaypoint();
+        Vector3 wp3Ok = listaWaypoint[3];
+        wp3Ok.x = 2223f;
+        wp3Ok.z = 188.2f;
+        listaWaypoint[3] = wp3Ok;
+        
+        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().currentEntry.waypoints = listaWaypoint;
+    }
 
 
     public void evento39()
     {
-        //Debug.Log("sono in evento39");
         List<RoadGraphEdge> percorso39_0 = ottieniPercorso39_0();
         List<RoadGraphEdge> percorso39_1 = ottieniPercorso39_1();
         CreaMacchinaTraffico(45, 1, 0, percorso39_0);
         CreaMacchinaTraffico(45, 0, 0.5f,percorso39_1);
+    }
+
+    public void evento1082()
+    {
+        List<Vector3> listaWaypoint = ottieniListaWaypoint();
+        for(int i = 0; i < listaWaypoint.Count; i++)
+        {
+            Vector3 wp = listaWaypoint[i];
+            wp.z = 191f;
+            listaWaypoint[i] = wp;
+        }
+
+        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().currentEntry.waypoints = listaWaypoint;
     }
 
     public void evento38()
@@ -492,8 +691,27 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(52, 3, 0.7f, percorso63_2);
     }
 
+    public void evento1036()
+    {
+        //List<Vector3> listaWaypoint = ottieniListaWaypoint();
+        /*for (int i = 0; i < listaWaypoint.Count; i++)
+        {
+            Vector3 wp = listaWaypoint[i];
+            wp.z = 191f;
+            listaWaypoint[i] = wp;
+        }
+
+        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().currentEntry.waypoints = listaWaypoint;*/
+    }
+
     public void evento64()
     {
+        List<Vector3> listaWaypoint = ottieniListaWaypoint();
+        Vector3 wp = listaWaypoint[0];
+        wp.z = 572f;
+        listaWaypoint[0] = wp;
+
+
         semaforo64a();
         List<RoadGraphEdge> percorso64_0 = ottieniPercorso64_0();
         List<RoadGraphEdge> percorso64_1 = ottieniPercorso64_1();
@@ -507,6 +725,12 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public void evento65()
     {
+        List<Vector3> listaWaypoint = ottieniListaWaypoint();
+        Vector3 wp = listaWaypoint[0];
+        wp.z = 572f;
+        listaWaypoint[0] = wp;
+
+
         semaforo65a();
         List<RoadGraphEdge> percorso65_0 = ottieniPercorso65_0();
         List<RoadGraphEdge> percorso65_1 = ottieniPercorso65_1();
@@ -545,7 +769,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         List<RoadGraphEdge> percorso15_0 = ottieniPercorso15_0();
         List<RoadGraphEdge> percorso15_1 = ottieniPercorso15_1();
         CreaMacchinaTraffico(3, 3, 0.4f, percorso15_0);
-        CreaMacchinaTraffico(3, 0, 0.6f, percorso15_1); //QUESTA SCOMPARE!!!
+        CreaMacchinaTraffico(3, 0, 0.6f, percorso15_1); //QUESTA SCOMPARE!!! ATTENZIONE
     }
 
     public void evento16()
@@ -570,7 +794,8 @@ public class ScenarioTestUrbano : MonoBehaviour
     public IEnumerator attesa18()
     {
         Debug.Log("sono in courutine");
-        yield return new WaitForSeconds(16f);
+        //yield return new WaitForSeconds(16f);
+        yield return new WaitForSeconds(25f);
         Debug.Log("Fine attesa");
         evento18a();
     }
@@ -615,6 +840,17 @@ public class ScenarioTestUrbano : MonoBehaviour
         go.GetComponent<TrafAIMotor>().currentEntry = entry;
     }
 
+    public void evento1007()
+    {
+        List<Vector3> listaWaypoint = ottieniListaWaypoint();
+        Vector3 wp3Ok = listaWaypoint[3];
+        wp3Ok.x = 866.41f;
+        wp3Ok.z = 380f;
+        listaWaypoint[3] = wp3Ok;
+
+        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().currentEntry.waypoints = listaWaypoint;
+    }
+
     public void evento5()
     {
         semaforo5a();
@@ -638,11 +874,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public void evento3()
     {
-        semaforo3a();       
-    }
-
-    public void evento3a()
-    {
+        semaforo3a();
         List<RoadGraphEdge> percorso3_0 = ottieniPercorso3_0();
         List<RoadGraphEdge> percorso3_1 = ottieniPercorso3_1();
         List<RoadGraphEdge> percorso3_2 = ottieniPercorso3_2();
@@ -654,18 +886,263 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(15, 3, 0.15f, percorso3_1);
         CreaMacchinaTraffico(15, 3, 0.3f, percorso3_2);
         CreaMacchinaTraffico(15, 3, 0.45f, percorso3_3);
-        CreaMacchinaTraffico(15, 2, 0.6f, percorso3_4);
-        CreaMacchinaTraffico(15, 1, 0.8f, percorso3_5);
+        CreaMacchinaTraffico(15, 2, 0.6f, percorso3_5);
+        CreaMacchinaTraffico(15, 1, 0.8f, percorso3_4);
         CreaMacchinaTraffico(15, 0, 0.2f, percorso3_6);
+
+        CreaMacchinaTraffico(15, 2, 0.15f, percorso3_5);
+        CreaMacchinaTraffico(15, 1, 0.4f, percorso3_4);
+        CreaMacchinaTraffico(15, 0, 0.1f, percorso3_6);
     }
 
+    public void evento4()
+    {
+        semaforo4a();
+        List<RoadGraphEdge> percorso4_0 = ottieniPercorso4_0();
+        List<RoadGraphEdge> percorso4_1 = ottieniPercorso4_1();
+        List<RoadGraphEdge> percorso4_2 = ottieniPercorso4_2();
+        List<RoadGraphEdge> percorso4_3 = ottieniPercorso4_3();
+        List<RoadGraphEdge> percorso4_4 = ottieniPercorso4_4();
+        List<RoadGraphEdge> percorso4_5 = ottieniPercorso4_5();
+        List<RoadGraphEdge> percorso4_6 = ottieniPercorso4_6();
+        List<RoadGraphEdge> percorso4_7 = ottieniPercorso4_7();
+
+        CreaMacchinaTraffico(24, 1, 0f, percorso4_0);
+        CreaMacchinaTraffico(24, 0, 0.15f, percorso4_1);
+        CreaMacchinaTraffico(24, 1, 0.3f, percorso4_0);
+        CreaMacchinaTraffico(24, 0, 0.45f, percorso4_1);
+        CreaMacchinaTraffico(24, 1, 0.6f, percorso4_0);
+        CreaMacchinaTraffico(24, 0, 0.75f, percorso4_1);
+
+        CreaMacchinaTraffico(23, 2, 0f, percorso4_2);
+        CreaMacchinaTraffico(23, 3, 0.15f, percorso4_3);
+
+        CreaMacchinaTraffico(23, 3, 0.87f, percorso4_4);
+        CreaMacchinaTraffico(23, 3, 0.95f, percorso4_7);
+
+        CreaMacchinaTraffico(23, 3, 0.5f, percorso4_5);
+        CreaMacchinaTraffico(23, 3, 0.65f, percorso4_6);
+
+        CreaMacchinaTraffico(23, 2, 0.3f, percorso4_2);
+
+    }
+
+    public void evento125()
+    {
+        semaforo4b();
+        semaforo125a();
+        List<RoadGraphEdge> percorso125_0 = ottieniPercorso125_0();
+        List<RoadGraphEdge> percorso125_1 = ottieniPercorso125_1();
+        List<RoadGraphEdge> percorso125_2 = ottieniPercorso125_2();
+        List<RoadGraphEdge> percorso125_3 = ottieniPercorso125_3();
+        List<RoadGraphEdge> percorso125_4 = ottieniPercorso125_4();
+
+        CreaMacchinaTraffico(160, 0, 0f, percorso125_0);
+        CreaMacchinaTraffico(160, 1, 0.15f, percorso125_1);
+        CreaMacchinaTraffico(160, 1, 0.3f, percorso125_2);
+
+        CreaMacchinaTraffico(159, 3, 0f, percorso125_3);
+        CreaMacchinaTraffico(159, 2, 0.15f, percorso125_4);
+
+        CreaMacchinaTraffico(160, 0, 0.45f, percorso125_0);
+        CreaMacchinaTraffico(160, 1, 0.6f, percorso125_1);
+        CreaMacchinaTraffico(160, 1, 0.75f, percorso125_2);
+
+        CreaMacchinaTraffico(159, 3, 0.45f, percorso125_3);
+        CreaMacchinaTraffico(159, 2, 0.6f, percorso125_4);
+    }
+
+    bool secondaVolta = false;
+
+    public void evento1008()
+    {
+        if (secondaVolta)
+        {
+            return;
+        }
+        List<Vector3> listaWaypoint = ottieniListaWaypoint();
+        Vector3 wp3Ok = listaWaypoint[3];
+        wp3Ok.x = 1162.84f;
+        wp3Ok.z = 950.3f;
+        listaWaypoint[3] = wp3Ok;
+
+        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().currentEntry.waypoints = listaWaypoint;
+    }
+
+    TrafAIMotor macchinaTrafficoScorrettaDavanti = null;
+
+    public void evento159()
+    {
+        if (secondaVolta)
+        {
+            evento159a();
+            return;
+        }
+        secondaVolta = true;
+        semaforo159b();
+        List<RoadGraphEdge> percorso159_0 = ottieniPercorso159_0();
+        List<RoadGraphEdge> percorso159_1 = ottieniPercorso159_1();
+        List<RoadGraphEdge> percorso159_2 = ottieniPercorso159_2();
+        List<RoadGraphEdge> percorso159_3 = ottieniPercorso159_3();
+        List<RoadGraphEdge> percorso159_4 = ottieniPercorso159_4();
+        macchinaTrafficoScorrettaDavanti = CreaMacchinaTraffico(162, 3, 0f, percorso159_4);
+        macchinaTrafficoScorrettaDavanti.autoScorretta = true;
+        macchinaTrafficoScorrettaDavanti.maxSpeed = 7f;
+        SetLayer(12, macchinaTrafficoScorrettaDavanti.transform);
+
+
+        List<RoadGraphEdge> percorso159_6 = ottieniPercorso159_6();
+
+        CreaMacchinaTraffico(158, 2, 0f, percorso159_0);
+        CreaMacchinaTraffico(158, 2, 0.1f, percorso159_1);
+        //CreaMacchinaTraffico(158, 2, 0.7f, percorso159_2);
+        CreaMacchinaTraffico(158, 3, 0.9f, percorso159_3);
+
+        
+        
+        CreaMacchinaTraffico(162, 1, 0.3f, percorso159_6);
+    }
+
+    
+
+    public void evento163()
+    {
+        List<RoadGraphEdge> percorso163_0 = ottieniPercorso163_0();
+        List<RoadGraphEdge> percorso163_1 = ottieniPercorso163_1();
+        List<RoadGraphEdge> percorso163_2 = ottieniPercorso163_2();
+        List<RoadGraphEdge> percorso163_3 = ottieniPercorso163_3();
+        List<RoadGraphEdge> percorso163_4 = ottieniPercorso163_4();
+        List<RoadGraphEdge> percorso163_5 = ottieniPercorso163_5();
+        List<RoadGraphEdge> percorso163_6 = ottieniPercorso163_6();
+        List<RoadGraphEdge> percorso163_7 = ottieniPercorso163_7();
+
+        CreaMacchinaTraffico(22, 2, 0f, percorso163_0);
+        CreaMacchinaTraffico(22, 2, 0.15f, percorso163_1);
+        CreaMacchinaTraffico(22, 2, 0.3f, percorso163_2);
+        CreaMacchinaTraffico(22, 3, 0.45f, percorso163_3);
+        CreaMacchinaTraffico(23, 0, 0.6f, percorso163_4);
+        //CreaMacchinaTraffico(23, 1, 0.75f, percorso163_5);
+        CreaMacchinaTraffico(23, 0, 0f, percorso163_6);
+        //CreaMacchinaTraffico(23, 1, 0f, percorso163_7);
+
+        //elimino il primo waypoint -> evita di andare sul marciapiede
+        GameObject go = ottieniRiferimentoPlayer();
+        TrafAIMotor traf = go.GetComponent<TrafAIMotor>();
+        List<Vector3> listaWaypoint = traf.currentEntry.waypoints;
+        listaWaypoint.RemoveAt(0);
+        traf.currentEntry.waypoints = listaWaypoint;
+
+        if (macchinaTrafficoScorrettaDavanti != null)
+        {
+            //risetto alla macchina scorretta che ci ritroviamo davanti il livello "traffic", altrimenti verrà sempre considerata un ostacolo
+            SetLayer(8, macchinaTrafficoScorrettaDavanti.transform);
+        }
+
+    }
+
+    
+    public void evento22()
+    {
+        TrackController.Instance.LanciaOstacolo(10);
+        List<RoadGraphEdge> percorso22_0 = ottieniPercorso22_0();
+        List<RoadGraphEdge> percorso22_1 = ottieniPercorso22_1();
+        List<RoadGraphEdge> percorso22_2 = ottieniPercorso22_2();
+        List<RoadGraphEdge> percorso22_3 = ottieniPercorso22_3();
+        List<RoadGraphEdge> percorso22_4 = ottieniPercorso22_4();
+        List<RoadGraphEdge> percorso22_5 = ottieniPercorso22_5();
+        List<RoadGraphEdge> percorso22_6 = ottieniPercorso22_6();
+        List<RoadGraphEdge> percorso22_7 = ottieniPercorso22_7();
+
+        CreaMacchinaTraffico(12, 2, 0.5f, percorso22_0);
+        //CreaMacchinaTraffico(12, 2, 0.15f, percorso22_1);
+        //CreaMacchinaTraffico(12, 3, 0.3f, percorso22_2);
+        //CreaMacchinaTraffico(21, 2, 0.45f, percorso22_3);
+        CreaMacchinaTraffico(21, 3, 0.3f, percorso22_4);
+        //CreaMacchinaTraffico(30, 0, 0.75f, percorso22_5);
+        //CreaMacchinaTraffico(30, 1, 0f, percorso22_6);
+        //CreaMacchinaTraffico(30, 0, 0f, percorso22_7);
+    }
+
+    public void evento30()
+    {
+        semaforo30a();
+        TrackController.Instance.LanciaOstacolo(11);
+        List<RoadGraphEdge> percorso30_0 = ottieniPercorso30_0();
+        List<RoadGraphEdge> percorso30_1 = ottieniPercorso30_1();
+        List<RoadGraphEdge> percorso30_2 = ottieniPercorso30_2();
+        List<RoadGraphEdge> percorso30_3 = ottieniPercorso30_3();
+        List<RoadGraphEdge> percorso30_4 = ottieniPercorso30_4();
+        List<RoadGraphEdge> percorso30_5 = ottieniPercorso30_5();
+        List<RoadGraphEdge> percorso30_6 = ottieniPercorso30_6();
+        List<RoadGraphEdge> percorso30_7 = ottieniPercorso30_7();
+
+        CreaMacchinaTraffico(158, 0, 0f, percorso30_0);
+        CreaMacchinaTraffico(158, 1, 0.15f, percorso30_1);
+        CreaMacchinaTraffico(158, 0, 0.3f, percorso30_2);
+        CreaMacchinaTraffico(158, 0, 0.45f, percorso30_3);
+        CreaMacchinaTraffico(157, 2, 0.6f, percorso30_4);
+        CreaMacchinaTraffico(157, 3, 0.75f, percorso30_5);
+        CreaMacchinaTraffico(157, 2, 0f, percorso30_6);
+        CreaMacchinaTraffico(157, 2, 0f, percorso30_7);
+    }
+
+    public void evento158()
+    {
+        //elimino il primo waypoint -> evita di andare sul marciapiede
+        List<Vector3> listaWaypoint = ottieniListaWaypoint();
+        Vector3 wp = listaWaypoint[0];
+        wp.z = 958f;
+        listaWaypoint[0] = wp;
+        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().currentEntry.waypoints = listaWaypoint;
+        //GameObject go = ottieniRiferimentoPlayer();
+        /*TrafAIMotor traf = go.GetComponent<TrafAIMotor>();
+        List<Vector3> listaWaypoint = traf.currentEntry.waypoints;
+        listaWaypoint.RemoveAt(0);
+        traf.currentEntry.waypoints = listaWaypoint;*/
+    }
+
+    public void evento159a()
+    {
+        semaforo159_2();
+        TrackController.Instance.LanciaOstacolo(12);        
+    }
+
+   /* public void evento1011()
+    {
+        GameObject go = ottieniRiferimentoPlayer();
+        TrafAIMotor traf = go.GetComponent<TrafAIMotor>();
+        List<Vector3> listaWaypoint = traf.currentEntry.waypoints;
+        int contatore = 0;
+        foreach (Vector3 wp in listaWaypoint)
+        {
+            contatore++;
+            Debug.Log("waypoint " + contatore + ": " + wp.x + "," + wp.y + "," + wp.z);
+        }
+        List<Vector3> listaWaypointOk = new List<Vector3>();
+        listaWaypointOk.Add(listaWaypoint[0]);
+        Vector3 nuovoWaypoint = listaWaypoint[3];
+        nuovoWaypoint.x = 1328f;
+        listaWaypointOk.Add(nuovoWaypoint);
+        traf.currentEntry.waypoints = listaWaypointOk;
+    }
+    */
+    public void evento9999()
+    {
+        Debug.Log("Test interrotto!!!!");       
+        fineGuidaAutomatica();
+    }
+
+
+
+
+    /*
     private void evento200()
     {
         Debug.Log("evento200");
         GameObject go = ottieniRiferimentoPlayer();
         TrafEntry entry = system.GetEntry(3, 0);
         go.GetComponent<TrafAIMotor>().nextEntry = entry;
-    }
+    }*/
 
 
 
@@ -850,25 +1327,25 @@ public class ScenarioTestUrbano : MonoBehaviour
         edge21a.subId = 13;
 
         edge22.id = 30;
-        edge22.subId = 3;
+        edge22.subId = 2;
 
         edge22a.id = 1052;
-        edge22a.subId = 10;
+        edge22a.subId = 8;
 
-        edge23.id = 157;
-        edge23.subId = 1;
+        edge23.id = 158;
+        edge23.subId = 3;
 
-        edge23a.id = 1076;
-        edge23a.subId = 11;
+        edge23a.id = 1011;
+        edge23a.subId = 3;
 
-        edge24.id = 142;
+        edge24.id = 159;
         edge24.subId = 3;
 
-        edge24a.id = 1041;
-        edge24a.subId = 3;
+        edge24a.id = 1008;
+        edge24a.subId = 10;
 
-        edge25.id = 143;
-        edge25.subId = 3;
+        edge25.id = 164;
+        edge25.subId = 1;
 
 
         List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
@@ -2396,6 +2873,86 @@ public class ScenarioTestUrbano : MonoBehaviour
         edge1.subId = 0;
 
         edge2.id = 16;
+        edge2.subId = 0;
+
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso4_0()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1014;
+        edge1.subId = 0;
+
+        edge2.id = 23;
+        edge2.subId =1;
+
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso4_1()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1014;
+        edge1.subId = 0;
+
+        edge2.id = 23;
+        edge2.subId = 0;
+
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso4_2()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1014;
+        edge1.subId = 0;
+
+        edge2.id = 24;
+        edge2.subId = 2;
+
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso4_3()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1014;
+        edge1.subId = 0;
+
+        edge2.id = 24;
         edge2.subId = 3;
 
 
@@ -2407,18 +2964,912 @@ public class ScenarioTestUrbano : MonoBehaviour
         return percorso;
     }
 
+    private List<RoadGraphEdge> ottieniPercorso4_4()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+        RoadGraphEdge edge4 = new RoadGraphEdge();
 
-    private bool guidaAutomatica = false;
+        edge1.id = 1014;
+        edge1.subId = 0;
+
+        edge2.id = 125;
+        edge2.subId = 0;
+
+        edge3.id = 159;
+        edge3.subId = 0;
+
+        edge4.id = 158;
+        edge4.subId = 0;
+
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+        percorso.Add(edge4);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso4_5()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+
+        edge1.id = 1014;
+        edge1.subId = 0;
+
+        edge2.id = 125;
+        edge2.subId = 1;
+
+        edge3.id = 164;
+        edge3.subId = 1;
+
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso4_6()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+
+        edge1.id = 1014;
+        edge1.subId = 0;
+
+        edge2.id = 125;
+        edge2.subId = 2;
+
+        edge3.id = 164;
+        edge3.subId = 2;
+
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso4_7()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+
+        edge1.id = 1014;
+        edge1.subId = 0;
+
+        edge2.id = 125;
+        edge2.subId =3;
+
+        edge3.id = 164;
+        edge3.subId = 3;
+
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso125_0()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+
+        edge1.id = 1008;
+        edge1.subId = 0;
+
+        edge2.id = 159;
+        edge2.subId = 0;
+
+        edge3.id = 163;
+        edge3.subId = 1;
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso125_1()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+
+        edge1.id = 1008;
+        edge1.subId = 0;
+
+        edge2.id = 159;
+        edge2.subId = 1;
+
+        edge3.id = 158;
+        edge3.subId = 1;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso125_2()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1008;
+        edge1.subId = 0;
+
+        edge2.id = 164;
+        edge2.subId = 1;
+
+
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso125_3()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1008;
+        edge1.subId = 0;
+
+        edge2.id = 164;
+        edge2.subId = 2;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso125_4()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1008;
+        edge1.subId = 0;
+
+        edge2.id = 160;
+        edge2.subId = 2;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso159_0()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+
+        edge1.id = 1011;
+        edge1.subId = 0;
+
+        edge2.id = 163;
+        edge2.subId = 1;
+
+        edge3.id = 20;
+        edge3.subId = 2;
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso159_1()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+
+        edge1.id = 1011;
+        edge1.subId = 0;
+
+        edge2.id = 163;
+        edge2.subId = 2;
+
+        edge3.id = 20;
+        edge3.subId = 1;
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso159_2()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1011;
+        edge1.subId = 0;
+
+        edge2.id = 159;
+        edge2.subId = 2;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso159_3()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1011;
+        edge1.subId = 0;
+
+        edge2.id = 159;
+        edge2.subId = 3;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso159_4()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+        RoadGraphEdge edge4 = new RoadGraphEdge();
+
+        edge1.id = 1011;
+        edge1.subId = 0;
+
+        edge2.id = 163;
+        edge2.subId = 3;
+
+        edge3.id = 22;
+        edge3.subId = 0;
+
+        edge4.id = 21;
+        edge4.subId = 0;
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+        percorso.Add(edge4);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso159_5()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+
+        edge1.id = 1011;
+        edge1.subId = 0;
+
+        edge2.id = 163;
+        edge2.subId = 0;
+
+        edge3.id = 23;
+        edge3.subId = 3;
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso159_6()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1011;
+        edge1.subId = 0;
+
+        edge2.id = 163;
+        edge2.subId = 1;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso163_0()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1017;
+        edge1.subId = 0;
+
+        edge2.id = 20;
+        edge2.subId = 2;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso163_1()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1017;
+        edge1.subId = 0;
+
+        edge2.id = 20;
+        edge2.subId = 1;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso163_2()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1017;
+        edge1.subId = 0;
+
+        edge2.id = 23;
+        edge2.subId = 2;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso163_3()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1017;
+        edge1.subId = 0;
+
+        edge2.id = 23;
+        edge2.subId = 3;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso163_4()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+
+        edge1.id = 1017;
+        edge1.subId = 0;
+
+        edge2.id = 22;
+        edge2.subId = 0;
+
+        edge3.id = 21;
+        edge3.subId = 0;
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso163_5()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+        RoadGraphEdge edge4 = new RoadGraphEdge();
+        RoadGraphEdge edge5 = new RoadGraphEdge();
+
+        edge1.id = 1017;
+        edge1.subId = 0;
+
+        edge2.id = 22;
+        edge2.subId = 1;
+
+        edge3.id = 30;
+        edge3.subId = 3;
+
+        edge4.id = 157;
+        edge4.subId = 0;
+
+        edge5.id = 156;
+        edge5.subId = 0;
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+        percorso.Add(edge4);
+        percorso.Add(edge5);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso163_6()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1017;
+        edge1.subId = 0;
+
+        edge2.id = 20;
+        edge2.subId = 1;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso163_7()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+        RoadGraphEdge edge4 = new RoadGraphEdge();
+
+        edge1.id = 1017;
+        edge1.subId = 0;
+
+        edge2.id = 22;
+        edge2.subId = 1;
+
+        edge3.id = 30;
+        edge3.subId = 2;
+
+        edge4.id = 158;
+        edge4.subId = 2;
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+        percorso.Add(edge4);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso22_0()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+
+        edge1.id = 1045;
+        edge1.subId = 0;
+
+        edge2.id = 30;
+        edge2.subId = 2;
+
+        edge3.id = 158;
+        edge3.subId = 2;
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso22_1()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1045;
+        edge1.subId = 0;
+
+        edge2.id = 22;
+        edge2.subId = 2;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso22_2()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+        RoadGraphEdge edge4 = new RoadGraphEdge();
+
+        edge1.id = 1045;
+        edge1.subId = 0;
+
+        edge2.id = 30;
+        edge2.subId = 3;
+
+        edge3.id = 157;
+        edge3.subId = 0;
+
+        edge4.id = 156;
+        edge4.subId = 0;
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+        percorso.Add(edge4);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso22_3()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+
+        edge1.id = 1045;
+        edge1.subId = 0;
+
+        edge2.id = 30;
+        edge2.subId = 2;
+
+        edge3.id = 158;
+        edge3.subId = 2;
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso22_4()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+        RoadGraphEdge edge4 = new RoadGraphEdge();
+
+        edge1.id = 1045;
+        edge1.subId = 0;
+
+        edge2.id = 30;
+        edge2.subId = 3;
+
+        edge3.id = 157;
+        edge3.subId = 1;
+
+        edge4.id = 156;
+        edge4.subId = 1;
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+        percorso.Add(edge4);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso22_5()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1045;
+        edge1.subId = 0;
+
+        edge2.id = 21;
+        edge2.subId = 0;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso22_6()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1045;
+        edge1.subId = 0;
+
+        edge2.id = 21;
+        edge2.subId = 1;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso22_7()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1045;
+        edge1.subId = 0;
+
+        edge2.id = 22;
+        edge2.subId = 3;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso30_0()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+
+        edge1.id = 1052;
+        edge1.subId = 0;
+
+        edge2.id = 157;
+        edge2.subId = 0;
+
+        edge3.id = 156;
+        edge3.subId = 0;
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso30_1()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+
+        edge1.id = 1052;
+        edge1.subId = 0;
+
+        edge2.id = 157;
+        edge2.subId = 1;
+
+        edge3.id = 156;
+        edge3.subId = 1;
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso30_2()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1052;
+        edge1.subId = 0;
+
+        edge2.id = 30;
+        edge2.subId = 0;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso30_3()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1052;
+        edge1.subId = 0;
+
+        edge2.id = 30;
+        edge2.subId = 1;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso30_4()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1052;
+        edge1.subId = 0;
+
+        edge2.id = 158;
+        edge2.subId = 2;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso30_5()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1052;
+        edge1.subId = 0;
+
+        edge2.id = 158;
+        edge2.subId = 3;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso30_6()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1052;
+        edge1.subId = 0;
+
+        edge2.id = 30;
+        edge2.subId = 1;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso30_7()
+    {
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge1.id = 1052;
+        edge1.subId = 0;
+
+        edge2.id = 30;
+        edge2.subId = 0;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        percorso.Add(edge2);
+
+        return percorso;
+    }
+
+
+
+
+    //private bool guidaAutomatica = false;
     public int maxIdent = 20;
     public int maxSub = 4;
     public float checkRadius = 8f;
 
 
-    private void fineGuidaAutomaticaSF()
+    public void fineGuidaAutomatica()
     {
         GameObject go = ottieniRiferimentoPlayer();
         Destroy(go.GetComponent<TrafAIMotor>());
-        guidaAutomatica = false;
+        Destroy(go.GetComponent<GuidaManuale>());
+        go.GetComponent<VehicleInputController>().enabled = true;
+        //guidaAutomatica = false;
     }
 
     private void attivaGuidaAutomatica(GameObject go, List<RoadGraphEdge> percorso, int id, int subId)
@@ -2444,20 +3895,25 @@ public class ScenarioTestUrbano : MonoBehaviour
 
                 GameObject nose = new GameObject("nose");
                 nose.transform.SetParent(go.transform);
-                nose.transform.localPosition = new Vector3(0, 0.5f, 2f);
-                nose.transform.localRotation = Quaternion.identity;
+            //nose.transform.localPosition = new Vector3(0, 0.5f, 2f); ->per la jaguar
+            nose.transform.localPosition = new Vector3(0, 0.5f, 2.61f);
+            nose.transform.localRotation = Quaternion.identity;
                 nose.transform.localScale = new Vector3(2f, 2f, 2f);
 
 
                 TrafAIMotor motor = go.AddComponent<TrafAIMotor>();
+            go.GetComponent<VehicleInputController>().enabled = false;
+
+            GuidaManuale guidaManuale = go.AddComponent<GuidaManuale>();
+            guidaManuale.setMotor(motor);
 
 
-                GameObject colliderOstacoli = new GameObject("colliderOstacoli");
+            GameObject colliderOstacoli = new GameObject("colliderOstacoli");
                 colliderOstacoli.transform.SetParent(go.transform);
                 BoxCollider boxColliderOstacoli = colliderOstacoli.AddComponent<BoxCollider>();
                 boxColliderOstacoli.isTrigger = true;
                 colliderOstacoli.transform.localPosition = new Vector3(0f, 0.65f, 7f);
-                colliderOstacoli.transform.localScale = new Vector3(1f, 1f, 1f);
+                colliderOstacoli.transform.localScale = new Vector3(1.5f, 1f, 1f);
                 colliderOstacoli.transform.localRotation = Quaternion.identity;
                 boxColliderOstacoli.size = new Vector3(3f, 0.75f, 10f);
                 TrafAIMotor.GestoreCollisioni gestore = colliderOstacoli.AddComponent<TrafAIMotor.GestoreCollisioni>();
@@ -2479,10 +3935,10 @@ public class ScenarioTestUrbano : MonoBehaviour
                 motor.nose = nose;
                 motor.raycastOrigin = nose.transform;
                 motor.targetHeight = 0f;
-                motor.waypointThreshold = 3f;
+                motor.waypointThreshold = 6f;
 
                 Debug.Log("pos.position: x = " + pos.position.x + "; y = " + pos.position.y + "; z = " + pos.position.z + "; targetIndex = " + pos.targetIndex);
-                guidaAutomatica = true;
+                //guidaAutomatica = true;
 
             List<RoadGraphEdge> percorsoPlayer = percorso.GetRange(1, percorso.Count - 1);
 
@@ -2495,13 +3951,13 @@ public class ScenarioTestUrbano : MonoBehaviour
             }
             else
             {
-                guidaAutomaticaSF(); //è una ricorsione, fa si che si ripete la funzione finchè tutto vada bene
+                attivaGuidaAutomatica(go, percorso, id, subId); //è una ricorsione, fa si che si ripete la funzione finchè tutto vada bene
             }
 
         
     }
 
-
+    /*
     private void guidaAutomaticaSF()
     {
         Debug.Log("sono in guidaAtuomaticaSF");
@@ -2513,7 +3969,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
 
         GameObject go = ottieniRiferimentoPlayer();
-        TrackController trackController = TrackController.Instance;
+        TrackController trackController = TrackController.Instance;       
         TrafEntry entry = trackController.GetCurrentTrafEntry(); //-> ottengo la entry corrente
         //TrafEntry entryOk = null;
 
@@ -2578,23 +4034,6 @@ public class ScenarioTestUrbano : MonoBehaviour
             guidaAutomatica = true;
 
 
-            /*motor.fixedRoute = true;
-             
-            //RoadGraphEdge edge = new RoadGraphEdge();
-            //edge.id = 5; edge.subId = 0;
-            RoadGraphEdge edge1 = new RoadGraphEdge();
-            edge1.id = 1003; edge1.subId = 4;
-            RoadGraphEdge edge2 = new RoadGraphEdge();
-            edge2.id = 3; edge2.subId = 1;
-            //RoadGraphEdge edge3 = new RoadGraphEdge();
-            //edge3.id = 4; edge3.subId = 3;
-
-            List<RoadGraphEdge> listaEdge = new List<RoadGraphEdge>();
-            //listaEdge.Add(edge);
-            listaEdge.Add(edge1);
-            listaEdge.Add(edge2);
-            //listaEdge.Add(edge3);
-            motor.fixedPath = listaEdge;*/
 
 
 
@@ -2608,7 +4047,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         }
 
     }
-
+*/
     //ANTONELLO
     private float calcolaDistanza(TrafEntry entry, GameObject go)
     {
@@ -2691,7 +4130,42 @@ public class ScenarioTestUrbano : MonoBehaviour
         {
             go = GameObject.Find("XE_Rigged(Clone)");
         }
+        if (go == null)
+        {
+            go = GameObject.Find("TeslaModelS_2_Rigged (1)");
+        }
+        if (go == null)
+        {
+            go = GameObject.Find("TeslaModelS_2_Rigged (1)(Clone)");
+        }
         return go;
+    }
+    
+    private List<Vector3> ottieniListaWaypoint()
+    {
+        GameObject go = ottieniRiferimentoPlayer();
+        TrafAIMotor traf = go.GetComponent<TrafAIMotor>();
+        List<Vector3> listaWaypoint = traf.currentEntry.waypoints;
+        Debug.Log("waypont:");
+        foreach (Vector3 wp in listaWaypoint)
+        {
+            Debug.Log(wp.x + "," + wp.y + "," + wp.z);
+        }
+        return listaWaypoint;
+    }
+
+    private void SetLayer(int newLayer, Transform trans)
+    {
+        //cambia il layer di un gameObject e di tutti i suoi figli
+        trans.gameObject.layer = newLayer;
+        foreach (Transform child in trans)
+        {
+            child.gameObject.layer = newLayer;
+            if (child.childCount > 0)
+            {
+                SetLayer(newLayer, child.transform);
+            }
+        }
     }
 }
 
