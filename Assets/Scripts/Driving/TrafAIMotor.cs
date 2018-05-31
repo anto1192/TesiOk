@@ -44,7 +44,7 @@ public class TrafAIMotor : MonoBehaviour
     public TrafEntry currentEntry;
     //ANTONELLO nextEntry era private
     public TrafEntry nextEntry = null;
-    private bool hasNextEntry = false;
+    public bool hasNextEntry = false;
     public int currentIndex = 0;
 
     public float currentSpeed;
@@ -242,8 +242,10 @@ public class TrafAIMotor : MonoBehaviour
                 MoveCarUtenteSterzata();
             }
         }
+        SteerCar();
+        MoveCarUtenteSterzata();
 
-        
+
     }
 
 
@@ -1142,11 +1144,12 @@ public class TrafAIMotor : MonoBehaviour
             //DirectInputWrapper.PlayDamperForce(0, Mathf.RoundToInt(_pidPars.offsetSpringForce * 1.75f));
             //DirectInputWrapper.PlayConstantForce(0, Mathf.RoundToInt(-currentTurn*10000/45 * _pidPars.offsetSpringForce * 1.75f));
             //DirectInputWrapper.UpdateConstantForce(0, _pidPars.valoreVolante);
-            DirectInputWrapper.PlaySpringForce(0, Mathf.RoundToInt(currentTurn / 45f / 0.94f * 10000f), _pidPars.saturazione, _pidPars.coefficiente);
+            //DirectInputWrapper.PlaySpringForce(0, Mathf.RoundToInt(currentTurn / 45f / 0.94f * 10000f), _pidPars.saturazione, _pidPars.coefficiente);
+            DirectInputWrapper.PlaySpringForce(0, Mathf.RoundToInt(currentTurn / 45f * 10000f), _pidPars.saturazione, _pidPars.coefficiente);
             //DirectInputWrapper.PlaySpringForce(0, Mathf.RoundToInt(currentTurn / 45f /0.006f*100f), _pidPars.saturazione, _pidPars.coefficiente);
         } //else
           // {
-        vehicleController.steerInput = currentTurn / 45f;
+        //vehicleController.steerInput = currentTurn / 45f;
         //}
     }
 

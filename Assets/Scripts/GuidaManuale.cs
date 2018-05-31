@@ -53,7 +53,7 @@ public class GuidaManuale : MonoBehaviour
             }
         }
         
-        if (inputController.GetSteerInput() != 0 && !(AppController.Instance.UserInput is SteeringWheelInputController))
+        if (inputController.GetSteerInput() != 0) // && !(AppController.Instance.UserInput is SteeringWheelInputController))
         {
             motor.interventoAllaGuidaSterzata = true;
             controller.steerInput = inputController.GetSteerInput();
@@ -67,7 +67,7 @@ public class GuidaManuale : MonoBehaviour
 
         if (AppController.Instance.UserInput is SteeringWheelInputController)
         {
-            Debug.Log("Volante: " + inputController.GetSteerInput());
+            Debug.Log("Volante: " + inputController.GetSteerInput() + "; sterzata effettiva: " + controller.steerInput + "; differenza: " + Math.Abs(inputController.GetSteerInput() - controller.steerInput));
         }
         //controller.steerInput = inputController.GetSteerInput();
         //controller.accellInput = inputController.GetAccelBrakeInput();
