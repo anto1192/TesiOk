@@ -73,6 +73,9 @@ public class TrafAIMotor : MonoBehaviour
     public Vector3 target = Vector3.zero;
     private Vector3 nextTarget = Vector3.zero;
 
+    //ANTONELLo
+    private Vector3 targetPrecedente = Vector3.zero;
+
     public const float giveWayRegisterDistance = 12f;
     //ANTONELLO
     //public const float brakeDistance = 10f;
@@ -80,7 +83,7 @@ public class TrafAIMotor : MonoBehaviour
     //public const float yellowLightGoDistance = 4f;
     //ANTONELLO
     public const float yellowLightGoDistance = 10f; //per evitare che inchiodi quando vede il semaforo arancione troppo tardi
-    public const float stopLength = 6f;
+    public const float stopLength = 10f;
     private VehicleController vehicleController;
 
     private bool inited = false;
@@ -128,9 +131,16 @@ public class TrafAIMotor : MonoBehaviour
     public bool interventoAllaGuidaAccelerazione = false;
     public bool interventoAllaGuidaSterzata = false;
 
+    PID PIDControllerSterzata;
+    PID PIDControllerAccelerazione;
+    PIDPars _pidPars;
+
+
     //ANTONELLO
     public void Init()
     {
+        if (_pidPars == null)
+            _pidPars = Resources.Load<PIDPars>("PIDPars_steeringWheel");
         target = currentEntry.waypoints[currentIndex];
         //CheckHeight();
         inited = true;
@@ -143,8 +153,16 @@ public class TrafAIMotor : MonoBehaviour
         }
 
         vehicleController = GetComponent<VehicleController>();
-        
+        PIDControllerSterzata = new PID(_pidPars.p_sterzata, _pidPars.i_sterzata, _pidPars.d_sterzata);
+        PIDControllerAccelerazione = new PID(_pidPars.p_accelerazione, _pidPars.i_accelerazione, _pidPars.d_accelerazione);
 
+
+    }
+
+    private void Start()
+    {
+        if(_pidPars==null)
+        _pidPars = Resources.Load<PIDPars>("PIDPars_steeringWheel");
     }
 
 
@@ -153,7 +171,6 @@ public class TrafAIMotor : MonoBehaviour
     public float NextRaycastTime()
     {
         return Time.time + UnityEngine.Random.value / 4 + 0.1f;
-        var ciao = new Tuple<String, int>(); 
     }
 
     //check for something in front of us, populate blockedInfo if something was found
@@ -170,7 +187,8 @@ public class TrafAIMotor : MonoBehaviour
             }
         }
 
-        if(Physics.Raycast(raycastOrigin.position, raycastOrigin.forward, out blockedInfo, brakeDistance, ~(1 << LayerMask.NameToLayer("BridgeRoad"))))
+        //if(Physics.Raycast(raycastOrigin.position, raycastOrigin.forward, out blockedInfo, brakeDistance, ~(1 << LayerMask.NameToLayer("BridgeRoad"))))
+        if (Physics.Raycast(raycastOrigin.position, raycastOrigin.forward, out blockedInfo, 35f, ~(1 << LayerMask.NameToLayer("BridgeRoad"))))
         {
             return true;
         }
@@ -234,6 +252,12 @@ public class TrafAIMotor : MonoBehaviour
     private float contatore = 0;
     private float numeroWaypointSaltati = 0;
 
+    private bool autoDavanti = false;
+    private double distanzaSicurezza = 0;
+    private float velocitàInizialeSicurezza = 0;
+    private float distanzaInizialeSicurezza = 0;
+    private bool autoDavantiFrenata = false;
+
     void Update()
     {
         if(!inited)
@@ -265,7 +289,7 @@ public class TrafAIMotor : MonoBehaviour
                 //last waypoint in this entry, grab the next path when we are in range
                 //ANTONELLO
                 //if(Vector3.Distance(nose.transform.position, currentEntry.waypoints[currentEntry.waypoints.Count - 1]) <= giveWayRegisterDistance)
-            if (Vector3.Distance(nose.transform.position, currentEntry.waypoints[currentEntry.waypoints.Count - 1]) <= 20f) 
+            if (Vector3.Distance(nose.transform.position, currentEntry.waypoints[currentEntry.waypoints.Count - 1]) <= 30f) //era a 20
             {               
                 var node = system.roadGraph.GetNode(currentEntry.identifier, currentEntry.subIdentifier);
                 
@@ -325,7 +349,7 @@ public class TrafAIMotor : MonoBehaviour
             if (distanzaWaypointFramePrecedente != 0 && (distanzaWaypoint - distanzaWaypointFramePrecedente) > 0)
             {
                 contatore++;
-                if (contatore >= 10)
+                if (contatore >= 5)
                 {
                     //abbiamo saltato il waypoint
                     if ((numeroWaypointSaltati++) >= 10)
@@ -368,7 +392,10 @@ public class TrafAIMotor : MonoBehaviour
                     if (distanza < 10f)
                     {
                         //evita che quando ci fermiamo a uno stop (un pochino prima dello stopTarget), riparte e si riferma allo stopTarget effettivo
-                        nextEntry.intersection.stopSign = false;
+                        //nextEntry.intersection.stopSign = false;
+                        currentEntry = nextEntry;
+                        nextEntry = null;
+                        hasNextEntry = false;
                     }
                 } 
             }
@@ -433,10 +460,11 @@ public class TrafAIMotor : MonoBehaviour
             }
 
 
-        } 
+        }
 
         float targetSpeed = maxSpeed;
-        
+        //float targetSpeed = Mathf.MoveTowards(currentSpeed, maxSpeed, 100f * Time.deltaTime);
+
         //lancio il raggio per vedere cosa ho davanti
         if (Time.time > nextRaycast)
         {
@@ -452,7 +480,7 @@ public class TrafAIMotor : MonoBehaviour
             if (hitInfo.rigidbody != null && (hitInfo.rigidbody.tag.Equals("TrafficCar") || hitInfo.rigidbody.tag.Equals("Player")))
             {
                 Debug.DrawLine(this.transform.position, hitInfo.transform.position);
-                if (hitInfo.distance <= 28f)
+                if (hitInfo.distance <= 35f)
                 {
                     if (((this.currentEntry.identifier >= 1000 || Vector3.Distance(this.gameObject.transform.position, currentEntry.waypoints[0]) < 10f) && (currentTurn > 5f || currentTurn < -5f))) //  || this.GetComponent<Rigidbody>().velocity.magnitude <= 0)
                     {
@@ -474,7 +502,7 @@ public class TrafAIMotor : MonoBehaviour
                     } else
                     {
                         TrafAIMotor macchinaDavanti = hitInfo.rigidbody.GetComponent<TrafAIMotor>();
-                        if (this.tag.Equals("Player") && (macchinaDavanti.frenata || macchinaDavanti.hasStopTarget) && macchinaDavanti.currentSpeed > 8f)
+                        /*if (this.tag.Equals("Player") && (macchinaDavanti.frenata || macchinaDavanti.hasStopTarget) && macchinaDavanti.currentSpeed > 6f)
                         {
                             //se l'auto davanti si sta fermando (ma è in movimento), mi fermo anche io
                             //if (macchinaDavanti.currentSpeed > 1f)
@@ -511,119 +539,112 @@ public class TrafAIMotor : MonoBehaviour
                                         frenataTarget = new Vector3(targetAutoDavanti.x, targetAutoDavanti.y, targetAutoDavanti.z -4f);
                                     }
                                 }
-                                calcolaDistanzaInizialeInchiodata();
-                            //}
-                            
-                        } else { 
-                            
+                                calcolaDistanzaInizialeInchiodata();*/
+                        //}
+
+                        //} else { 
+
                             //negli altri casi valuto la velocità dell'auto davanti
-                            float frontSpeed = hitInfo.rigidbody.velocity.magnitude;
+                            //float frontSpeed = hitInfo.rigidbody.velocity.magnitude;
+                            float frontSpeed = macchinaDavanti.currentSpeed;
+                            
                         
-                            if (frontSpeed > 1f)
+                            if (frontSpeed > 0.25f)
                             {
-                                //se l'auto non è ferma
-                                float velocitaTarget = Mathf.Min(targetSpeed, (frontSpeed - 0.2f));
-                                float differenzaVelocita = Math.Abs(this.GetComponent<Rigidbody>().velocity.magnitude - velocitaTarget);
-
-                                if (hitInfo.distance <= 28f && hitInfo.distance > 20f)
+                                float velocitaTarget = Mathf.Min(targetSpeed, (frontSpeed - 0.25f));
+                                float miaVelocita = this.GetComponent<Rigidbody>().velocity.magnitude;
+                                double distanzaSicurezzaUpdate = (Math.Pow((this.GetComponent<Rigidbody>().velocity.magnitude * 3.6f / 10f), 2) + 5f); //+ questo valore perchè la distanza viene calcolata dal centro dell'auto del traffico
+                                bool sottoDistanzaSicurezza = (distanzaSicurezzaUpdate - hitInfo.distance) > 1f;
+                                bool piuVeloceDelTarget = (miaVelocita - velocitaTarget) >= 1f;
+                                if ((piuVeloceDelTarget || sottoDistanzaSicurezza))
                                 {
-                                    if (differenzaVelocita >= 5f)
-                                    {
-                                        //cè una bella differenza di velocità tra me e la macchina davanti, quindi comincio a rallentare, rallento con target di velocita la sua velocita + 3
-                                        targetSpeed = Mathf.Lerp(this.GetComponent<Rigidbody>().velocity.magnitude, targetSpeed+3f, throttleSpeed * Time.deltaTime);
-                                    }
-                                }
-
-                                if (hitInfo.distance <= 20f && hitInfo.distance >= 5f)
+                                    if ((macchinaDavanti.frenata || macchinaDavanti.hasStopTarget) && (miaVelocita - velocitaTarget) <= 2f)
                                 {
-                                    //la distanza si è ridotta a meno di 20
-                                
-                                    if (differenzaVelocita >= 3f && hitInfo.distance >= 14f)
-                                    {
-                                        //c'è parecchia differenza di velocita ma la macchina davanti è ancora lontana, rallento con target di velocita la sua velocita + 1.5
-                                        targetSpeed = Mathf.Lerp(this.GetComponent<Rigidbody>().velocity.magnitude, targetSpeed + 1.5f, throttleSpeed * Time.deltaTime);
-                                    }
-                                    else { 
-                                        //la distanza è minore di 12
-                                        if (differenzaVelocita >= 2f)
-                                        {
-                                            //c'è un po di differenza di velocità, uso l'interpolazione lineare per settare la velocità target uguale a quella dell'auto di fronte
-                                            targetSpeed = Mathf.Lerp(this.GetComponent<Rigidbody>().velocity.magnitude, velocitaTarget, throttleSpeed * Time.deltaTime);
-                                        } else
-                                        {
-                                            //poca differenza di velocita (probabilmetne sono accodato all'auto), setto direttamente la velocita target uguale a quella dell'auto di fronte
-                                            targetSpeed = velocitaTarget;
-                                        }
-                                    }
-                                    if (this.tag.Equals("Player"))
-                                    {
-                                        Debug.Log("TargetSpeed: " + targetSpeed + "; distanza: " + hitInfo.distance);
-                                    }
-
-
-                                    if (targetSpeed <= 2.5f)
-                                    {
-                                        targetSpeed += 3f;
-                                    }
-                                }
-                                /*if (hitInfo.distance < 5f && hitInfo.distance >= 4f && frontSpeed > 2f)
-                                {
-                                    //se la distanza si è ridotta a 5f provo a rallentare un po prima di iniziare la fase di frenata
-                                    if (frontSpeed >= 3f)
-                                    {
-                                        targetSpeed = Mathf.Min(targetSpeed, (frontSpeed - 2f));
+                                        autoDavantiFrenata = true;
+                                        autoDavanti = false;
+                                        sogliaNoGasTraffico = 0f;
                                     } else
                                     {
-                                        targetSpeed = Mathf.Min(targetSpeed, (frontSpeed));
-                                    }
-                                
-                                }*/
-                            
-                                //se la distanza si riduce a 5 mi fermo in ogni caso (se la macchina è piu lenta di me)
-                                if ((hitInfo.distance < 5f) && frontSpeed < this.GetComponent<Rigidbody>().velocity.magnitude)
-                                {
-                                    frenata = true;
-                                    velocitaInizialeFrenata = this.GetComponent<Rigidbody>().velocity.magnitude;
-                                    frenataTarget = hitInfo.transform.position;
-                                    calcolaDistanzaInizialeInchiodata();
+                                        autoDavantiFrenata = false;
+                                        sogliaNoGasTraffico = _pidPars.sogliaNoGasTraffico;
+                                        if (autoDavanti == false)
+                                        {
+                                            //distanzaSicurezza = (Math.Pow((this.GetComponent<Rigidbody>().velocity.magnitude * 3.6f / 10f), 2) + 3.5f); //+ questo valore perchè la distanza viene calcolata dal centro dell'auto del traffico
+                                            //distanzaSicurezza = (Math.Pow((frontSpeed * 3.6f / 10f), 2) + 3.5f); //+ questo valore perchè la distanza viene calcolata dal centro dell'auto del traffico
+                                            if (sottoDistanzaSicurezza)
+                                            {
+                                                distanzaSicurezza = distanzaSicurezzaUpdate;
+                                            }
+                                            else
+                                            {
+                                                distanzaSicurezza = (Math.Pow((frontSpeed * 3.6f / 10f), 2) + 5f);
+                                            }
+
+                                            autoDavanti = true;
+                                            distanzaInizialeSicurezza = hitInfo.distance;
+                                            velocitàInizialeSicurezza = this.GetComponent<Rigidbody>().velocity.magnitude;
+                                        }
                                 }
+                                    
+                                    
+                                } else
+                                {
+                                    autoDavanti = false;
+                                autoDavantiFrenata = false;
+                                sogliaNoGasTraffico = _pidPars.sogliaNoGasTraffico;
+                            }
+
+                                if (Math.Abs(hitInfo.distance - distanzaSicurezza) >= 1f && autoDavanti && miaVelocita > 0.1f)
+                                {
+                                    /* se Vf è la velocita finale, Vi quella iniziale, Df la distanza finale, Di la distanza iniziale, Dc la distanza corrente
+                                    allora Vx = (Vf + Vi) / ((Df + Di)/Dc)*/
+                                    targetSpeed = (velocitaTarget + velocitàInizialeSicurezza) / (((float)distanzaSicurezza + distanzaInizialeSicurezza) / hitInfo.distance);
+                                } else
+                                {
+                                    autoDavanti = false;
+                                    targetSpeed = velocitaTarget;
+                                }
+                                //if (this.tag.Equals("Player"))
+                                //{
+                                //    Debug.Log("targetSpeed: " + targetSpeed + "; miavelocita " + miaVelocita + ";  autoDavanti: " + autoDavanti + "; distanza: " + hitInfo.distance + "; distanza di sicurezza: " + distanzaSicurezzaUpdate);
+
+                                //}
                             }
                             else
                             {
-                                //la macchina davanti è ferma o estremamente lenta (si può considerare ferma)
-                                if (frontSpeed < this.GetComponent<Rigidbody>().velocity.magnitude) { 
+                                autoDavanti = false;
+                            autoDavantiFrenata = false;
+                            sogliaNoGasTraffico = _pidPars.sogliaNoGasTraffico;
+                            //double distanzaSicurezza1 = (Math.Pow((this.GetComponent<Rigidbody>().velocity.magnitude * 3.6f / 10f), 2) + 3.5f); //+ questo valore perchè la distanza viene calcolata dal centro dell'auto del traffico
+                            //la macchina davanti è ferma o estremamente lenta (si può considerare ferma)
+                            if (frontSpeed < this.GetComponent<Rigidbody>().velocity.magnitude) { 
                                     frenata = true;
                                     velocitaInizialeFrenata = this.GetComponent<Rigidbody>().velocity.magnitude;
                                     frenataTarget = hitInfo.transform.position;
                                     calcolaDistanzaInizialeInchiodata();
+                                    //if (this.tag.Equals("Player"))
+                                    //{
+                                    //    Debug.Log("FRENATA true; distanza: " + hitInfo.distance + "; frontSpeed: " + frontSpeed  + "; miavelocita " + this.GetComponent<Rigidbody>().velocity.magnitude);
+
+                                    //}
                                 }
                             }
-                        }
+                        //}
                     }
-                } /*else {
-                    //float frontSpeed = Mathf.Clamp((hitInfo.distance - 1f) / 3f, 0f, maxSpeed);
-                    float frontSpeed = hitInfo.rigidbody.GetComponent<TrafAIMotor>().currentSpeed;
-                    if (frontSpeed > 5f)
-                    {
-                    
-
-                        targetSpeed = Mathf.Min(targetSpeed, frontSpeed);
-                        targetSpeed = Mathf.MoveTowards(this.GetComponent<Rigidbody>().velocity.magnitude, targetSpeed, throttleSpeed * Time.deltaTime);
-                        if (this.tag.Equals("Player"))
-                        {
-                            Debug.Log("TargetSpeed: " + targetSpeed);
-                        }
-                    }
-                }*/
+                }
             }
         } else
         {           
             if (frenata)
             {
+                autoDavanti = false;
                 //if ((!somethingInFront) || (somethingInFront && hitInfo.distance >= 2f && this.GetComponent<Rigidbody>().velocity.magnitude <= 1f) && (hitInfo.rigidbody.tag.Equals("TrafficCar") || hitInfo.rigidbody.tag.Equals("Player")))
                 if (hitInfo.rigidbody == null)
                 {
                     frenata = false;
+                    autoDavantiFrenata = false;
+                    sogliaNoGasTraffico = _pidPars.sogliaNoGasTraffico;
+
                 } else {
 
                     float frontSpeed = hitInfo.rigidbody.velocity.magnitude;
@@ -633,13 +654,20 @@ public class TrafAIMotor : MonoBehaviour
 
                     {
                         //Se mi sono fermato per via di qualcosa di fronte che ora non c'è piu devo ripartire
-                        //se invece c'è qualcosa davanti, frenata è true, ma la distanza è maggiore di 5f (piu è basso piu riparte prima quando si ferma dietro un'auto)
+                        //se invece c'è qualcosa davanti, frenata è true, ma la distanza è maggiore di 4f (piu è basso piu riparte prima quando si ferma dietro un'auto)
                         //e l'auto è ferma, significa che l'auto davanti a me sta ripartendo quindi posso ripartire anche io
                         frenata = false;
                         if (this.tag.Equals("Player"))
                         {
                             Debug.Log("Frenata false, hitinfo.distance = " + hitInfo.distance);
                         }
+                        /*autoDavanti = true;
+                        distanzaSicurezza = (Math.Pow((this.GetComponent<Rigidbody>().velocity.magnitude * 3.6f / 10f), 2) + 3.5f); //+ questo valore perchè la distanza viene calcolata dal centro dell'auto del traffico
+                        //distanzaSicurezza = (Math.Pow((frontSpeed * 3.6f / 10f), 2) + 3.5f); //+ questo valore perchè la distanza viene calcolata dal centro dell'auto del traffico
+
+                        autoDavanti = true;
+                        distanzaInizialeSicurezza = hitInfo.distance;
+                        velocitàInizialeSicurezza = this.GetComponent<Rigidbody>().velocity.magnitude;*/
                     }
                 }
             }
@@ -647,6 +675,11 @@ public class TrafAIMotor : MonoBehaviour
             
 
         }
+
+        /*if (autoDavanti)
+        {
+            return;
+        }*/
 
         if (frenata)
         {
@@ -664,22 +697,22 @@ public class TrafAIMotor : MonoBehaviour
             }
             if (this.tag.Equals("Player"))
             {
-                distanzaCorrente -= 4f;
+                distanzaCorrente -= 5f;
             } else
             {
-                distanzaCorrente -= 2f;
+                distanzaCorrente -= 3f;
             }
             
             Debug.DrawLine(frenataTarget, transform.position);
-            if (velocitaInizialeFrenata >= 6f)
-            {
+            //if (velocitaInizialeFrenata >= 6f)
+            //{
                 targetSpeed = velocitaInizialeFrenata * distanzaCorrente / distanzaInizialeInchiodata;
-            } else
+            /*} else
             {
                 targetSpeed = 6f * distanzaCorrente / distanzaInizialeInchiodata;
-            }
+            }*/
             
-            if (targetSpeed <= 2)
+            if (targetSpeed <= _pidPars.sogliaFermata)
             {
                 targetSpeed = 0;
                 //Debug.Log("target < 2");
@@ -689,7 +722,7 @@ public class TrafAIMotor : MonoBehaviour
 
         }
 
-        if (!frenata && (hasStopTarget || hasGiveWayTarget))
+        if (!frenata && !autoDavantiFrenata && (hasStopTarget || hasGiveWayTarget))
         {
             /*Vector3 targetVec = (stopTarget - nose.transform.position);
 
@@ -712,18 +745,18 @@ public class TrafAIMotor : MonoBehaviour
             {
                 distanzaCorrente = Math.Abs(vettoreDifferenza.z);
             }
-            distanzaCorrente -= 3f;
+            distanzaCorrente -= 2f;
             Debug.DrawLine(stopTarget, transform.position);
-            //targetSpeed = velocitaInizialeFrenata * distanzaCorrente / distanzaIniziale;
-            if (velocitaInizialeFrenata >= 6f)
+            targetSpeed = velocitaInizialeFrenata * distanzaCorrente / distanzaIniziale;
+            /*if (velocitaInizialeFrenata >= 6f)
             {
                 targetSpeed = velocitaInizialeFrenata * distanzaCorrente / distanzaIniziale;
             }
             else
             {
                 targetSpeed = 6f * distanzaCorrente / distanzaIniziale;
-            }
-            if (targetSpeed <= 1f)
+            }*/
+            if (targetSpeed <= _pidPars.sogliaFermata)
             {
                 targetSpeed = 0;
                 //Debug.Log("target < 2");
@@ -736,7 +769,18 @@ public class TrafAIMotor : MonoBehaviour
         //ANTONELLO
         if ((currentEntry.isIntersection() || hasNextEntry) && !hasStopTarget && !frenata)
         {
-            targetSpeed = targetSpeed * intersectionCornerSpeed;
+            float min = 4;
+            if (targetSpeed <= 4)
+            {
+                min = targetSpeed;
+            }
+            targetSpeed = Mathf.Clamp(targetSpeed * intersectionCornerSpeed, min, maxSpeed);
+            /*targetSpeed = Mathf.MoveTowards(targetSpeed, targetSpeed * intersectionCornerSpeed, Time.fixedDeltaTime * 5f);
+            if (this.tag.Equals("Player"))
+            {
+                Debug.Log("IntersectionCornerSpeed: " + intersectionCornerSpeed + "; targetSpeed: " + targetSpeed);
+            }*/
+            
         }
         else
         {
@@ -744,11 +788,11 @@ public class TrafAIMotor : MonoBehaviour
             if (currentTurn > 5f || currentTurn < -5f)
             {
                 //targetSpeed = targetSpeed * Mathf.Clamp(1 - (currentTurn / maxTurn), 0.1f, 1f);
-                targetSpeed = targetSpeed * Mathf.Clamp(1 - (currentTurn / maxTurn), 0.3f, 1f);
+                targetSpeed = targetSpeed * Mathf.Clamp(1 - (Math.Abs(currentTurn) / maxTurn), 0.2f, 1f);
             }
             
         }
-
+        float targetSpeedIniziale = targetSpeed;
         if(targetSpeed > currentSpeed)
         {          
             float distanzaCorrente = 0;
@@ -775,25 +819,39 @@ public class TrafAIMotor : MonoBehaviour
         }
         else 
         {
-            
-            currentSpeed -= Mathf.Min(maxBrake * Time.deltaTime, currentSpeed - targetSpeed);
-            if(currentSpeed < 0)
-                currentSpeed = 0;
-            //Debug.Log("CurrentSpeed: " + currentSpeed);
-
             //ANTONELLO
-            if (hasStopTarget || frenata)
+            if (hasStopTarget || frenata || autoDavanti || autoDavantiFrenata)
             {
-                /*if (targetSpeed <= currentSpeed)
+                if (targetSpeed > currentSpeed)
                 {
                     //serve questa condizione perchè evita di accelerare quando sono in fase di fermata
-                    currentSpeed = targetSpeed; //dovrei aver risolto in altro modo
-                }*/
-                currentSpeed = targetSpeed;
+                    targetSpeed = currentSpeed; 
+                }
+                //currentSpeed = targetSpeed;
+            } else
+            {
+                //targetSpeed -= Mathf.Min(maxBrake * Time.deltaTime, currentSpeed - targetSpeed);
+                //Per fare in modo che arriva a targetSpeed dalla velocità corrente non troppo immediatamente
+                targetSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, Time.fixedDeltaTime * _pidPars.velocitaFrenata);
             }
 
-        }
+            if (targetSpeed < _pidPars.sogliaFermata)
+                currentSpeed = 0;
+            else
+                currentSpeed = targetSpeed;
+            //Debug.Log("CurrentSpeed: " + currentSpeed);
+
         
+            if (this.tag.Equals("Player"))
+            {
+                Debug.Log("TargetSpeedIniziale: " + targetSpeedIniziale + "; currentSpeed impsotato: " + currentSpeed);
+            }
+            
+
+        }
+
+
+
     }
 
     //ANTONELLO
@@ -833,6 +891,7 @@ public class TrafAIMotor : MonoBehaviour
             {
                 if ((hasStopTarget || hasGiveWayTarget) && !waypointSaltato) //ANTONELLO
                 {
+                    targetPrecedente = target;
                     target = nextEntry.waypoints[0];
                 }
                 else
@@ -871,60 +930,120 @@ public class TrafAIMotor : MonoBehaviour
         }
 
         if ((!hasStopTarget && !hasGiveWayTarget) || waypointSaltato)
+        {
+            targetPrecedente = target;
             target = currentEntry.waypoints[currentIndex];
+        }
+
     }
+
+    public float centerSteerDifference = 2f;
+    float averageSteeringAngle = 0f;
 
     void SteerCar()
     {
-        
+        PIDControllerSterzata.pFactor = _pidPars.p_sterzata;
+        PIDControllerSterzata.iFactor = _pidPars.i_sterzata;
+        PIDControllerSterzata.dFactor = _pidPars.d_sterzata;
+        PIDControllerAccelerazione.pFactor = _pidPars.p_accelerazione;
+        PIDControllerAccelerazione.iFactor = _pidPars.i_accelerazione;
+        PIDControllerAccelerazione.dFactor = _pidPars.d_accelerazione;
+
+
         float targetDist = Vector3.Distance(target, transform.position);
-        //head towards target
         Vector3 newTarget = target;
-        if(targetTangent != Vector3.zero && targetDist > 6f)
+        if (targetTangent != Vector3.zero && targetDist > 6f)
         {
             newTarget = target - (targetTangent * (targetDist - 6f));
-        } 
+        }
         Vector3 steerVector = new Vector3(newTarget.x, transform.position.y, newTarget.z) - transform.position;
         float steer = Vector3.Angle(transform.forward, steerVector);
-        if(steer > 140f)
+        if (steer > 140f)
         {
-            steer = currentTurn;
+            //steer = currentTurn;
+            steer = 0;
         }
-        float turnPrecedente = 0;
+        steer = Mathf.Clamp((Vector3.Cross(transform.forward, steerVector).y < 0 ? -steer : steer), -maxTurn, maxTurn);
+
+        float turnPrecedente;
         if (this.tag.Equals("Player"))
         {
             turnPrecedente = vehicleController.steerInput * 45f;
-        } else
+        }
+        else
         {
             turnPrecedente = currentTurn;
         }
 
-        currentTurn = Mathf.Clamp((Vector3.Cross(transform.forward, steerVector).y < 0 ? -steer : steer), -maxTurn, maxTurn);
-        //currentTurn = Mathf.MoveTowards(turnPrecedente, currentTurn, Time.deltaTime);
-        //DateTime ora;
-        if (Math.Abs(currentTurn - turnPrecedente) >= 0.2f )
+        float steeringAngle = steer;
+
+        bool sterzataMassima = false;
+        //Debug.Log("indice: " + indice);
+
+        if (steeringAngle > 25f)
         {
-            angoloSterzataAlto = true;
-            //ora = DateTime.Now;
-            //currentTurn = (currentTurn + turnPrecedente) / 2f;
-            float differenzaTurn = Math.Abs(currentTurn - turnPrecedente);
-            /*    if (currentTurn > turnPrecedente)
-                {
-                    currentTurn = turnPrecedente + (differenzaTurn / 5);
-                }
-                else
-                {
-                    currentTurn = turnPrecedente - (differenzaTurn / 5);
-                }*/
-            currentTurn = Mathf.Lerp(turnPrecedente, currentTurn, 5);
-            
+            steeringAngle = 45f;
+            sterzataMassima = true;
+        }
+        if (steeringAngle < -25f)
+        {
+            steeringAngle = -45f;
+            sterzataMassima = true;
+        }
+
+        if (!sterzataMassima)
+        {
+            steeringAngle = PIDControllerSterzata.UpdatePars(steer, turnPrecedente, Time.fixedDeltaTime);
+        }
+
+        
+        
+        //Limit the steering angle
+        steeringAngle = Mathf.Clamp(steeringAngle, -45, 45);
+
+        bool trattoStradaDritto = false;
+
+        if (Math.Abs(this.transform.position.x - target.x) <= 1 || Math.Abs(this.transform.position.z - target.z) <= 1)
+        {
+            trattoStradaDritto = true;
+        }
+
+
+        
+
+        float indice = 0;
+        float differenzaTurn = Math.Abs(steeringAngle - turnPrecedente);
+        float indice1 = Mathf.Clamp(1 - (differenzaTurn / 20f), 0.1f, 1) * _pidPars.indiceSterzataCurva;
+        if (sterzataMassima)
+        {
+            indice = _pidPars.indiceSterzataMassima;
         } else
         {
-            if (angoloSterzataAlto)
+            /*if (trattoStradaDritto) //|| differenzaTurn > 5f)
             {
-                angoloSterzataAlto = false;
+                indice = _pidPars.indiceSterzataDritto;
             }
+            else
+            {
+                indice = _pidPars.indiceSterzataCurva;
+            }*/
+            indice = _pidPars.indiceSterzataDritto;
         }
+        //indice = indice1;
+
+        //Debug.Log("indice settato: " + indice + "; indice secondo regola: " + indice1);
+
+        averageSteeringAngle = averageSteeringAngle + ((steeringAngle - averageSteeringAngle) / indice);
+        if (Mathf.Abs(averageSteeringAngle-turnPrecedente) <= _pidPars.puntoMortoSterzata)
+        {
+            averageSteeringAngle = turnPrecedente;
+        }
+        currentTurn = averageSteeringAngle;
+
+        currentTurn = Mathf.Clamp(Mathf.Lerp(turnPrecedente, currentTurn, steerSpeed * Time.deltaTime), -45f, 45f);
+
+      
+        
     }
 
     public float maxThrottle = 0.8f;
@@ -935,81 +1054,100 @@ public class TrafAIMotor : MonoBehaviour
     private float m_targetThrottle = 0.0f;
     private float currentThrottle = 0f;
 
+    private float frenataPrecedente = 0;
+    private float sogliaNoGasTraffico;
 
     //METODO PER FAR MUOVERE LA MACCHINA USANDO IL VEHICLE CONTROLLER - ANTONELLO
     void MoveCarUtenteAccelerazione()
     {
-        float throttlePrecedente = currentThrottle;
+        float throttlePrecedente = GetComponent<VehicleController>().accellInput;
 
-        /*var predicted = GetPredictedPoint();
-        Vector3 steerVector = new Vector3(heightHit.normal.x, transform.position.y, heightHit.normal.z) - transform.position;
-
-        float steer = Vector3.Angle(transform.forward, steerVector);
-        m_targetSteer = (Vector3.Cross(transform.forward, steerVector).y < 0 ? -steer : steer) / vehicleController.maxSteeringAngle;
-
-        if (Vector3.Distance(predicted, heightHit.normal) < 1f)
-            m_targetSteer = 0f;*/
-
-
-        float speedDifference = currentSpeed - GetComponent<Rigidbody>().velocity.magnitude;// * 2;
+        float speedDifference = currentSpeed - GetComponent<Rigidbody>().velocity.magnitude;
         float velocitaAttuale = GetComponent<Rigidbody>().velocity.magnitude;
-
-        if (speedDifference <= 0)
+        /*if (currentSpeed <= velocitaAttuale && velocitaAttuale <= 0.001f)
         {
-            //m_targetThrottle = -(currentSpeed - GetComponent<Rigidbody>().velocity.magnitude / currentSpeed) * maxBrake;
-            currentThrottle = -(GetComponent<Rigidbody>().velocity.magnitude / currentSpeed) * maxBrake;
-            currentThrottle = Mathf.Clamp(currentThrottle, -1, 0);
-            if (currentSpeed == 0)
+            //sono fermo e devo stare fermo
+            vehicleController.accellInput = 0f;
+            return;
+        }*/
+        //currentThrottle = PIDControllerAccelerazione.UpdatePars(currentSpeed, velocitaAttuale, Time.deltaTime);
+        currentThrottle = PIDControllerAccelerazione.UpdatePars(currentSpeed, velocitaAttuale, Time.fixedDeltaTime);
+        if (velocitaAttuale > currentSpeed)
+        {
+            if(hasStopTarget || frenata || hasGiveWayTarget || Math.Abs(speedDifference) > _pidPars.sogliaNoGas || (autoDavanti && Math.Abs(speedDifference) > sogliaNoGasTraffico))
             {
-                //se sono fermo, tengo premuto il freno al massimo
-                currentThrottle = -1;
+                //devo fermarmi o rallentare
+                currentThrottle = Mathf.Clamp(currentThrottle, -1f, 0f);
+                if (currentThrottle < 0)
+                {
+                    frenataPrecedente = currentThrottle;
+                } else
+                {
+                    currentThrottle = frenataPrecedente;
+                }
+                /*currentThrottle = ((velocitaAttuale - currentSpeed) / (Time.deltaTime * -2.2f));
+                currentThrottle = Mathf.Clamp(currentThrottle, -1f, 0f);
+               *///Debug.Log("Sto frenando; throttle (target): " + currentThrottle + "; velocita attuale: " + velocitaAttuale + "; velocita Target: " + currentSpeed);
+            }
+            else
+            {
+                //devo solo rallentare ma non ho motivo di frenare
+                currentThrottle = Mathf.Clamp(currentThrottle, 0f, maxThrottle);
+            }
+            
+        } else
+        {
+            if (hasStopTarget || frenata)
+            {
+                currentThrottle = frenataPrecedente;
+            }
+            currentThrottle = Mathf.Clamp(currentThrottle, 0f, maxThrottle);
+        }
+        
+
+        
+
+        float differenzaThrottle = Math.Abs(currentThrottle - throttlePrecedente);
+        if (differenzaThrottle < _pidPars.puntoMortoFrenata)
+        {
+            currentThrottle = throttlePrecedente;
+        } else
+        {
+            if (differenzaThrottle >= _pidPars.differenzaAccelerazione)
+            {
+                if (throttlePrecedente < currentThrottle)
+                {
+                    currentThrottle = throttlePrecedente + (differenzaThrottle / _pidPars.indiceAccelerazione);
+                }
+                if (throttlePrecedente > currentThrottle)
+                {
+                    currentThrottle = throttlePrecedente - (differenzaThrottle / _pidPars.indiceAccelerazione);
+                }
             }
         }
-        else
-        {
-            m_targetThrottle = maxThrottle * Mathf.Clamp(1 - Mathf.Abs(currentTurn/45), 0.2f, 1f);
-            //m_targetThrottle = maxThrottle;
-            speedDifference *= m_targetThrottle;
-            currentThrottle = Mathf.Clamp(Mathf.MoveTowards(currentThrottle, speedDifference / 2f, throttleSpeed * Time.deltaTime), -maxBrake, maxThrottle);
-            currentThrottle = Mathf.Clamp(currentThrottle, 0, maxThrottle);
-        }
+        
+        
 
 
-        //vehicleController.accellInput = Mathf.MoveTowards(throttlePrecedente, currentThrottle, throttleSpeed * Time.deltaTime);
-        vehicleController.accellInput = currentThrottle; 
+        vehicleController.accellInput = Mathf.MoveTowards(throttlePrecedente, currentThrottle, throttleSpeed * Time.fixedDeltaTime);
+        //vehicleController.accellInput = currentThrottle; 
     }
 
     void MoveCarUtenteSterzata()
     {
-        if (currentTurn > 25f)
+        
+        if (AppController.Instance.UserInput is SteeringWheelInputController)
         {
-            /*Debug.Log("massima sterzata a destra; currentTurn = " + currentTurn);
-            vehicleController.steerInput = Mathf.MoveTowards(vehicleController.steerInput, 1f, steerSpeed * Time.deltaTime);
-            return;*/
-            currentTurn = 45f;
-        }
-        if (currentTurn < -25f)
-        {
-            /*Debug.Log("massima sterzata a sinistra; currentTurn = " + currentTurn);
-            vehicleController.steerInput = Mathf.MoveTowards(vehicleController.steerInput, -1f, steerSpeed * Time.deltaTime);
-            return;*/
-            currentTurn = -45f;
-        }
-
-        if (currentEntry.identifier >= 1000)
-        {
-            //sono in un incrocio
-            vehicleController.steerInput = Mathf.Lerp(vehicleController.steerInput, currentTurn / 45f, steerSpeed * Time.deltaTime);
-            return;
-        }
-        if (angoloSterzataAlto)
-        {
-            vehicleController.steerInput = Mathf.Lerp(vehicleController.steerInput, currentTurn / 45f, steerSpeed * Time.deltaTime);
-        }
-        else
-        {
-            vehicleController.steerInput = Mathf.MoveTowards(vehicleController.steerInput, currentTurn / 45f, steerSpeed * Time.deltaTime);
-        }
+            //DirectInputWrapper.PlaySpringForce(0, _pidPars.offsetSpringForce, 7,500);
+            //DirectInputWrapper.PlayDamperForce(0, Mathf.RoundToInt(_pidPars.offsetSpringForce * 1.75f));
+            //DirectInputWrapper.PlayConstantForce(0, Mathf.RoundToInt(-currentTurn*10000/45 * _pidPars.offsetSpringForce * 1.75f));
+            //DirectInputWrapper.UpdateConstantForce(0, _pidPars.valoreVolante);
+            DirectInputWrapper.PlaySpringForce(0, Mathf.RoundToInt(currentTurn / 45f / 0.94f * 10000f), _pidPars.saturazione, _pidPars.coefficiente);
+            //DirectInputWrapper.PlaySpringForce(0, Mathf.RoundToInt(currentTurn / 45f /0.006f*100f), _pidPars.saturazione, _pidPars.coefficiente);
+        } //else
+          // {
+        vehicleController.steerInput = currentTurn / 45f;
+        //}
     }
 
     private void MoveCar()
@@ -1017,6 +1155,7 @@ public class TrafAIMotor : MonoBehaviour
         GetComponent<Rigidbody>().MoveRotation(Quaternion.FromToRotation(Vector3.up, heightHit.normal) * Quaternion.Euler(0f, transform.eulerAngles.y + currentTurn * Time.fixedDeltaTime, 0f));
         GetComponent<Rigidbody>().MovePosition(transform.position + transform.forward * currentSpeed * Time.fixedDeltaTime);
     }
+
 
     private void inchioda()
     {
@@ -1116,11 +1255,11 @@ public class TrafAIMotor : MonoBehaviour
         }
         if (go == null)
         {
-            go = GameObject.Find("TeslaModelS_2_Rigged (1)");
+            go = GameObject.Find("TeslaModelS_2_Rigged)");
         }
         if (go == null)
         {
-            go = GameObject.Find("TeslaModelS_2_Rigged (1)(Clone)");
+            go = GameObject.Find("TeslaModelS_2_Rigged(Clone)");
         }
         return go;
     }
@@ -1138,7 +1277,7 @@ public class TrafAIMotor : MonoBehaviour
 
     internal class GestoreCollisioni : MonoBehaviour
     {
-
+        
         TrafAIMotor motor = null;
 
         public void setMotor(TrafAIMotor motor)
@@ -1149,7 +1288,7 @@ public class TrafAIMotor : MonoBehaviour
         // Use this for initialization
         void Start()
         {
-
+            
         }
 
         // Update is called once per frame
@@ -1172,7 +1311,8 @@ public class TrafAIMotor : MonoBehaviour
                 return;
             }
             float distanza = Vector3.Distance(motor.transform.position, other.gameObject.transform.position);
-            if (distanza < 11f && motor.currentSpeed > 7f)
+            double spazioFrenata = (Math.Pow(motor.GetComponent<Rigidbody>().velocity.magnitude, 2)) / (2 * 2.3f);
+            if (distanza < spazioFrenata)
             {
                 //l'ostacolo è troppo vicino, non riesco a inchiodare, lo evito
                 motor.evitare = true;

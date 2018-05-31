@@ -46,6 +46,8 @@ public class SteeringWheelInputController : InputController {
 
     public float FFBGain = 1f;
 
+    public bool guidaAutomatica = false;
+
     protected override void Start()
     {
         base.Start();
@@ -81,7 +83,12 @@ public class SteeringWheelInputController : InputController {
                 pedalIndex = 1;
             }
             else
-                Debug.Log("STEERINGWHEEL: Multiple devices and couldn't find steering wheel device index");
+            {
+                //Debug.Log("STEERINGWHEEL: Multiple devices and couldn't find steering wheel device index");
+                wheelIndex = 0;
+                pedalIndex = 1;
+            }
+
         }
 
             minBrake = AppController.Instance.appSettings.minBrake;
@@ -238,22 +245,49 @@ public class SteeringWheelInputController : InputController {
 
         {
             DeviceState state =  DirectInputWrapper.GetStateManaged(wheelIndex);
-            steerInput = state.lX / 32768f;
-            accelInput = state.rglSlider[0] / -32768f;
-           /* x = state.lX;
-            y = state.lY;
-            z = state.lZ;
-            s0 = state.rglSlider[0];
-            s1 = state.rglSlider[1];*/
-            if (forceFeedbackPlaying)
+            if (state.lX == 0 && state.lY == 0 && state.lRz == 0)
+            {
+                return;
+            }
+            //steerInput = state.lX / 32768f;
+            steerInput = Mathf.Clamp(state.lX / 32200f, -1f, 1f);
+
+            //accelInput = state.rglSlider[0] / -32768f;
+            //ly accel, lrz freno
+            //float gas = (float) state.lY / 32768;
+            //float indiceGas = (float(state.lY);
+            float gas = ((float) state.lY- 32767) / -64378f;
+            float brake = ((float)state.lRz - 32767) / 65403f;
+            //float brake = (float) state.lRz / 32768;
+
+            accelInput = gas + brake;
+
+            /*float totalGas = (maxGas - minGas);
+            float totalBrake = (maxBrake - minBrake);
+
+            accelInput = (gas - minGas) / totalGas - (brake - minBrake) / totalBrake;*/
+
+            /* x = state.lX;
+             y = state.lY;
+             z = state.lZ;
+             s0 = state.rglSlider[0];
+             s1 = state.rglSlider[1];*/
+            /*if (forceFeedbackPlaying)
+            {*/
+
+            if (!guidaAutomatica)
             {
                 DirectInputWrapper.PlayConstantForce(wheelIndex, Mathf.RoundToInt(constant * FFBGain));
                 DirectInputWrapper.PlayDamperForce(wheelIndex, Mathf.RoundToInt(damper * FFBGain));
                 DirectInputWrapper.PlaySpringForce(wheelIndex, 0, Mathf.RoundToInt(springSaturation * FFBGain), springCoefficient);
             }
+            //DirectInputWrapper.PlayConstantForce(wheelIndex, Mathf.RoundToInt(constant * FFBGain));
+            /*DirectInputWrapper.PlayDamperForce(wheelIndex, Mathf.RoundToInt(damper * FFBGain));
+            DirectInputWrapper.PlaySpringForce(wheelIndex, 0, Mathf.RoundToInt(springSaturation * FFBGain), springCoefficient);*/
+            //}
 
 
-            if(DirectInputWrapper.DevicesCount() > 1)
+            /*if(DirectInputWrapper.DevicesCount() > 1)
             {
                 DeviceState state2 = DirectInputWrapper.GetStateManaged(pedalIndex);
                 int gas = 0;
@@ -263,7 +297,7 @@ public class SteeringWheelInputController : InputController {
                 y2 = state2.lY;
                 z2 = state2.lZ;
                 s02 = state2.rglSlider[0];
-                s12 = state2.rglSlider[1];*/
+                s12 = state2.rglSlider[1];*//*
 
                 switch (gasAxis) {
                     case "X": 
@@ -295,7 +329,7 @@ public class SteeringWheelInputController : InputController {
                 float totalBrake = (maxBrake - minBrake);
 
                 accelInput = (gas - minGas) / totalGas - (brake - minBrake) / totalBrake;
-            }
+            }/*/
         }
 
 

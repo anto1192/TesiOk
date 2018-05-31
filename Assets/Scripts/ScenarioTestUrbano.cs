@@ -6,7 +6,7 @@ using System.Reflection;
 
 public class ScenarioTestUrbano : MonoBehaviour
 {
-
+    public static event System.Action<GameObject> OnSpawnHeaps;
     static ScenarioTestUrbano scenario;
     private TrafSystem system;
     private GameObject[] prefabs;
@@ -57,8 +57,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     
     public static void gestisciSemaforo(int idPrecedente, int nuovoId)
-    {
-        Debug.Log("Sono in gestisciSemaforo");
+    {      
         string nomeMetodo = "semaforo" + nuovoId;
         //ScenarioTestUrbano.getInstance().Invoke(nomeMetodo, 2f);
         MethodInfo mi = ScenarioTestUrbano.getInstance().GetType().GetMethod(nomeMetodo);
@@ -80,6 +79,15 @@ public class ScenarioTestUrbano : MonoBehaviour
         {
             mi.Invoke(ScenarioTestUrbano.getInstance(), null);
         }
+        /*if (nuovoId == 18)
+        {
+            string nomeMetodo = "evento" + nuovoId;
+            MethodInfo mi = ScenarioTestUrbano.getInstance().GetType().GetMethod(nomeMetodo);
+            if (mi != null)
+            {
+                mi.Invoke(ScenarioTestUrbano.getInstance(), null);
+            }
+        }*/
     }
 
 
@@ -359,6 +367,11 @@ public class ScenarioTestUrbano : MonoBehaviour
         lights[0].StopAllCoroutines();
         lights[0].StartCoroutine(courutineSemaforoVerde(container));
         lights[0].StartCoroutine(courutineSemaforoRosso(container1));
+    }
+
+    public void semaforo15()
+    {
+        semaforo15a();
     }
 
     public void semaforo16()
@@ -812,7 +825,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
         List<RoadGraphEdge> percorso18_0 = ottieniPercorso18_0();
         List<RoadGraphEdge> percorso18_1 = ottieniPercorso18_1();
-        CreaMacchinaTraffico(17, 0, 0.5f, percorso18_0);
+        //CreaMacchinaTraffico(17, 0, 0.5f, percorso18_0);
         CreaMacchinaTraffico(17, 0, 0.3f, percorso18_1);
 
 
@@ -1053,7 +1066,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         List<RoadGraphEdge> percorso22_6 = ottieniPercorso22_6();
         List<RoadGraphEdge> percorso22_7 = ottieniPercorso22_7();
 
-        CreaMacchinaTraffico(12, 2, 0.5f, percorso22_0);
+        CreaMacchinaTraffico(12, 2, 0.2f, percorso22_0);
         //CreaMacchinaTraffico(12, 2, 0.15f, percorso22_1);
         //CreaMacchinaTraffico(12, 3, 0.3f, percorso22_2);
         //CreaMacchinaTraffico(21, 2, 0.45f, percorso22_3);
@@ -3895,8 +3908,15 @@ public class ScenarioTestUrbano : MonoBehaviour
 
                 GameObject nose = new GameObject("nose");
                 nose.transform.SetParent(go.transform);
-            //nose.transform.localPosition = new Vector3(0, 0.5f, 2f); ->per la jaguar
-            nose.transform.localPosition = new Vector3(0, 0.5f, 2.61f);
+            if (go.name.Contains("XE"))
+            {
+                nose.transform.localPosition = new Vector3(0, 0.5f, 2f); //->per la jaguar
+            } else
+            {
+                nose.transform.localPosition = new Vector3(0, 0.5f, 2.61f); //->per la tesla
+            }
+
+
             nose.transform.localRotation = Quaternion.identity;
                 nose.transform.localScale = new Vector3(2f, 2f, 2f);
 
@@ -3913,7 +3933,7 @@ public class ScenarioTestUrbano : MonoBehaviour
                 BoxCollider boxColliderOstacoli = colliderOstacoli.AddComponent<BoxCollider>();
                 boxColliderOstacoli.isTrigger = true;
                 colliderOstacoli.transform.localPosition = new Vector3(0f, 0.65f, 7f);
-                colliderOstacoli.transform.localScale = new Vector3(1.5f, 1f, 1f);
+                colliderOstacoli.transform.localScale = new Vector3(1.7f, 1f, 1f);
                 colliderOstacoli.transform.localRotation = Quaternion.identity;
                 boxColliderOstacoli.size = new Vector3(3f, 0.75f, 10f);
                 TrafAIMotor.GestoreCollisioni gestore = colliderOstacoli.AddComponent<TrafAIMotor.GestoreCollisioni>();
@@ -4118,6 +4138,12 @@ public class ScenarioTestUrbano : MonoBehaviour
             motor.fixedRoute = true;
             motor.fixedPath = percorso;
             motor.Init();
+
+            if (OnSpawnHeaps != null)
+            {
+                OnSpawnHeaps(go);
+            }
+
             return motor;
         }
         return null;
@@ -4132,11 +4158,11 @@ public class ScenarioTestUrbano : MonoBehaviour
         }
         if (go == null)
         {
-            go = GameObject.Find("TeslaModelS_2_Rigged (1)");
+            go = GameObject.Find("TeslaModelS_2_Rigged)");
         }
         if (go == null)
         {
-            go = GameObject.Find("TeslaModelS_2_Rigged (1)(Clone)");
+            go = GameObject.Find("TeslaModelS_2_Rigged(Clone)");
         }
         return go;
     }
