@@ -40,7 +40,7 @@ public class AdminSettings : Singleton<AdminSettings>
 
     public float camFarClip = 10000f;
 
-    public float camNearClip = 0.5f;
+    public float camNearClip = 0.01f; //DARIO
 
     public float moonLightIntensity = 0.15f;
 

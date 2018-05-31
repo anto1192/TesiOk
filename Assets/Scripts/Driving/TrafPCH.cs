@@ -270,7 +270,7 @@ public class TrafPCH: MonoBehaviour
 
         //transform.Rotate(0f, currentTurn * Time.deltaTime, 0f);
         RaycastHit hit;
-        Physics.Raycast(transform.position + Vector3.up * 5, -transform.up, out hit, 100f, ~(1 << LayerMask.NameToLayer("Traffic")));
+        Physics.Raycast(transform.position + Vector3.up * 5, -transform.up, out hit, 100f, ~(1 << LayerMask.NameToLayer("Traffic") ));  
 
         Vector3 hTarget = new Vector3(currentSpot.x, hit.point.y, currentSpot.z);
 

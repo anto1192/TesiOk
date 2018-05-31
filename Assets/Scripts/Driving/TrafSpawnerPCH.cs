@@ -21,6 +21,8 @@ public class TrafSpawnerPCH : MonoBehaviour, ITrafficSpawner
 
     public float checkRadius = 8f;
 
+    public static event System.Action<bool> OnSpawnHeaps; //DARIO
+
     public void SpawnHeaps()
     {
         for (int i = 0; i < numberToSpawn; i++)
@@ -108,6 +110,9 @@ public class TrafSpawnerPCH : MonoBehaviour, ITrafficSpawner
                 SpawnHeaps();
 
             spawned = !spawned;
+
+            if (OnSpawnHeaps != null)  //DARIO
+                OnSpawnHeaps(spawned);
         }
 
     }

@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 [System.Serializable]
-public class SplineNode {
+public class SplineNode2 {
     public Vector3 position;
     public Vector3 tangent;
 }
@@ -28,7 +28,7 @@ public class TrafEntry
     public TrafRoad road;
     public TrafficLightContainer light;
     public List<Vector3> waypoints;
-    public List<SplineNode> spline;
+    public List<SplineNode2> spline;
 
     //TODO: remove road ScriptableObject dependency
 	[System.NonSerialized]
@@ -42,7 +42,7 @@ public class TrafEntry
         //return road.waypoints.Select(wp => wp.position).ToArray();
     }
 
-    public List<SplineNode> GetSpline() {
+    public List<SplineNode2> GetSpline() {
         return spline;
     }
 
@@ -171,7 +171,7 @@ public class TrafEntry
     public TrafRoad road;
     public TrafficLightContainer light;
     public List<Vector3> waypoints;
-    public List<SplineNode> spline;
+    public List<SplineNode2> spline;
     }*/
 }
 

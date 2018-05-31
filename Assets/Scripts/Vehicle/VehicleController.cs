@@ -34,9 +34,14 @@ public class AxleInfo
     public bool isGroundedRight = false;
 }
 
-public enum RoadSurface { Tarmac, Offroad, Airborne}
+public enum RoadSurface { Tarmac, Offroad, Airborne }
 
-public class VehicleController : MonoBehaviour {
+public class VehicleController : MonoBehaviour
+{
+
+    //ANTONELLO
+    public UnityEngine.UI.Slider sliderAccelerazione;
+    public UnityEngine.UI.Slider sliderFrenata;
 
     //all car wheel info
     public List<AxleInfo> axles;
@@ -85,7 +90,7 @@ public class VehicleController : MonoBehaviour {
     public float wheelDamping = 2f;
 
     //autosteer helps the car maintain its heading
-    [Range(0,1)]
+    [Range(0, 1)]
     public float autoSteerAmount;
 
     //traction control limits torque based on wheel slip - traction reduced by amount when slip exceeds the tractionControlSlipLimit
@@ -233,6 +238,8 @@ public class VehicleController : MonoBehaviour {
     float maxAngleVolant;
 
 
+
+
     void OnEnable()
     {
         //cache rigidbody
@@ -247,7 +254,7 @@ public class VehicleController : MonoBehaviour {
         axles[1].left.ConfigureVehicleSubsteps(5.0f, 30, 10);
         axles[1].right.ConfigureVehicleSubsteps(5.0f, 30, 10);
 
-        foreach(var axle in axles)
+        foreach (var axle in axles)
         {
             axle.left.wheelDampingRate = wheelDamping;
             axle.right.wheelDampingRate = wheelDamping;
@@ -265,7 +272,7 @@ public class VehicleController : MonoBehaviour {
         //check delay so we cant shift up/down too quick
         if (Time.time - lastShift > shiftDelay)
         {
-            
+
             //shift up
             if (currentRPM / maxRPM > shiftUpCurve.Evaluate(accellInput) && Mathf.RoundToInt(currentGear) < gearRatios.Length)
             {
@@ -288,7 +295,7 @@ public class VehicleController : MonoBehaviour {
             }
         }
 
-        if(shifting)
+        if (shifting)
         {
             float lerpVal = (Time.time - lastShift) / shiftTime;
             currentGear = Mathf.Lerp(lastGear, targetGear, lerpVal);
@@ -307,14 +314,31 @@ public class VehicleController : MonoBehaviour {
         }
     }
 
-  
+
 
     public void FixedUpdate()
     {
+        //ANTONELLO
+        if (sliderFrenata != null && sliderAccelerazione != null)
+        {
+            if (accellInput < 0)
+            {
+                sliderFrenata.value = this.accellInput;
+                sliderAccelerazione.value = 0;
+            }
+            else
+            {
+                sliderAccelerazione.value = this.accellInput;
+                sliderFrenata.value = 0;
+            }
+        }
+
+
+
 
         //air drag (quadratic)
         rb.AddForce(-airDragCoeff * rb.velocity * rb.velocity.magnitude);
-        
+
         //downforce (quadratic)
         rb.AddForce(-airDownForceCoeff * rb.velocity.sqrMagnitude * transform.up);
 
@@ -323,7 +347,7 @@ public class VehicleController : MonoBehaviour {
 
         //calc current gear ratio
         float gearRatio = Mathf.Lerp(gearRatios[Mathf.FloorToInt(currentGear) - 1], gearRatios[Mathf.CeilToInt(currentGear) - 1], currentGear - Mathf.Floor(currentGear));
-        
+
         //calc engine RPM from wheel rpm
         float wheelsRPM = (axles[1].right.rpm + axles[1].left.rpm) / 2f;
         if (wheelsRPM < 0)
@@ -332,7 +356,7 @@ public class VehicleController : MonoBehaviour {
         currentRPM = Mathf.Lerp(currentRPM, minRPM + (wheelsRPM * finalDriveRatio * gearRatio), Time.fixedDeltaTime * RPMSmoothness);
 
         //find out which wheels are on the ground
-        foreach(var axle in axles)
+        foreach (var axle in axles)
         {
             axle.isGroundedLeft = axle.left.GetGroundHit(out axle.hitLeft);
             axle.isGroundedRight = axle.right.GetGroundHit(out axle.hitRight);
@@ -359,12 +383,12 @@ public class VehicleController : MonoBehaviour {
         AutoGearBox();
 
         //record current speed in MPH  DARIO
-        //currentSpeed = rb.velocity.magnitude * 2.23693629f; //to obtain velocity from metersPerSecond to MilesPerHour
-        currentSpeed = rb.velocity.magnitude * 3.6f; //to obtain velocity from metersPerSecond to KmPerHour
+        currentSpeed = rb.velocity.magnitude * 2.23693629f; //to obtain velocity from metersPerSecond to MilesPerHour
+        //currentSpeed = rb.velocity.magnitude * 3.6f; //to obtain velocity from metersPerSecond to KmPerHour
 
         //find current road surface type
         WheelHit hit;
-        if(axles[0].left.GetGroundHit(out hit))
+        if (axles[0].left.GetGroundHit(out hit))
         {
             traction = hit.forwardSlip;
             var roadObject = hit.collider.transform.parent == null ? hit.collider.transform : hit.collider.transform.parent;
@@ -401,9 +425,10 @@ public class VehicleController : MonoBehaviour {
         {
             rtraction = 0f;
         }
-        
+
         //DARIO
         Volant();
+
 
     }
 
@@ -413,23 +438,24 @@ public class VehicleController : MonoBehaviour {
         //bail if a wheel isn't on the ground
         foreach (var axle in axles)
         {
-            if(axle.isGroundedLeft == false || axle.isGroundedRight == false)
-            return; 
+            if (axle.isGroundedLeft == false || axle.isGroundedRight == false)
+                return;
         }
 
         var yawRate = oldRotation - transform.eulerAngles.y;
 
         //don't adjust if the yaw rate is super high
-        if (Mathf.Abs(yawRate) < 10f)      
+        if (Mathf.Abs(yawRate) < 10f)
             rb.velocity = Quaternion.AngleAxis(yawRate * autoSteerAmount, Vector3.up) * rb.velocity;
-        
+
         oldRotation = transform.eulerAngles.y;
     }
 
     private void ApplyTorque()
     {
-        
-        if (accellInput >= 0) {
+
+        if (accellInput >= 0)
+        {
             //motor
             float torquePerWheel = accellInput * (currentTorque / numberOfDrivingWheels);
             foreach (var axle in axles)
@@ -464,7 +490,7 @@ public class VehicleController : MonoBehaviour {
                 axle.right.motorTorque = 0f;
             }
         }
-        
+
     }
 
     private void TractionControl()
@@ -473,10 +499,10 @@ public class VehicleController : MonoBehaviour {
         {
             if (axle.motor)
             {
-               if(axle.left.isGrounded)
+                if (axle.left.isGrounded)
                     AdjustTractionControlTorque(axle.hitLeft.forwardSlip);
 
-                if(axle.right.isGrounded)
+                if (axle.right.isGrounded)
                     AdjustTractionControlTorque(axle.hitRight.forwardSlip);
             }
         }
@@ -501,13 +527,13 @@ public class VehicleController : MonoBehaviour {
 
     public void Update()
     {
-        
+
         if (rb.centerOfMass != centerOfMass)
             rb.centerOfMass = centerOfMass;
 
-        if(axles[0].left.wheelDampingRate != wheelDamping)
+        if (axles[0].left.wheelDampingRate != wheelDamping)
         {
-            foreach(var axle in axles)
+            foreach (var axle in axles)
             {
                 axle.left.wheelDampingRate = wheelDamping;
                 axle.right.wheelDampingRate = wheelDamping;
@@ -541,9 +567,9 @@ public class VehicleController : MonoBehaviour {
     {
         GUI.Label(new Rect(10, 10, 500, 200), "GEAR " + (Mathf.RoundToInt(currentGear)));
         GUI.Label(new Rect(10, 30, 500, 200), "RPM " + Mathf.RoundToInt(currentRPM));
-        GUI.Label(new Rect(10, 50, 500, 200), "MPH " + Mathf.RoundToInt(currentSpeed)); //DARIO
-       // GUI.Label(new Rect(10, 50, 500, 200), "KPH " + Mathf.RoundToInt(currentSpeed));
-        GUI.Label(new Rect(10, 70, 500, 200), "THROTTLE " +  accellInput.ToString("F2"));
+        //GUI.Label(new Rect(10, 50, 500, 200), "MPH " + Mathf.RoundToInt(currentSpeed)); //DARIO
+        GUI.Label(new Rect(10, 50, 500, 200), "KPH " + Mathf.RoundToInt(rb.velocity.magnitude * 3.6f));
+        GUI.Label(new Rect(10, 70, 500, 200), "THROTTLE " + accellInput.ToString("F2"));
         GUI.Label(new Rect(10, 90, 500, 200), "WHEEL POSITION " + steerInput.ToString("F3"));
         GUI.Label(new Rect(10, 110, 500, 200), "TRACTION " + traction.ToString("F3"));
         GUI.Label(new Rect(10, 130, 500, 200), "TRACTIONR " + tractionR.ToString("F3"));
@@ -558,12 +584,14 @@ public class VehicleController : MonoBehaviour {
         {
             volantStartRotation = volant.transform.localEulerAngles.z;
         }
+
+
     }
 
     void Volant()
     {
-        angle1Ref = Mathf.MoveTowards(angle1Ref, steerInput, 2 * Time.deltaTime);
-        angle2Volant = Mathf.MoveTowards(angle2Volant, steerInput, 2 * Time.deltaTime);
+        angle1Ref = Mathf.MoveTowards(angle1Ref, steerInput, /*2 **/ Time.deltaTime);
+        angle2Volant = Mathf.MoveTowards(angle2Volant, steerInput, /*2 **/ Time.deltaTime);
         //
         maxAngleVolant = 35.0f * angle_x_Velocity.Evaluate(currentSpeed);
         angleRefVolant = Mathf.Clamp(angle1Ref * maxAngleVolant, -maxAngleVolant, maxAngleVolant);
@@ -640,9 +668,13 @@ public class VehicleController : MonoBehaviour {
 
         if (volant)
         {
-            volant.transform.localEulerAngles = new Vector3(volant.transform.localEulerAngles.x, volant.transform.localEulerAngles.y, volantStartRotation + (angle2Volant * 540.0f));
+            volant.transform.localEulerAngles = new Vector3(volant.transform.localEulerAngles.x, volant.transform.localEulerAngles.y, volantStartRotation + (angle2Volant * 443.0f));
         }
     }
+
+
+
+
 
 }
 
