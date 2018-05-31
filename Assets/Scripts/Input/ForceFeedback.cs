@@ -66,6 +66,14 @@ public class ForceFeedback : MonoBehaviour
 
     void Update()
     {
+        if (gameObject.GetComponent<TrafAIMotor>() != null)
+        {
+            //sono in guida automatica nello scenario urbano
+            logi.guidaAutomatica = true;
+            return;
+        }
+        logi.guidaAutomatica = false;
+
         float selfAlignmentTorque = 0f;
         foreach (var wheel in wheels)
         {
@@ -91,6 +99,8 @@ public class ForceFeedback : MonoBehaviour
         }
 
         float forceFeedback = selfAlignmentTorque;
+
+        
 
         //disable during autodrive mode
         if (TrackController.Instance.IsInAutoPath() || !(AppController.Instance.UserInput is SteeringWheelInputController))
