@@ -704,7 +704,7 @@ public class TrafAIMotor : MonoBehaviour
                 distanzaCorrente -= 5f;
             } else
             {
-                distanzaCorrente -= 5f;
+                distanzaCorrente -= 6f;
             }
             
             Debug.DrawLine(frenataTarget, transform.position);
@@ -1253,11 +1253,11 @@ public class TrafAIMotor : MonoBehaviour
         }
         if (go == null)
         {
-            go = GameObject.Find("TeslaModelS_2_Rigged)");
+            go = GameObject.Find("TeslaModelS_2_RiggedLOD)");
         }
         if (go == null)
         {
-            go = GameObject.Find("TeslaModelS_2_Rigged(Clone)");
+            go = GameObject.Find("TeslaModelS_2_RiggedLOD(Clone)");
         }
         return go;
     }

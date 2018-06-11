@@ -1409,7 +1409,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
 
         List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
-        /*percorso.Add(edge1);
+        percorso.Add(edge1);
         percorso.Add(edge1a);
         percorso.Add(edge2);
         //percorso.Add(edge2a);
@@ -1443,8 +1443,8 @@ public class ScenarioTestUrbano : MonoBehaviour
         //percorso.Add(edge16a);
         percorso.Add(edge17);
         //percorso.Add(edge17a);
-        percorso.Add(edge18);*/
-        percorso.Add(edge18a);
+        percorso.Add(edge18);
+        //percorso.Add(edge18a);
         percorso.Add(edge19);
         //percorso.Add(edge19a);
         percorso.Add(edge20);
@@ -4205,11 +4205,11 @@ public class ScenarioTestUrbano : MonoBehaviour
         }
         if (go == null)
         {
-            go = GameObject.Find("TeslaModelS_2_Rigged)");
+            go = GameObject.Find("TeslaModelS_2_RiggedLOD");
         }
         if (go == null)
         {
-            go = GameObject.Find("TeslaModelS_2_Rigged(Clone)");
+            go = GameObject.Find("TeslaModelS_2_RiggedLOD(Clone)");
         }
         return go;
     }
