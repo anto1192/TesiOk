@@ -69,9 +69,9 @@ public class EnvironmentSensingAlt : MonoBehaviour
             }
         CreatePathEnhanced(); 
         CreateCenterLine();
-        linesUtils.LineRend = linesUtils.CreateLineRenderer(linesUtils.LineRendererEmpty, "LineRenderer", 2.5f, new Color32(0x3A, 0xC1, 0xAA, 0xFF), mats[2], () => linesUtils.InitGlowTexture());
-        linesUtils.LineRend2 = linesUtils.CreateLineRenderer(linesUtils.CenterLineRendererEmpty, "centerLineRenderer", 0.5f, new Color32(0xFF, 0xFF, 0xFF, 0xFF), mats[2], () => linesUtils.InitGlowTexture2());
-        linesUtils.CenterLineLerper();
+        //linesUtils.LineRend = linesUtils.CreateLineRenderer(linesUtils.LineRendererEmpty, "LineRenderer", 2.5f, new Color32(0x3A, 0xC1, 0xAA, 0xFF), mats[2], () => linesUtils.InitGlowTexture());
+        //linesUtils.LineRend2 = linesUtils.CreateLineRenderer(linesUtils.CenterLineRendererEmpty, "centerLineRenderer", 0.5f, new Color32(0xFF, 0xFF, 0xFF, 0xFF), mats[2], () => linesUtils.InitGlowTexture2());
+        //linesUtils.CenterLineLerper();
 
     }
 

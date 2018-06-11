@@ -12,17 +12,17 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
     private Material[] mats;
     private Sprite[] sprites;
     private Dictionary<int, float> CSVDictionary = new Dictionary<int, float>(); //this is to store the precomputed values of angle(speed)
-    private Dictionary<int, CubesAndTags> IDsAndGos = new Dictionary<int, CubesAndTags>(); //this is to store gameobjects ids and their relative cubes
+    public Dictionary<int, CubesAndTags> IDsAndGos = new Dictionary<int, CubesAndTags>(); //this is to store gameobjects ids and their relative cubes
+
+    
     private Quaternion rot0; //this is to store the initial rotation of the needle
     private GameObject[] prefabs;
-    private GameObject pathEnhanced = null;
-    private GameObject centerLine = null;
+    
     private GameObject speedPanel; //this is used to semplify the search into the car hierarchy which is very deep
     private Vector3 obstaclePrevPos; //this is to store the initial position of the obstacle in order to compute its speed
-    private LinesUtilsAlt linesUtilsAlt = new LinesUtilsAlt();
+    
     private LayerMask mask;
-    public enum Lane { RIGHT, OPPOSITE }
-    private HashSet<Transform> curColls = new HashSet<Transform>(); //this is to store the root transform of the colliders 
+    
     private Transform rayCastPos;
     private RectTransform speed;
     private RectTransform needle;
@@ -52,21 +52,28 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
             this.infoTag.Add(infoTag);
             this.bounds.Add(bounds);
         }
+
+        public void DestroyCubesAndTags()
+        {
+            foreach (GameObject go in this.boundingCube)
+                Destroy(go);
+            foreach (GameObject go in this.infoTag)
+                Destroy(go);
+        }
     }
 
     //void OnEnable()
     //{
-    //    TrafSpawnerPCH.OnSpawnHeaps += HandleOnSpawnHeaps;
+    //    ScenarioTestUrbano.OnSpawnHeaps += HandleOnSpawnHeaps;
     //}
 
     //void OnDisable()
     //{
-    //    TrafSpawnerPCH.OnSpawnHeaps -= HandleOnSpawnHeaps;
+    //    ScenarioTestUrbano.OnSpawnHeaps -= HandleOnSpawnHeaps;
     //}
 
-
     private void Awake()
-    {
+    { 
         LoadDictionary();
         LoadMaterials();
         LoadPrefabs();
@@ -76,28 +83,22 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
     void Start()
     {
         LoadCarHierarchy();
-        rigidbody = gameObject.GetComponent<Rigidbody>();
+
         obstaclePrevPos = Vector3.zero; //init position of obstacle spawned
-        rot0 = speed.localRotation; //init rotation of speed needle
+        
         mask = (1 << LayerMask.NameToLayer("Traffic")) | (1 << LayerMask.NameToLayer("obstacle")) | (1 << LayerMask.NameToLayer("EnvironmentProp")) | (1 << LayerMask.NameToLayer("Signage") | 1 << LayerMask.NameToLayer("Roads")); //restrict OnTriggerEnter only to the layers of interest
 
-        foreach (Transform t in driverCam.transform)
-            if (t.name.Equals("Center"))
-            {
-                t.GetComponent<Camera>().allowHDR = true;
-                MKGlow mkg = t.gameObject.AddComponent<MKGlow>();
-                mkg.GlowType = MKGlowType.Selective;
-                mkg.GlowLayer = LayerMask.GetMask("Graphics");
-                break;
-            }
-        CreatePathEnhanced();
-        CreateCenterLine();
-        linesUtilsAlt.LineRend = linesUtilsAlt.CreateLineRenderer(linesUtilsAlt.LineRendererEmpty, "LineRenderer", 2.5f, new Color32(0x3A, 0xC1, 0xAA, 0xFF), mats[3], () => linesUtilsAlt.InitGlowTexture());
-        linesUtilsAlt.LineRend2 = linesUtilsAlt.CreateLineRenderer(linesUtilsAlt.CenterLineRendererEmpty, "centerLineRenderer", 0.5f, new Color32(0xFF, 0xFF, 0xFF, 0xFF), mats[3], () => linesUtilsAlt.InitGlowTexture2());
-        linesUtilsAlt.CenterLineLerper();
+        //foreach (Transform t in driverCam.transform)
+        //    if (t.name.Equals("Center"))
+        //    {
+        //        t.GetComponent<Camera>().allowHDR = true;
+        //        MKGlow mkg = t.gameObject.AddComponent<MKGlow>();
+        //        mkg.GlowType = MKGlowType.Selective;
+        //        mkg.GlowLayer = LayerMask.GetMask("Graphics");
+        //        break;
+        //    }
 
-        StartCoroutine(NavigationLine(0.25f));
-        StartCoroutine(LaneKeeping(0.25f));
+        StartCoroutine(CleanObjects(0.25f));
     }
 
     void Update()
@@ -107,8 +108,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        //Gizmos.color = Color.blue;
-        //Gizmos.DrawWireSphere(gameObject.transform.position, 3.5f);
+        DebugExtension.DrawCone(rayCastPos.position, rayCastPos.forward * 150f, Color.magenta, 11);
     }
 
     void OnTriggerEnter(Collider other)
@@ -126,12 +126,14 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                 BoxCollider boxCol = other as BoxCollider;
                                 bounds.center = Quaternion.Euler(other.transform.localEulerAngles) * boxCol.center;
                                 bounds.size = boxCol.size;
+                                UpdateIDsAndGos(other, bounds);
                             }
                             else if (other.transform.tag.Equals("Sign"))
                             {
                                 BoxCollider boxCol = other as BoxCollider;
                                 bounds.center = boxCol.center;
                                 bounds.size = boxCol.size * 1.25f;
+                                UpdateIDsAndGos(other, bounds);
                             }
                             switch (other.transform.name)
                             {
@@ -140,8 +142,9 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                         CapsuleCollider capsCol = other as CapsuleCollider;
                                         bounds.center = Quaternion.Euler(other.transform.localEulerAngles) * capsCol.center;
                                         bounds.size = new Vector3(capsCol.radius * 4.0f, capsCol.radius * 4.0f, capsCol.height);
+                                        UpdateIDsAndGos(other, bounds);
                                     }
-                                    break;
+                                break;
                                 case "tree_dec01":
                                     {
                                         Transform oldParent = other.transform.parent;
@@ -150,6 +153,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                         bounds.center = Quaternion.Euler(other.transform.localEulerAngles) * new Vector3(capsCol.center.x * other.transform.localScale.x, capsCol.center.y * other.transform.localScale.y, capsCol.center.z * other.transform.localScale.z);
                                         bounds.size = new Vector3(capsCol.radius * 2.0f * other.transform.localScale.x, capsCol.radius * 2.0f * other.transform.localScale.y, capsCol.height * other.transform.localScale.z);
                                         other.transform.parent = oldParent;
+                                        UpdateIDsAndGos(other, bounds);
                                     }
                                     break;
                                 case "Dumpster":
@@ -169,16 +173,10 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                         BoxCollider boxCol = other as BoxCollider;
                                         bounds.center = Quaternion.Euler(other.transform.localEulerAngles) * new Vector3(boxCol.center.x * other.transform.localScale.x, boxCol.center.y * other.transform.localScale.y, boxCol.center.z * other.transform.localScale.z);
                                         bounds.size = new Vector3(boxCol.size.x * other.transform.localScale.x, boxCol.size.y * other.transform.localScale.y, boxCol.size.z * other.transform.localScale.z);
+                                        UpdateIDsAndGos(other, bounds);
                                     }
                                     break;
-                            }
-                            GameObject boundingCube = CreateBoundingCube(other.transform, other.transform.position + bounds.center, bounds.size);
-                            GameObject infoTag = CreateInfoTag(other.transform.position + bounds.center);
-                            boundingCube.GetComponent<Renderer>().enabled = false;
-                            infoTag.GetComponent<Canvas>().enabled = false;
-                            CubesAndTags cubesAndTags = new CubesAndTags();
-                            cubesAndTags.AddElements(boundingCube, infoTag, bounds);
-                            IDsAndGos.Add(other.gameObject.GetInstanceID(), cubesAndTags);
+                            }    
                     }
                     break;
                 case 17:
@@ -192,33 +190,48 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                         BoxCollider boxCol = other as BoxCollider;
                         bounds.center = boxCol.center;
                         bounds.size = boxCol.size * 1.25f;
-                        GameObject boundingCube = CreateBoundingCube(other.transform, other.transform.position + bounds.center, bounds.size);
-                        GameObject infoTag = CreateInfoTag(other.transform.position + bounds.center);
-                        boundingCube.GetComponent<Renderer>().enabled = false;
-                        infoTag.GetComponent<Canvas>().enabled = false;
-                        CubesAndTags cubesAndTags = new CubesAndTags();
-                        cubesAndTags.AddElements(boundingCube, infoTag, bounds);
-                        IDsAndGos.Add(other.gameObject.GetInstanceID(), cubesAndTags);
+                        UpdateIDsAndGos(other, bounds);
                     }
                     break;
                 case 12:
                     {  //obstacle
-                        Bounds bounds = ComputeBounds(other.transform);
-                        GameObject boundingCube = CreateBoundingCube(other.transform, bounds.center, bounds.size);
-                        GameObject infoTag = CreateInfoTag(bounds.center);
-                        boundingCube.transform.SetParent(other.transform);
-                        boundingCube.transform.localPosition = Vector3.zero;
-                        boundingCube.GetComponent<Renderer>().enabled = false;
-                        infoTag.GetComponent<Canvas>().enabled = false;
-                        CubesAndTags cubesAndTags = new CubesAndTags(); //I need to recompute the bounds since obstacles are dynamic, so I pass an empty bounds here
-                        cubesAndTags.AddElements(boundingCube, infoTag, bounds);
-                        IDsAndGos.Add(other.gameObject.GetInstanceID(), cubesAndTags);
+                        Bounds bounds = new Bounds();
+                        GameObject boundingCube = null;
+                        GameObject infoTag = null;
+                        if (other.transform.root.name.StartsWith("Mercedes") /*|| other.transform.root.tag.Equals("TrafficCar")*/)
+                        {
+                            if (other.transform.name.Equals("Body1"))
+                            { //this is in order to check if an object has more colliders than one; if so, one is sufficient so simply discard other otherwise the cube instantiated would be equal to the number of colliders
+                                bounds = ComputeBounds(other.transform.root);
+                                boundingCube = CreateBoundingCube(other.transform.root, bounds.center, bounds.size);
+                                boundingCube.transform.SetParent(other.transform.root);
+                                infoTag = CreateInfoTag(bounds.center);
+                                boundingCube.GetComponent<Renderer>().enabled = false;
+                                infoTag.GetComponent<Canvas>().enabled = false;
+                                CubesAndTags cubesAndTags = new CubesAndTags(); //I need to recompute the bounds since obstacles are dynamic, so I pass an empty bounds here
+                                cubesAndTags.AddElements(boundingCube, infoTag, bounds);
+                                IDsAndGos.Add(other.gameObject.GetInstanceID(), cubesAndTags);
+                            } 
+                        }
+                        else
+                        {
+                            bounds = ComputeBounds(other.transform);
+                            boundingCube = CreateBoundingCube(other.transform, bounds.center, bounds.size);
+                            infoTag = CreateInfoTag(bounds.center);
+                            boundingCube.transform.SetParent(other.transform);
+                            boundingCube.transform.localPosition = Vector3.zero;
+                            boundingCube.GetComponent<Renderer>().enabled = false;
+                            infoTag.GetComponent<Canvas>().enabled = false;
+                            CubesAndTags cubesAndTags = new CubesAndTags(); //I need to recompute the bounds since obstacles are dynamic, so I pass an empty bounds here
+                            cubesAndTags.AddElements(boundingCube, infoTag, bounds);
+                            IDsAndGos.Add(other.gameObject.GetInstanceID(), cubesAndTags);
+                        }      
                     }
                     break;
 
                 case 8:
                     {
-                        if (!curColls.Contains(other.transform.root))
+                        if (other.transform.name.Equals("Body1") && other.transform.root.tag.Equals("TrafficCar"))
                         { //this is in order to check if an object has more colliders than one; if so, one is sufficient so simply discard other otherwise the cube instantiated would be equal to the number of colliders
                             Bounds bounds = ComputeBounds(other.transform.root);
                             bounds = ComputeBounds(other.transform.root);
@@ -231,13 +244,14 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                             CubesAndTags cubesAndTags = new CubesAndTags(); //I need to recompute the bounds since obstacles are dynamic, so I pass an empty bounds here
                             cubesAndTags.AddElements(boundingCube, infoTag, bounds);
                             IDsAndGos.Add(other.gameObject.GetInstanceID(), cubesAndTags);
-                            curColls.Add(other.transform.root);
+
+                            other.transform.root.gameObject.AddComponent<TrafficCarNavigationLineUrban>();
                         }
                     }
                     break;
                 case 18: //Roads
                     {
-                        if (other.transform.name.StartsWith("TrafficLight"))
+                        if (other.transform.name.StartsWith("TrafficLight") /*&& other.transform.parent.name.Equals("Inter85")*/)
                         {
                             Dictionary<string, Transform> trafLightChildren = new Dictionary<string, Transform>();
                             List<Bounds> bounds = new List<Bounds>();
@@ -260,7 +274,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                 CubesAndTags cubesAndTags = new CubesAndTags(); //I need to recompute the bounds since obstacles are dynamic, so I pass an empty bounds here
                                 cubesAndTags.AddElements(boundingCube0, infoTag0, bounds[0]);
                                 cubesAndTags.AddElements(boundingCube1, infoTag1, bounds[1]);
-                                IDsAndGos.Add(other.gameObject.GetInstanceID(), cubesAndTags);
+                                IDsAndGos.Add(other.gameObject.GetInstanceID(), cubesAndTags); 
                             }
 
                         }
@@ -272,14 +286,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
 
     void OnTriggerExit(Collider other)
     {
-        if (IDsAndGos.ContainsKey(other.gameObject.GetInstanceID()))
-        {
-            Destroy(IDsAndGos[other.gameObject.GetInstanceID()].boundingCube[0]);
-            Destroy(IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0]);
-            IDsAndGos.Remove(other.gameObject.GetInstanceID());
-        }
-        
-
+        CleanObjects(other);
     }
 
     void OnTriggerStay(Collider other)
@@ -299,43 +306,57 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                         {
                             if (other.transform.tag.Equals("ParkedCar"))
                             {
-                                trasl = Quaternion.Euler(-other.transform.localEulerAngles) * bounds.size; //infoTag trasl
-                                trasl = new Vector3(Mathf.Abs(trasl.z) * 0.5f + 2.0f, Mathf.Abs(trasl.y) * 0.5f, 0);
+                                trasl = bounds.size; //infoTag trasl
+                                trasl = new Vector3(Mathf.Abs(trasl.x) * 0.5f + 1.0f, Mathf.Abs(trasl.y) * 0.5f, 0);
                                 UpdateInfoTag(other, "0" + " KPH", Mathf.RoundToInt(dist).ToString() + " M", "", sprites[64], bounds, dist, 0, trasl);
                             } 
                             
                             switch (other.transform.name)
                             {
                                 case "streetlight":
-                                    {
-                                        trasl = Quaternion.Euler(-other.transform.localEulerAngles) * bounds.size; //infoTag trasl
-                                        trasl = new Vector3(Mathf.Abs(trasl.z) * 0.5f + 2.0f, 0, 0);
-                                        UpdateInfoTag(other, "0" + " KPH", Mathf.RoundToInt(dist).ToString() + " M", "", sprites[64], bounds, dist, 0, trasl);
-                                    }
-                                    break;
-                                case "tree_dec01":
-                                    {
-                                        trasl = Quaternion.Euler(-other.transform.localEulerAngles) * bounds.size; //infoTag trasl
-                                        trasl = new Vector3(Mathf.Abs(trasl.z) * 0.5f + 3.0f, 0, 0);
-                                        UpdateInfoTag(other, "0" + " KPH", Mathf.RoundToInt(dist).ToString() + " M", "", sprites[64], bounds, dist, 0, trasl);
-                                    }
-                                    break;
-                                case "Dumpster":
-
-                                case "busstop":
-
-                                case "barrier_concrete":
-
-                                case "barrier_metal":
 
                                 case "Lamppost":
+
+                                case "tree_dec01":
+                                    {
+                                        trasl = bounds.size; //infoTag trasl
+                                        trasl = new Vector3(Mathf.Abs(trasl.x) * 0.5f + 2.0f, -Mathf.Abs(trasl.z) * 0.25f, 0);
+                                        UpdateInfoTag(other, "0" + " KPH", Mathf.RoundToInt(dist).ToString() + " M", "", sprites[64], bounds, dist, 0, trasl);
+                                    }
+                                    break;
+                                
+                                case "Dumpster":
+
+                                case "barrier_concrete":
+                                    {
+                                        trasl = bounds.size; //infoTag trasl
+                                        trasl = new Vector3(Mathf.Abs(trasl.x) * 0.5f + 2.0f, Mathf.Abs(trasl.z) * 0.5f, 0);
+                                        UpdateInfoTag(other, "0" + " KPH", Mathf.RoundToInt(dist).ToString() + " M", "", sprites[64], bounds, dist, 0, trasl);
+                                    }
+                                    break;
+
+                                case "busstop":
+                                    {
+                                        trasl = bounds.size; //infoTag trasl
+                                        trasl = new Vector3(Mathf.Abs(trasl.y) * 0.5f + 2.0f, 0, 0);
+                                        UpdateInfoTag(other, "0" + " KPH", Mathf.RoundToInt(dist).ToString() + " M", "", sprites[64], bounds, dist, 0, trasl);
+                                    }
+                                    break;
+
+                                case "barrier_metal":
+                                    {
+                                        trasl = bounds.size; //infoTag trasl
+                                        trasl = new Vector3(Mathf.Abs(trasl.z) * 0.5f + 2.0f, Mathf.Abs(trasl.y) * 0.5f, 0);
+                                        UpdateInfoTag(other, "0" + " KPH", Mathf.RoundToInt(dist).ToString() + " M", "", sprites[64], bounds, dist, 0, trasl);
+                                    }
+                                    break;
 
                                 case "Table_For2":
 
                                 case "Table_For4":
                                     {
-                                        trasl = Quaternion.Euler(-other.transform.localEulerAngles) * bounds.size; //infoTag trasl
-                                        trasl = new Vector3(Mathf.Abs(trasl.z) * 0.5f + 2.0f, Mathf.Abs(trasl.y) * 0.5f, 0);
+                                        trasl = bounds.size; //infoTag trasl
+                                        trasl = new Vector3(Mathf.Abs(trasl.x) * 0.5f + 2.0f, Mathf.Abs(trasl.y) * 0.5f, 0);
                                         UpdateInfoTag(other, "0" + " KPH", Mathf.RoundToInt(dist).ToString() + " M", "", sprites[64], bounds, dist, 0, trasl);
                                     }
                                     break;
@@ -348,10 +369,10 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                         }
                         if (other.transform.tag.Equals("Sign"))
                         {
-                            Sprite sprite = ReturnSignPic(other.name, sprites);
-                            if (Vector3.Dot(gameObject.transform.TransformDirection(Vector3.forward), other.transform.TransformDirection(Vector3.up)) < 0 && sprite != null)
+                            KeyValuePair <Sprite, string> kvp = ReturnSignPic(other.name, sprites);
+                            if (Vector3.Dot(gameObject.transform.TransformDirection(Vector3.forward), other.transform.TransformDirection(Vector3.up)) < 0 && kvp.Key != null)
                             {
-                                UpdateInfoTag(other, "", "", "", sprite, new Bounds(Vector3.zero, Vector3.zero), dist, 0, Vector3.zero);
+                                UpdateInfoTag(other, "", "", kvp.Value, kvp.Key, bounds, dist, 0, Vector3.zero);
                             } else
                             {
                                 IDsAndGos[other.gameObject.GetInstanceID()].boundingCube[0].GetComponent<Renderer>().enabled = false;
@@ -362,10 +383,11 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                     break;
                 case 17: //Signage
                     {
-                        Sprite sprite = ReturnSignPic(other.name, sprites);
-                        if (Vector3.Dot(gameObject.transform.TransformDirection(Vector3.forward), other.transform.TransformDirection(Vector3.up)) < 0 && sprite != null)
+                        Bounds bounds = IDsAndGos[other.gameObject.GetInstanceID()].bounds[0];
+                        KeyValuePair<Sprite, string> kvp = ReturnSignPic(other.name, sprites);
+                        if (Vector3.Dot(gameObject.transform.TransformDirection(Vector3.forward), other.transform.TransformDirection(Vector3.up)) < 0 && kvp.Key != null)
                         {
-                            UpdateInfoTag(other, "", "", "", sprite, new Bounds(Vector3.zero, Vector3.zero), dist, 0, Vector3.zero);
+                            UpdateInfoTag(other, "", "", kvp.Value, kvp.Key, bounds, dist, 0, Vector3.zero);
                         }
                         else
                         {
@@ -377,7 +399,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                 case 12:
                     {
                         Bounds bounds = IDsAndGos[other.gameObject.GetInstanceID()].bounds[0];
-                        UpdateInfoTag(other, Mathf.RoundToInt(CalculateObstacleSpeed(other.transform)).ToString() + " KPH", Mathf.RoundToInt(dist).ToString() + " M", "", sprites[28], bounds, dist, 0, Vector3.zero);
+                        UpdateInfoTag(other, Mathf.RoundToInt(CalculateObstacleSpeed(other.transform)).ToString() + " KPH", Mathf.RoundToInt(dist).ToString() + " M", "", sprites[64], bounds, dist, 0, Vector3.zero);
                     }
                     break;
                 case 8:
@@ -394,33 +416,33 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
 
                 case 18: //Roads
                     {
-                        if (other.transform.name.StartsWith("TrafficLight"))
-                        {
+                        //if (other.transform.name.StartsWith("TrafficLight"))
+                        //{
                             //Bounds bounds =  IDsAndGos[other.gameObject.GetInstanceID()].bounds[0]; //I don't need them! Maybe I'd reconsider to avoid to pass them in OnTriggerEnter()
                             //Bounds bounds1 = IDsAndGos[other.gameObject.GetInstanceID()].bounds[1];
-                            Transform textPanel = IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.GetChild(0);
-                            Transform imagePanel = IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.GetChild(1);
-                            Transform textPanel1 = IDsAndGos[other.gameObject.GetInstanceID()].infoTag[1].transform.GetChild(0);
-                            Transform imagePanel1 = IDsAndGos[other.gameObject.GetInstanceID()].infoTag[1].transform.GetChild(1);
+                            Transform Panel = IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.GetChild(0);
+                            Transform Panel1 = IDsAndGos[other.gameObject.GetInstanceID()].infoTag[1].transform.GetChild(0);
+                            
 
-                            textPanel.transform.GetChild(0).GetComponent<Text>().text = textPanel.transform.GetChild(1).GetComponent<Text>().text = "";
-                            textPanel1.transform.GetChild(0).GetComponent<Text>().text = textPanel1.transform.GetChild(1).GetComponent<Text>().text = "";
+                            Panel.transform.GetChild(0).GetComponent<Text>().text = Panel.transform.GetChild(1).GetComponent<Text>().text = "";
+                            Panel1.transform.GetChild(0).GetComponent<Text>().text = Panel1.transform.GetChild(1).GetComponent<Text>().text = "";
+                            Panel.transform.GetChild(2).GetComponent<Text>().fontSize = Panel1.transform.GetChild(2).GetComponent<Text>().fontSize = 110;
 
                             TrafLightState currentState = other.transform.GetComponent<TrafficLightContainer>().State;
                             if (currentState.Equals(TrafLightState.GREEN))
                             {
-                                imagePanel.transform.GetChild(0).GetComponent<Image>().sprite = imagePanel1.transform.GetChild(0).GetComponent<Image>().sprite = sprites[61];
-                                textPanel.transform.GetChild(2).GetComponent<Text>().text = textPanel1.transform.GetChild(2).GetComponent<Text>().text = "GO";
+                                Panel.transform.GetChild(3).GetComponent<Image>().sprite = Panel1.transform.GetChild(3).GetComponent<Image>().sprite = sprites[61];
+                                Panel.transform.GetChild(2).GetComponent<Text>().text = Panel1.transform.GetChild(2).GetComponent<Text>().text = "GO";
                             }
                             else if (currentState.Equals(TrafLightState.YELLOW))
                             {
-                                imagePanel.transform.GetChild(0).GetComponent<Image>().sprite = imagePanel1.transform.GetChild(0).GetComponent<Image>().sprite = sprites[62];
-                                textPanel.transform.GetChild(2).GetComponent<Text>().text = textPanel1.transform.GetChild(2).GetComponent<Text>().text = "GO";
+                                Panel.transform.GetChild(3).GetComponent<Image>().sprite = Panel1.transform.GetChild(3).GetComponent<Image>().sprite = sprites[62];
+                                Panel.transform.GetChild(2).GetComponent<Text>().text = Panel1.transform.GetChild(2).GetComponent<Text>().text = "GO";
                             }
                             else
                             {
-                                imagePanel.transform.GetChild(0).GetComponent<Image>().sprite = imagePanel1.transform.GetChild(0).GetComponent<Image>().sprite = sprites[63];
-                                textPanel.transform.GetChild(2).GetComponent<Text>().text = textPanel1.transform.GetChild(2).GetComponent<Text>().text = "STOP";
+                                Panel.transform.GetChild(3).GetComponent<Image>().sprite = Panel1.transform.GetChild(3).GetComponent<Image>().sprite = sprites[63];
+                                Panel.transform.GetChild(2).GetComponent<Text>().text = Panel1.transform.GetChild(2).GetComponent<Text>().text = "STOP";
                             }
                             IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.rotation = Quaternion.Euler(0f, 90f, 0f) * IDsAndGos[other.gameObject.GetInstanceID()].boundingCube[0].transform.rotation;
                             IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.position = IDsAndGos[other.gameObject.GetInstanceID()].boundingCube[0].transform.position + IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.TransformDirection(-Vector3.forward);
@@ -429,7 +451,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
 
                             IDsAndGos[other.gameObject.GetInstanceID()].boundingCube[0].GetComponent<Renderer>().enabled = IDsAndGos[other.gameObject.GetInstanceID()].boundingCube[1].GetComponent<Renderer>().enabled = true;
                             IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].GetComponent<Canvas>().enabled = IDsAndGos[other.gameObject.GetInstanceID()].infoTag[1].GetComponent<Canvas>().enabled = true;
-                        }
+                        //}
                     }
                     break;
             }
@@ -455,25 +477,35 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
         return infoTag;
     }
 
+    void UpdateIDsAndGos(Collider other, Bounds bounds)
+    {
+        GameObject boundingCube = CreateBoundingCube(other.transform, other.transform.position + bounds.center, bounds.size);
+        GameObject infoTag = CreateInfoTag(other.transform.position + bounds.center);
+        boundingCube.GetComponent<Renderer>().enabled = false;
+        infoTag.GetComponent<Canvas>().enabled = false;
+        CubesAndTags cubesAndTags = new CubesAndTags();
+        cubesAndTags.AddElements(boundingCube, infoTag, bounds);
+        IDsAndGos.Add(other.gameObject.GetInstanceID(), cubesAndTags);
+    }
+
     void UpdateInfoTag(Collider other, string text, string text1, string text2, Sprite sprite, Bounds bounds, float dist, float dist1, Vector3 trasl)
     {
         Renderer visibility = IDsAndGos[other.gameObject.GetInstanceID()].boundingCube[0].GetComponent<Renderer>();
         Canvas canvas = IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].GetComponent<Canvas>();
-        Transform textPanel = IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.GetChild(0);
-        Transform imagePanel = IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.GetChild(1);
+        Transform Panel = IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.GetChild(0);
 
         Renderer visibility1 = null;
         Canvas canvas1 = null;
-        Transform textPanel1 = null;
-        Transform imagePanel1 = null;
+        Transform Panel1 = null;
+        
 
         if (IDsAndGos[other.gameObject.GetInstanceID()].boundingCube.Count > 1)
         {
             visibility1 = IDsAndGos[other.gameObject.GetInstanceID()].boundingCube[1].GetComponent<Renderer>();
             canvas1 = IDsAndGos[other.gameObject.GetInstanceID()].infoTag[1].GetComponent<Canvas>();
             dist1 = CalculateDistance(rayCastPos.position, other.transform.position); //this distance does not include bounds since it cannot always be precomputed, for example, this is the case of moving objects
-            textPanel1 = IDsAndGos[other.gameObject.GetInstanceID()].infoTag[1].transform.GetChild(0);
-            imagePanel1 = IDsAndGos[other.gameObject.GetInstanceID()].infoTag[1].transform.GetChild(1);
+            Panel1 = IDsAndGos[other.gameObject.GetInstanceID()].infoTag[1].transform.GetChild(0);
+            
         }
 
         IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.rotation = transform.rotation;
@@ -486,8 +518,8 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                 IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.position = other.transform.position + bounds.center + IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.TransformDirection(Vector3.right.x * -trasl.x, Vector3.up.y * trasl.y, 0); //object is to the right or directly ahead
         } else if ((other.gameObject.layer.Equals(16) && other.tag.Equals("Sign")) || other.gameObject.layer.Equals(17))
         {
-            IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.position = other.transform.position + IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.TransformDirection(-Vector3.forward);
-        } else if (other.gameObject.layer.Equals(8) || other.gameObject.layer.Equals(12))
+            IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.position = other.transform.position + bounds.center + IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.TransformDirection(-Vector3.forward);
+        } else if (other.gameObject.layer.Equals(8))
         {
             Vector3 relativePoint = transform.InverseTransformPoint(other.transform.position); //this is to recognize if the object is to the left/right with respect to the car
             if (relativePoint.x < 0.0f)
@@ -495,13 +527,32 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
             else if (relativePoint.x >= 0.0f)
                 IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.position = other.transform.position + IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.TransformDirection(Vector3.right.x * -bounds.size.x, Vector3.up.y * bounds.size.y * 0.5f, 0); //object is to the right or directly ahead
         }
+        else if (other.gameObject.layer.Equals(12))
+        {
+            Vector3 relativePoint = transform.InverseTransformPoint(other.transform.position); //this is to recognize if the object is to the left/right with respect to the car
+            if (relativePoint.x < 0.0f)
+                IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.position = other.transform.position + IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.TransformDirection(Vector3.right.x * (bounds.size.z + 0.5f), Vector3.up.y * bounds.size.y * 0.5f, 0); //object is to the left  
+            else if (relativePoint.x >= 0.0f)
+                IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.position = other.transform.position + IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.TransformDirection(Vector3.right.x * -(bounds.size.z + 0.5f), Vector3.up.y * bounds.size.y * 0.5f, 0); //object is to the right or directly ahead
+        }
 
-        imagePanel.transform.GetChild(0).GetComponent<Image>().sprite = sprite;
-        textPanel.transform.GetChild(0).GetComponent<Text>().text = text; 
-        textPanel.transform.GetChild(1).GetComponent<Text>().text = text1;
-        textPanel.transform.GetChild(2).GetComponent<Text>().text = text2;
+        Panel.transform.GetChild(0).GetComponent<Text>().text = text;
+        Panel.transform.GetChild(1).GetComponent<Text>().text = text1;
+        Panel.transform.GetChild(2).GetComponent<Text>().text = text2;
+        Panel.transform.GetChild(3).GetComponent<Image>().sprite = sprite;
+
+        Vector3 windShieldPos = rayCastPos.position + rayCastPos.up * 0.5f;
+        windShieldPos -= rayCastPos.forward * 1.8f;
+        Vector3 offset = IDsAndGos[other.gameObject.GetInstanceID()].infoTag[0].transform.position - windShieldPos;
         visibility.enabled = true;
-        canvas.enabled = true;
+        if (offset.sqrMagnitude < 3 * 3)  //if infoTags are too close to the playerCar I disable them
+        {
+            canvas.enabled = false;
+        }
+        else
+        {
+            canvas.enabled = true;
+        }
     }
 
     void LoadCarHierarchy()
@@ -514,20 +565,16 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
         speed = speedPanelChildren["Speed"];
         needle = speedPanelChildren["Needle"];
 
-        foreach (Transform t in transform)
+        foreach (Transform t in transform.parent)
             if (t.name.Equals("rayCastPos"))
             {
                 rayCastPos = t;
                 break;
             }
 
-        SphereCollider sphereCol = gameObject.AddComponent<SphereCollider>();
-        sphereCol.radius = 150;
-        sphereCol.isTrigger = true;
+        rigidbody = transform.parent.gameObject.GetComponent<Rigidbody>();
 
-        //Debug.Log(speed);
-        //Debug.Log(needle);
-        //Debug.Log(rayCastPos);
+        rot0 = speed.localRotation; //init rotation of speed needle
     }
 
     void LoadDictionary()
@@ -658,26 +705,6 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
 
     }
 
-    Lane MonitorLane(Vector3 Point)
-    {
-        if (Vector3.Dot(gameObject.transform.TransformDirection(Vector3.forward), Point) < 0)
-            return Lane.OPPOSITE;
-        else
-            return Lane.RIGHT;
-    }
-
-    void CreatePathEnhanced()
-    {
-        //pathEnhanced = new GameObject("PathEnhancedUrban");
-        //pathEnhanced.AddComponent<AutoPathHelperUrban>();
-        pathEnhanced = Instantiate(prefabs[12]);
-    }
-
-    void CreateCenterLine()
-    {
-        centerLine = Instantiate(prefabs[9]);
-    }
-
     void SetSpeed()
     {
         float targetAngle;
@@ -698,82 +725,74 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
         inputStream.Close();
     }
 
-    Sprite ReturnSignPic(string signName, Sprite[] sprites)
+    KeyValuePair<Sprite, string> ReturnSignPic(string signName, Sprite[] sprites)
     {
-        if (signName.StartsWith("OneWayRight") || signName.StartsWith("One_Way_Right")) { return sprites[41]; }
-        else if (signName.StartsWith("OneWayLeft") || signName.StartsWith("One_Way_Left"))  { return sprites[40]; }
-        else if (signName.StartsWith("DoNotEnter") || signName.StartsWith("NotNotEnter_NoPole")) { return sprites[57]; }
-        else if (signName.StartsWith("2_Hr_Parking")) { return sprites[43]; }
-        else if (signName.StartsWith("15_Minute_Parking")) { return sprites[56]; }
-        else if (signName.StartsWith("30_Minute_Parking")) { return sprites[42]; }
-        else if (signName.StartsWith("Bicycle")) { return sprites[34]; }
-        else if (signName.StartsWith("Disabled_Parking")) { return sprites[55]; }
-        else if (signName.StartsWith("Do_Not_Block_Intersection")) { return sprites[35]; }
-        else if (signName.StartsWith("Left_Lane_Must_Turn_Left")) { return sprites[39]; }
-        else if (signName.StartsWith("Left_Turn_Signal_Yield_on_Green")) { return sprites[49]; }
-        else if (signName.StartsWith("No_Left_Turn") || signName.StartsWith("NoTurnLeft_NoPole")) { return sprites[36]; }
-        else if (signName.StartsWith("No_Right_Turn") || signName.StartsWith("NoTurnRight_NoPole")) { return sprites[37]; }
-        else if (signName.StartsWith("No_Parking")) { return sprites[27]; }
-        else if (signName.StartsWith("No_Parking_Bus_Stop")) { return sprites[47]; }
-        else if (signName.StartsWith("No_Truck_Parking")) { return sprites[26]; }
-        else if (signName.StartsWith("NoParkingAnyTime")) { return sprites[23]; }
-        else if (signName.StartsWith("Parking")) { return sprites[45]; }
-        else if (signName.StartsWith("Parking_2")) { return sprites[46]; }
-        else if (signName.StartsWith("PickUp_DropOff")) { return sprites[24]; }
-        else if (signName.StartsWith("Reserved_Disabled_Parking")) { return sprites[25]; }
-        else if (signName.StartsWith("Reserved_Parking_")) { return sprites[28]; }
-        else if (signName.StartsWith("Right_Lane_Must_Turn_Right")) { return sprites[38]; }
-        else if (signName.StartsWith("Right_Only")) { return sprites[52]; }
-        else if (signName.StartsWith("Road_Work_Ahead")) { return sprites[33]; }
-        else if (signName.StartsWith("Speed_Limit_15")) { return sprites[31]; }
-        else if (signName.StartsWith("Speed_Limit_25")) { return sprites[30]; }
-        else if (signName.StartsWith("Speed_Limit_35")) { return sprites[29]; }
-        else if (signName.StartsWith("This_Lane")) { return sprites[53]; }
-        else if (signName.StartsWith("Tow__Away_Zone")) { return sprites[44]; }
-        else if (signName.StartsWith("Turn")) { return sprites[32]; }
-        else if (signName.StartsWith("Turning_Traffic_Must_Yield_To_Pedestrians")) { return sprites[50]; }
-        else if (signName.StartsWith("Turning_Vehicles")) { return sprites[51]; }
-        else if (signName.StartsWith("Yield_To_Peds")) { return sprites[48]; }
-        else if (signName.StartsWith("StopSign")) { return sprites[58]; }
-        else return null;
+        if (signName.StartsWith("OneWayRight") || signName.StartsWith("One_Way_Right")) { return new KeyValuePair<Sprite, string>(sprites[41], "ONE WAY LEFT"); }
+        else if (signName.StartsWith("OneWayLeft") || signName.StartsWith("One_Way_Left"))  { return new KeyValuePair<Sprite, string>(sprites[40], "ONE WAY RIGHT"); }
+        else if (signName.StartsWith("DoNotEnter") || signName.StartsWith("NotNotEnter_NoPole")) { return new KeyValuePair<Sprite, string>(sprites[57], "DO NOT ENTER"); }
+        else if (signName.StartsWith("2_Hr_Parking")) { return new KeyValuePair<Sprite, string>(sprites[57], "PARKING") ; }
+        else if (signName.StartsWith("15_Minute_Parking")) { return new KeyValuePair<Sprite, string>(sprites[56], "PARKING"); }
+        else if (signName.StartsWith("30_Minute_Parking")) { return new KeyValuePair<Sprite, string>(sprites[42], "PARKING"); }
+        else if (signName.StartsWith("Bicycle")) { return new KeyValuePair<Sprite, string>(sprites[34], "WATCH FOR CYCLISTS"); }
+        else if (signName.StartsWith("Disabled_Parking")) { return new KeyValuePair<Sprite, string>(sprites[55], "DISABLED PARKING"); }
+        else if (signName.StartsWith("Do_Not_Block_Intersection")) { return new KeyValuePair<Sprite, string>(sprites[35], "DO NOT BLOCK INTERSECTION"); }
+        else if (signName.StartsWith("Left_Lane_Must_Turn_Left")) { return new KeyValuePair<Sprite, string>(sprites[39], "LEFT LANE MUST TURN LEFT"); }
+        else if (signName.StartsWith("Left_Turn_Signal_Yield_on_Green")) { return new KeyValuePair<Sprite, string>(sprites[49], "ONE WAY"); }
+        else if (signName.StartsWith("No_Left_Turn") || signName.StartsWith("NoTurnLeft_NoPole")) { return new KeyValuePair<Sprite, string>(sprites[36], "NO LEFT TURN"); }
+        else if (signName.StartsWith("No_Right_Turn") || signName.StartsWith("NoTurnRight_NoPole")) { return new KeyValuePair<Sprite, string>(sprites[37], "NO RIGHT TURN"); }
+        else if (signName.StartsWith("No_Parking")) { return new KeyValuePair<Sprite, string>(sprites[27], "NO PARKING"); }
+        else if (signName.StartsWith("No_Parking_Bus_Stop")) { return new KeyValuePair<Sprite, string>(sprites[47], "NO PARKING"); }
+        else if (signName.StartsWith("No_Truck_Parking")) { return new KeyValuePair<Sprite, string>(sprites[26], "NO PARKING"); }
+        else if (signName.StartsWith("NoParkingAnyTime")) { return new KeyValuePair<Sprite, string>(sprites[23], "NO PARKING"); }
+        else if (signName.StartsWith("Parking")) { return new KeyValuePair<Sprite, string>(sprites[45], "PARKING"); }
+        else if (signName.StartsWith("Parking_2")) { return new KeyValuePair<Sprite, string>(sprites[46], "PARKING"); }
+        else if (signName.StartsWith("PickUp_DropOff")) { return new KeyValuePair<Sprite, string>(sprites[24], "PICK-UP DROPOFF"); }
+        else if (signName.StartsWith("Reserved_Disabled_Parking")) { return new KeyValuePair<Sprite, string>(sprites[25], "DISABLED PARKING"); }
+        else if (signName.StartsWith("Reserved_Parking_")) { return new KeyValuePair<Sprite, string>(sprites[28], "RESERVED PARKING"); }
+        else if (signName.StartsWith("Right_Lane_Must_Turn_Right")) { return new KeyValuePair<Sprite, string>(sprites[38], "RIGHT LANE MUST TURN RIGHT"); }
+        else if (signName.StartsWith("Right_Only")) { return new KeyValuePair<Sprite, string>(sprites[52], "RIGHT ONLY"); }
+        else if (signName.StartsWith("Road_Work_Ahead")) { return new KeyValuePair<Sprite, string>(sprites[33], "ROADWORK AHEAD"); }
+        else if (signName.StartsWith("Speed_Limit_15")) { return new KeyValuePair<Sprite, string>(sprites[31], "SPEED LIMIT 15"); }
+        else if (signName.StartsWith("Speed_Limit_25")) { return new KeyValuePair<Sprite, string>(sprites[30], "SPEED LIMIT 25"); }
+        else if (signName.StartsWith("Speed_Limit_35")) { return new KeyValuePair<Sprite, string>(sprites[29], "SPEED LIMIT 35"); }
+        else if (signName.StartsWith("This_Lane")) { return new KeyValuePair<Sprite, string>(sprites[53], "THIS LANE"); }
+        else if (signName.StartsWith("Tow__Away_Zone")) { return new KeyValuePair<Sprite, string>(sprites[44], "TOW AWAY ZONE"); }
+        else if (signName.StartsWith("Turn")) { return new KeyValuePair<Sprite, string>(sprites[32], "WATCH OUT CURVE"); }
+        else if (signName.StartsWith("Turning_Traffic_Must_Yield_To_Pedestrians")) { return new KeyValuePair<Sprite, string>(sprites[50], "YIELD TO PEDS"); }
+        else if (signName.StartsWith("Turning_Vehicles")) { return new KeyValuePair<Sprite, string>(sprites[51], "TURNING VEHICLES"); }
+        else if (signName.StartsWith("Yield_To_Peds")) { return new KeyValuePair<Sprite, string>(sprites[48], "YIELD TO PEDS"); }
+        else if (signName.StartsWith("StopSign")) { return new KeyValuePair<Sprite, string>(sprites[58], "STOP"); }
+        else return new KeyValuePair<Sprite, string>(null, ""); 
     }
 
-    IEnumerator NavigationLine(float waitTime)
+    void CleanObjects(Collider other)
     {
-        while (true)
+        if (IDsAndGos.ContainsKey(other.gameObject.GetInstanceID()))
         {
-            yield return new WaitForSeconds(waitTime);
-            linesUtilsAlt.DrawLine(gameObject);
+            if (other.gameObject.layer.Equals(LayerMask.NameToLayer("Traffic")))
+            { 
+                Destroy(other.transform.root.GetComponent<TrafficCarNavigationLineUrban>()); //I destroy the script that draws the navigation Line
+                Destroy(other.transform.root.GetComponentInChildren<LineRenderer>().gameObject); //I destroy the Empty that contains the LineRenderer
+            }
+
+            IDsAndGos[other.gameObject.GetInstanceID()].DestroyCubesAndTags();
+            IDsAndGos.Remove(other.gameObject.GetInstanceID());
+            
         }
     }
 
-    IEnumerator LaneKeeping(float waitTime)
+    IEnumerator CleanObjects(float waitTime) //this is to clean those cars which are deleted when are still tracked
     {
         while (true)
         {
             yield return new WaitForSeconds(waitTime);
-
-            RaycastHit hit;
-            CurvySpline curvySpline = null;
-            CurvySpline pathEnhancedCurvySpline = null;
-            if (Physics.Raycast(rayCastPos.position, rayCastPos.TransformDirection(-Vector3.up), out hit, 10.0f, 1 << LayerMask.NameToLayer("Graphics")))
+            List<int> keys = new List<int>(IDsAndGos.Keys);
+            foreach (int key in keys)
             {
-                curvySpline = hit.collider.gameObject.GetComponent<CurvySpline>();
-                pathEnhancedCurvySpline = pathEnhanced.GetComponent<CurvySpline>();
-                if (curvySpline.IsInitialized && pathEnhancedCurvySpline.IsInitialized)
+                if (IDsAndGos[key].boundingCube[0] == null) //TrafficCar no more exists, so delete it, its LineRenderer and its infoTag
                 {
-                    //Debug.Log("meshcollider found is: " + hit.collider);
-                    float carTf = curvySpline.GetNearestPointTF(transform.position); //determine the nearest t of the car with respect to the centerLine
-                    float carTf2 = pathEnhancedCurvySpline.GetNearestPointTF(transform.position);
-                    float dist = Vector3.Distance(transform.position, curvySpline.Interpolate(carTf));
-                    float dist2 = Vector3.Distance(transform.position, pathEnhancedCurvySpline.Interpolate(carTf2));
-                    if (dist < 4.0f && dist2 < 2.7f)
-                        linesUtilsAlt.CenterLineColor = linesUtilsAlt.ChangeMatByDistance(dist);
-                    else if (dist >= 4.0f && dist2 < 2.7f)
-                        linesUtilsAlt.CenterLineColor = new Color32(0xFF, 0xFF, 0xFF, 0xFF);
-                    else if (dist2 >= 2.7f)
-                        linesUtilsAlt.CenterLineColor = new Color32(0xFF, 0x00, 0x00, 0xFF);
-                    linesUtilsAlt.DrawCenterLine(gameObject, carTf, curvySpline);
+                    Destroy(IDsAndGos[key].infoTag[0]); //I don't use DestroyCubesAndTags since the boundingCube is already destroyed
+                    IDsAndGos.Remove(key);
                 }
             }
         }

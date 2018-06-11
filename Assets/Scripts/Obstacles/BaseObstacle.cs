@@ -20,12 +20,32 @@ public abstract class BaseObstacle : MonoBehaviour
  
     protected const float triggerTimeout = 3f;
 
+    private EnvironmentSensingAltTrigger envAlt; //DARIO
+    private EnvironmentSensingAltUrbanTrigger envAltUrban; //DARIO
+
     public abstract void OnTrigger();
     public virtual void CleanUp()
     {
+        envAlt = FindObjectOfType(typeof(EnvironmentSensingAltTrigger)) as EnvironmentSensingAltTrigger; //DARIO
+        if (envAlt != null)
+        {
+            GameObject game = GetComponentInChildren<Collider>().gameObject; //DARIO
+            Destroy(envAlt.IDsAndGos[game.GetInstanceID()].boundingCube); //DARIO
+            Destroy(envAlt.IDsAndGos[game.GetInstanceID()].infoTag); //DARIO
+            envAlt.IDsAndGos.Remove(game.GetInstanceID()); //DARIO
+        } else
+        {
+            envAltUrban = FindObjectOfType(typeof(EnvironmentSensingAltUrbanTrigger)) as EnvironmentSensingAltUrbanTrigger; //DARIO
+            GameObject game = GetComponentInChildren<Collider>().gameObject; //DARIO
+            Destroy(envAltUrban.IDsAndGos[game.GetInstanceID()].boundingCube[0]); //DARIO
+            Destroy(envAltUrban.IDsAndGos[game.GetInstanceID()].infoTag[0]); //DARIO
+            envAltUrban.IDsAndGos.Remove(game.GetInstanceID()); //DARIO
+        }
+        
         Destroy(gameObject);
     }
 
+    
     protected virtual void Update()
     {
         float dist = Vector3.Distance(transform.position, TrackController.Instance.car.transform.position);
