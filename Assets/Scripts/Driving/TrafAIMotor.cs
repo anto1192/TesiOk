@@ -242,8 +242,6 @@ public class TrafAIMotor : MonoBehaviour
                 MoveCarUtenteSterzata();
             }
         }
-        SteerCar();
-        MoveCarUtenteSterzata();
 
 
     }
@@ -561,7 +559,7 @@ public class TrafAIMotor : MonoBehaviour
                                 if ((piuVeloceDelTarget || sottoDistanzaSicurezza))
                                 {
                                     if ((macchinaDavanti.frenata || macchinaDavanti.hasStopTarget) && (miaVelocita - velocitaTarget) <= 2f)
-                                {
+                                    {
                                         autoDavantiFrenata = true;
                                         autoDavanti = false;
                                         sogliaNoGasTraffico = 0f;
@@ -592,9 +590,9 @@ public class TrafAIMotor : MonoBehaviour
                                 } else
                                 {
                                     autoDavanti = false;
-                                autoDavantiFrenata = false;
-                                sogliaNoGasTraffico = _pidPars.sogliaNoGasTraffico;
-                            }
+                                    autoDavantiFrenata = false;
+                                    sogliaNoGasTraffico = _pidPars.sogliaNoGasTraffico;
+                                }
 
                                 if (Math.Abs(hitInfo.distance - distanzaSicurezza) >= 1f && autoDavanti && miaVelocita > 0.1f)
                                 {
@@ -622,6 +620,10 @@ public class TrafAIMotor : MonoBehaviour
                             if (frontSpeed < this.GetComponent<Rigidbody>().velocity.magnitude) { 
                                     frenata = true;
                                     velocitaInizialeFrenata = this.GetComponent<Rigidbody>().velocity.magnitude;
+                                if (!this.tag.Equals("Player") && velocitaInizialeFrenata < 3f)
+                                {
+                                    velocitaInizialeFrenata = 11f;
+                                }
                                     frenataTarget = hitInfo.transform.position;
                                     calcolaDistanzaInizialeInchiodata();
                                     //if (this.tag.Equals("Player"))
@@ -702,7 +704,7 @@ public class TrafAIMotor : MonoBehaviour
                 distanzaCorrente -= 5f;
             } else
             {
-                distanzaCorrente -= 3f;
+                distanzaCorrente -= 5f;
             }
             
             Debug.DrawLine(frenataTarget, transform.position);
@@ -844,10 +846,10 @@ public class TrafAIMotor : MonoBehaviour
             //Debug.Log("CurrentSpeed: " + currentSpeed);
 
         
-            if (this.tag.Equals("Player"))
-            {
-                Debug.Log("TargetSpeedIniziale: " + targetSpeedIniziale + "; currentSpeed impsotato: " + currentSpeed);
-            }
+            //if (this.tag.Equals("Player"))
+            //{
+            //    Debug.Log("TargetSpeedIniziale: " + targetSpeedIniziale + "; currentSpeed impsotato: " + currentSpeed);
+            //}
             
 
         }
@@ -1140,18 +1142,11 @@ public class TrafAIMotor : MonoBehaviour
         
         if (AppController.Instance.UserInput is SteeringWheelInputController)
         {
-            //DirectInputWrapper.PlaySpringForce(0, _pidPars.offsetSpringForce, 7,500);
-            //DirectInputWrapper.PlayDamperForce(0, Mathf.RoundToInt(_pidPars.offsetSpringForce * 1.75f));
-            //DirectInputWrapper.PlayConstantForce(0, Mathf.RoundToInt(-currentTurn*10000/45 * _pidPars.offsetSpringForce * 1.75f));
-            //DirectInputWrapper.UpdateConstantForce(0, _pidPars.valoreVolante);
-            //DirectInputWrapper.PlaySpringForce(0, Mathf.RoundToInt(currentTurn / 45f / 0.94f * 10000f), _pidPars.saturazione, _pidPars.coefficiente);
-            DirectInputWrapper.PlaySpringForce(0, Mathf.RoundToInt(currentTurn / 45f * 10000f), _pidPars.saturazione, _pidPars.coefficiente);
-            //DirectInputWrapper.PlaySpringForce(0, Mathf.RoundToInt(currentTurn / 45f /0.006f*100f), _pidPars.saturazione, _pidPars.coefficiente);
-        } //else
-          // {
-        //vehicleController.steerInput = currentTurn / 45f;
-        //}
+            DirectInputWrapper.PlaySpringForce(0, Mathf.RoundToInt(currentTurn / 45f * 10000f), _pidPars.saturazione, _pidPars.coefficiente);            
+        }
+        vehicleController.steerInput = currentTurn / 45f;
     }
+
 
     private void MoveCar()
     {
