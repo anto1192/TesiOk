@@ -9,12 +9,12 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class TrafPCH: MonoBehaviour
+public class MacchinaSorpassoPCH : MonoBehaviour
 {
     public Transform raycastOrigin;
     public CarAutoPath path;
     public int currentWaypointIndex;
-    public  RoadPathNode currentNode;
+    public RoadPathNode currentNode;
     private Vector3 currentWaypoint;
     private RoadPathNode nextNode;
     private int nextWaypointIndex;
@@ -59,12 +59,7 @@ public class TrafPCH: MonoBehaviour
     public float currentSpeed;
     public float currentTurn;
 
-    //ANTONELLO
-    float velocitaPrecedente = 0;
-    public float accelerazione = 0;
-
     RaycastHit hitInfo;
-
 
     void Start()
     {
@@ -73,14 +68,17 @@ public class TrafPCH: MonoBehaviour
 
     public void Init()
     {
-
+        GetComponent<TrafPCH>().enabled = false;
+        listaWaypoint.Add(wp1);
+        listaWaypoint.Add(wp2);
+        listaWaypoint.Add(wp3);
         currentWaypoint = currentNode.position;
         nextWaypointIndex = currentWaypointIndex;
         UpdateNextWaypoint();
 
         prevWaypoint = currentWaypoint;
         prevNode = currentNode;
-   
+
 
         currentWaypoint = nextWaypoint;
         currentNode = nextNode;
@@ -94,7 +92,7 @@ public class TrafPCH: MonoBehaviour
         }
         else
         {
-            prevTangent = (prevNode.tangent- prevWaypoint).normalized;
+            prevTangent = (prevNode.tangent - prevWaypoint).normalized;
         }
 
         if (currentNode.tangent == Vector3.zero)
@@ -109,7 +107,6 @@ public class TrafPCH: MonoBehaviour
 
         targetSpeed = maxSpeed;
 
-
     }
 
     void FixedUpdate()
@@ -117,11 +114,34 @@ public class TrafPCH: MonoBehaviour
         MoveCar();
     }
 
+    int contatore = 0;
+    Vector3 wp1 = new Vector3(-1320.05f, 142.535f, 1399.5f);
+    Vector3 wp2 = new Vector3(-1328.26f, 142.7f, 1402.83f);
+    Vector3 wp3 = new Vector3(-1338.52f, 142.97f, 1411.73f);
+    List<Vector3> listaWaypoint = new List<Vector3>();
+
+
+
     private void UpdateNextWaypoint()
     {
         nextWaypointIndex = currentWaypointIndex + 1;
         if (nextWaypointIndex >= path.pathNodes.Count)
             nextWaypointIndex = 0;
+
+        if (nextWaypointIndex > 877 && nextWaypointIndex < 883 && contatore < 3)
+        {
+            nextNode = path.pathNodes[nextWaypointIndex];
+            //nextNode.position = listaWaypoint[contatore];
+            //nextWaypoint = nextNode.position;
+            nextWaypoint = listaWaypoint[contatore];
+            contatore++;
+            return;
+        }
+        if (contatore == 3)
+        {
+            nextWaypointIndex = 883;
+            contatore = 0;
+        }
 
         nextNode = path.pathNodes[nextWaypointIndex];
         nextWaypoint = nextNode.position;
@@ -158,28 +178,6 @@ public class TrafPCH: MonoBehaviour
     void Update()
     {
 
-        /*
-
-        var predicted = GetPredictedPoint();
-
-        var normal = GetNormalPoint(predicted, currentWaypoint, nextWaypoint);
-
-        if(Vector3.Dot(normal - nextWaypoint, nextWaypoint - currentWaypoint) >= 0)
-        {
-            currentWaypoint = nextWaypoint;
-            currentNode = nextNode;
-            currentWaypointIndex = nextWaypointIndex;
-
-            UpdateNextWaypoint();
-
-            predicted = GetPredictedPoint();
-            normal = GetNormalPoint(predicted, currentWaypoint, nextWaypoint);
-        }
-
-        */
-
-        accelerazione = (currentSpeed - velocitaPrecedente) / Time.deltaTime;
-        velocitaPrecedente = currentSpeed;
 
 
 
@@ -192,19 +190,15 @@ public class TrafPCH: MonoBehaviour
             targetSpeed = 4f;
         else
             targetSpeed = maxSpeed;
-        
+
         // if (Vector3.Distance(predicted, normal) < pathRadius)
         //     m_targetSteer = 0f;
 
-        if (CheckFrontBlocked(out hitInfo))
-        {
-            targetSpeed = Mathf.Clamp(hitInfo.distance / 2f - 1f, 0f, targetSpeed);
-        }
 
 
 
         float speedDifference = targetSpeed - GetComponent<Rigidbody>().velocity.magnitude;
-        //float speedDifference = targetSpeed - currentSpeed;
+
 
 
 
@@ -216,30 +210,6 @@ public class TrafPCH: MonoBehaviour
     }
 
 
-    private bool CheckFrontBlocked(out RaycastHit blockedInfo)
-    {
-        Collider[] colls = Physics.OverlapSphere(raycastOrigin.position, 0.2f, 1 << LayerMask.NameToLayer("Traffic"));
-        foreach (var c in colls)
-        {
-            if (c.transform.root != transform.root)
-            {
-                blockedInfo = new RaycastHit();
-                blockedInfo.distance = 0f;
-                return true;
-            }
-        }
-
-        if (Physics.Raycast(raycastOrigin.position, raycastOrigin.forward, out blockedInfo, brakeDistance, 1 << LayerMask.NameToLayer("Traffic") | 1 << LayerMask.NameToLayer("PlayerCar")))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    private float turnPrecedente = 0;
 
     void MoveCar()
     {
@@ -281,7 +251,7 @@ public class TrafPCH: MonoBehaviour
 
         //transform.Rotate(0f, currentTurn * Time.deltaTime, 0f);
         RaycastHit hit;
-        Physics.Raycast(transform.position + Vector3.up * 5, -transform.up, out hit, 100f, ~(1 << LayerMask.NameToLayer("Traffic") ));  
+        Physics.Raycast(transform.position + Vector3.up * 5, -transform.up, out hit, 100f, ~(1 << LayerMask.NameToLayer("Traffic")));
 
         Vector3 hTarget = new Vector3(currentSpot.x, hit.point.y, currentSpot.z);
 
@@ -298,15 +268,9 @@ public class TrafPCH: MonoBehaviour
         tangent.y = 0f;
         tangent = tangent.normalized;
 
-        //GetComponent<Rigidbody>().MoveRotation(Quaternion.FromToRotation(Vector3.up, hit.normal) * Quaternion.LookRotation(tangent));
+        GetComponent<Rigidbody>().MoveRotation(Quaternion.FromToRotation(Vector3.up, hit.normal) * Quaternion.LookRotation(tangent));
         GetComponent<Rigidbody>().MovePosition(hTarget);
-        // transform.Translate(Vector3.forward * currentSpeed * Time.deltaTime);
-        //transform.Translate(hTarget * Time.deltaTime);
-        //transform.LookAt(nextWaypoint);
-        currentTurn = Vector3.SignedAngle(transform.forward, currentWaypoint - transform.position, Vector3.up);
-        currentTurn = Mathf.Clamp(Mathf.Lerp(turnPrecedente, currentTurn, steerSpeed * Time.fixedDeltaTime), -45f, 45f);
-        GetComponent<Rigidbody>().MoveRotation(Quaternion.FromToRotation(Vector3.up, hit.normal) * Quaternion.Euler(0f, transform.eulerAngles.y + currentTurn * Time.fixedDeltaTime * 2f, 0f));
-        turnPrecedente = currentTurn;
+        //transform.Translate(Vector3.forward * currentSpeed * Time.deltaTime);
     }
 
 }

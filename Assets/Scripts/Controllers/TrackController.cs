@@ -182,9 +182,15 @@ public class TrackController : UnitySingleton<TrackController> {
     [HideInInspector]
     public float mapZPos = 0f;
 
+    //ANTONELLO
+    public bool visualizzaInfrazioni = true;
+
     public void AddInfraction(DrivingInfraction d)
     {
-
+        if (!visualizzaInfrazioni)
+        {
+            return;
+        }
         infractionsAlertTimer = Time.time;
         if(infractionsAlertSound != null)
             AudioController.Instance.PlayClip(infractionsAlertSound);
@@ -1489,18 +1495,6 @@ public class TrackController : UnitySingleton<TrackController> {
 
     public void AutoPath()
     {
-        //ANTONELLO
-        /*GameObject cameraObject = GameObject.Find("DriverCamera");
-
-        if (cameraObject != null)
-        {
-            Debug.Log("Ho preso il riferimento alla camera, la disabilito");
-            cameraObject.SetActive(false);
-        }
-        else
-        {
-            Debug.Log("camera null");
-        }*/
         Debug.Log("sono in AutoPath()");
         if (hasTraffic)
         {

@@ -10,7 +10,8 @@ public class ScenarioTestUrbano : MonoBehaviour
     static ScenarioTestUrbano scenario;
     private TrafSystem system;
     private GameObject[] prefabs;
-    private TrafAIMotor macchinaTraffico;
+    //private TrafAIMotor macchinaTraffico;
+    private MacchinaTrafficoInchiodata macchinaTraffico;
     private static ScenarioTestUrbano singleton = new ScenarioTestUrbano();
     public static ScenarioTestUrbano getInstance()
     {
@@ -157,7 +158,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             //yield return null;
             contenitore1.Set(TrafLightState.GREEN);
             contenitore2.Set(TrafLightState.RED);
-            yield return new WaitForSeconds(5f);
+            yield return new WaitForSeconds(6f);
             contenitore1.Set(TrafLightState.YELLOW);
             yield return new WaitForSeconds(3f);
             contenitore1.Set(TrafLightState.RED);
@@ -169,7 +170,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             contenitore2.Set(TrafLightState.RED);
             yield return new WaitForSeconds(2f);
             contenitore1.Set(TrafLightState.GREEN);
-            yield return new WaitForSeconds(10f);
+            yield return new WaitForSeconds(9f);
         }
     }
 
@@ -181,7 +182,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             contenitore1.Set(TrafLightState.GREEN);
             contenitore2.Set(TrafLightState.RED);
             contenitore3.Set(TrafLightState.RED);
-            yield return new WaitForSeconds(5f);
+            yield return new WaitForSeconds(6f);
             contenitore1.Set(TrafLightState.YELLOW);
             yield return new WaitForSeconds(3f);
             contenitore1.Set(TrafLightState.RED);
@@ -196,7 +197,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             contenitore3.Set(TrafLightState.RED);
             yield return new WaitForSeconds(2f);
             contenitore1.Set(TrafLightState.GREEN);
-            yield return new WaitForSeconds(10f);
+            yield return new WaitForSeconds(9f);
         }
     }
 
@@ -207,7 +208,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             //yield return null;
             contenitore1.Set(TrafLightState.GREEN);
             contenitore2.Set(TrafLightState.RED);
-            yield return new WaitForSeconds(4f);
+            yield return new WaitForSeconds(3.5f);
             contenitore1.Set(TrafLightState.YELLOW);
             yield return new WaitForSeconds(3f);
             contenitore1.Set(TrafLightState.RED);
@@ -219,7 +220,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             contenitore2.Set(TrafLightState.RED);
             yield return new WaitForSeconds(2f);
             contenitore1.Set(TrafLightState.GREEN);
-            yield return new WaitForSeconds(11f);
+            yield return new WaitForSeconds(10.5f);
         }
     }
 
@@ -253,6 +254,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
         lights[0].StopAllCoroutines();
         lights[0].StartCoroutine(courutineSemaforoArancioneMiFermo(container, container1));
+        semaforo38();
     }
 
     public void semaforo38()
@@ -268,6 +270,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         lights[0].StartCoroutine(courutineSemaforoRosso(container));
         lights[0].StartCoroutine(courutineSemaforoVerde(container1));
         lights[0].StartCoroutine(courutineSemaforoVerde(container2));
+        semaforo49();
     }
 
     public void semaforo49()
@@ -369,7 +372,8 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(11, 2, 0f, percorso13_0);
         CreaMacchinaTraffico(11, 2, 0.3f, percorso13_1);
         CreaMacchinaTraffico(12, 0, 0f, percorso13_2);
-        CreaMacchinaTraffico(11, 3, 0.7f, percorso13_3);
+        //CreaMacchinaTraffico(11, 3, 0.7f, percorso13_3);
+        CreaMacchinaTraffico(11, 3, 0.75f, percorso13_3).autoScorretta = true;
         CreaMacchinaTraffico(12, 1, 0.6f, percorso13_4);
         CreaMacchinaTraffico(12, 0, 0.8f, percorso13_5);
     }
@@ -587,6 +591,8 @@ public class ScenarioTestUrbano : MonoBehaviour
         macchinaTrafficoScorretta.autoScorretta = true;
         SetLayer(12, macchinaTrafficoScorretta.transform);
 
+        
+
 
        
     }
@@ -666,6 +672,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         listaWaypoint[3] = wp3Ok;
         
         ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().currentEntry.waypoints = listaWaypoint;
+        
     }
 
 
@@ -675,11 +682,12 @@ public class ScenarioTestUrbano : MonoBehaviour
         List<RoadGraphEdge> percorso39_1 = ottieniPercorso39_1();
         CreaMacchinaTraffico(45, 1, 0, percorso39_0);
         CreaMacchinaTraffico(45, 0, 0.5f,percorso39_1);
+        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().sterzataMassima = true;
     }
 
     public void evento1082()
     {
-        List<Vector3> listaWaypoint = ottieniListaWaypoint();
+        /*List<Vector3> listaWaypoint = ottieniListaWaypoint();
         for(int i = 0; i < listaWaypoint.Count; i++)
         {
             Vector3 wp = listaWaypoint[i];
@@ -687,7 +695,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             listaWaypoint[i] = wp;
         }
 
-        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().currentEntry.waypoints = listaWaypoint;
+        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().currentEntry.waypoints = listaWaypoint;*/
     }
 
     public void evento38()
@@ -699,6 +707,8 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(36, 0, 0.5f, percorso38_0);
         CreaMacchinaTraffico(49, 1, 0f, percorso38_1);
         CreaMacchinaTraffico(49, 0, 0.3f, percorso38_2);
+
+        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().sterzataMassima = false;
     }
 
     public void evento49()
@@ -730,6 +740,9 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(51, 1, 0.2f, percorso50_1);
         CreaMacchinaTraffico(62, 0, 0.4f, percorso50_2);
         CreaMacchinaTraffico(62, 0, 0f, percorso50_3);
+
+
+        
     }
 
     public void evento63()
@@ -791,7 +804,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         List<RoadGraphEdge> percorso65_2 = ottieniPercorso65_2();
         List<RoadGraphEdge> percorso65_3 = ottieniPercorso65_3();
         List<RoadGraphEdge> percorso65_4 = ottieniPercorso65_4();
-        ScenarioTestUrbano.getInstance().macchinaTraffico = CreaMacchinaTraffico(25, 3, 0.3f, percorso65_0);
+        ScenarioTestUrbano.getInstance().macchinaTraffico = CreaMacchinaTrafficoInchiodata(25, 3, 0.3f, percorso65_0);
         CreaMacchinaTraffico(25, 2, 0f, percorso65_1);
         CreaMacchinaTraffico(25, 1, 0.4f, percorso65_2);
         CreaMacchinaTraffico(25, 0, 0.6f, percorso65_3);
@@ -847,10 +860,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public IEnumerator attesa18()
     {
-        Debug.Log("sono in courutine");
-        //yield return new WaitForSeconds(16f);
         yield return new WaitForSeconds(25f);
-        Debug.Log("Fine attesa");
         evento18a();
     }
 
@@ -878,13 +888,23 @@ public class ScenarioTestUrbano : MonoBehaviour
         lights[0].StartCoroutine(attesa18());      
     }
 
+    public IEnumerator attesa18_2()
+    {
+        yield return new WaitForSeconds(1f);
+        evento18a();
+    }
+
     public void evento18a()
     {
         GameObject go = ottieniRiferimentoPlayer();
-        while (macchinaAccodarmi.transform.position.z > go.transform.position.z)
+        if (macchinaAccodarmi.transform.position.z > go.transform.position.z)
         {
-            //aspetto che la macchina mi superi per poi accodarmi
+            TrafficLightContainer container = system.GetEntry(1049, 5).light;
+            TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+            lights[0].StartCoroutine(attesa18_2());
+            return;
         }
+        
         if (go.GetComponent<TrafAIMotor>().maxSpeed != 11f)
         {
             go.GetComponent<TrafAIMotor>().maxSpeed = 11f;
@@ -898,6 +918,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         Debug.DrawLine(go.transform.position, entry.waypoints[go.GetComponent<TrafAIMotor>().currentIndex]);
 
         go.GetComponent<TrafAIMotor>().currentEntry = entry;
+        go.GetComponent<TrafAIMotor>().sterzataMassima = true;
     }
 
     public void evento1007()
@@ -1047,7 +1068,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         List<RoadGraphEdge> percorso159_4 = ottieniPercorso159_4();
         macchinaTrafficoScorrettaDavanti = CreaMacchinaTraffico(162, 3, 0f, percorso159_4);
         macchinaTrafficoScorrettaDavanti.autoScorretta = true;
-        macchinaTrafficoScorrettaDavanti.maxSpeed = 7f;
+        macchinaTrafficoScorrettaDavanti.maxSpeed = 5.5f;
         //SetLayer(12, macchinaTrafficoScorrettaDavanti.transform);
 
 
@@ -1090,13 +1111,18 @@ public class ScenarioTestUrbano : MonoBehaviour
         TrafAIMotor traf = go.GetComponent<TrafAIMotor>();
         List<Vector3> listaWaypoint = traf.currentEntry.waypoints;
         listaWaypoint.RemoveAt(0);
+        Vector3 waypModificato = new Vector3(1329f, 10.03f, 929.98f);
+        listaWaypoint[0] = waypModificato;
         traf.currentEntry.waypoints = listaWaypoint;
 
-        if (macchinaTrafficoScorrettaDavanti != null)
+        foreach(Vector3 wayp in listaWaypoint)
         {
-            //risetto alla macchina scorretta che ci ritroviamo davanti il livello "traffic", altrimenti verrà sempre considerata un ostacolo
-            SetLayer(8, macchinaTrafficoScorrettaDavanti.transform);
+            Debug.Log("Wayp: " + wayp.x + " - " + wayp.y + " - " + wayp.z);
         }
+
+
+        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().maxSpeed = 11f;
+        macchinaTrafficoScorrettaDavanti.maxSpeed = 8f;
 
     }
 
@@ -1144,6 +1170,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(157, 3, 0.75f, percorso30_5);
         CreaMacchinaTraffico(157, 2, 0f, percorso30_6);
         CreaMacchinaTraffico(157, 2, 0f, percorso30_7);
+        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().sterzataMassima = false;
     }
 
     public void evento158()
@@ -1164,7 +1191,17 @@ public class ScenarioTestUrbano : MonoBehaviour
     public void evento159a()
     {
         semaforo159_2();
-        TrackController.Instance.LanciaOstacolo(12);        
+        TrackController.Instance.LanciaOstacolo(12);
+        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().sterzataMassima = true;
+    }
+
+    public void evento1011()
+    {
+        if (!secondaVolta)
+        {
+            ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().maxSpeed = 3f;
+        }
+        
     }
 
    /* public void evento1011()
@@ -3935,8 +3972,12 @@ public class ScenarioTestUrbano : MonoBehaviour
     private void attivaGuidaAutomatica(GameObject go, List<RoadGraphEdge> percorso, int id, int subId)
     {
 
-
-        float distance = 0;
+        float distance = 0f;
+        if (id == 120)
+        {
+            distance = 0.5f;
+        }
+        
 
 
         TrafEntry entry = system.GetEntry(id, subId); //-> serve a ottenere la entry di un determinato punto, bisogna indicare il giusto id e subid
@@ -4175,6 +4216,45 @@ public class ScenarioTestUrbano : MonoBehaviour
         {
             GameObject go = GameObject.Instantiate(prefabs[Random.Range(0, prefabs.Length)], pos.position, Quaternion.identity) as GameObject;
             TrafAIMotor motor = go.GetComponent<TrafAIMotor>();
+            //go.layer = 16;
+
+
+            motor.currentIndex = pos.targetIndex;
+            motor.currentEntry = entry;
+            go.transform.LookAt(entry.waypoints[pos.targetIndex]);
+            motor.system = system;
+            motor.fixedRoute = true;
+            motor.fixedPath = percorso;
+            motor.Init();
+
+            if (OnSpawnHeaps != null)
+            {
+                OnSpawnHeaps(go);
+            }
+
+            return motor;
+        }
+        return null;
+    }
+
+    public MacchinaTrafficoInchiodata CreaMacchinaTrafficoInchiodata(int id, int subId, float distance, List<RoadGraphEdge> percorso)
+    {
+        //id e subId stabiliscono la entry
+        //distance da che distanza dall'inizio della entry la macchina deve apparire
+        //percorso indica il percorso che la macchina deve seguire, dopo che l'ha terminato, l'auto si distrugge
+        TrafEntry entry = system.GetEntry(id, subId);
+
+        if (entry == null)
+            return null;
+        InterpolatedPosition pos = entry.GetInterpolatedPosition(distance);
+
+
+        if (!Physics.CheckSphere(pos.position, checkRadius, 1 << LayerMask.NameToLayer("Traffic")))
+        {
+            GameObject go = GameObject.Instantiate(prefabs[Random.Range(0, prefabs.Length)], pos.position, Quaternion.identity) as GameObject;
+            MacchinaTrafficoInchiodata motor = go.AddComponent<MacchinaTrafficoInchiodata>();
+            motor.nose = go.GetComponent<TrafAIMotor>().nose;
+            motor.raycastOrigin = go.GetComponent<TrafAIMotor>().raycastOrigin;
             go.layer = 16;
 
 
@@ -4196,6 +4276,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         return null;
     }
 
+
     private GameObject ottieniRiferimentoPlayer()
     {
         GameObject go = GameObject.Find("XE_Rigged");
@@ -4205,11 +4286,11 @@ public class ScenarioTestUrbano : MonoBehaviour
         }
         if (go == null)
         {
-            go = GameObject.Find("TeslaModelS_2_RiggedLOD");
+            go = GameObject.Find("TeslaModelS_2_Rigged");
         }
         if (go == null)
         {
-            go = GameObject.Find("TeslaModelS_2_RiggedLOD(Clone)");
+            go = GameObject.Find("TeslaModelS_2_Rigged(Clone)");
         }
         return go;
     }

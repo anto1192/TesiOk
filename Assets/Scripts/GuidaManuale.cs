@@ -15,6 +15,9 @@ public class GuidaManuale : MonoBehaviour
     private VehicleController controller;
     private TrafAIMotor motor;
     private float maxDifferenza = 0;
+    private float inputPrecedente = 9999;
+    private bool primoIntervento = false;
+    private float sterzataRiferimento;
 
     void Awake()
     {
@@ -56,14 +59,30 @@ public class GuidaManuale : MonoBehaviour
 
         if (AppController.Instance.UserInput is SteeringWheelInputController)
         {
-            //if (Math.Abs(inputController.GetSteerInput() - controller.steerInput) > maxDifferenza && Math.Abs(controller.steerInput) < 0.65f)
-            //{
-            //    maxDifferenza = Math.Abs(inputController.GetSteerInput() - controller.steerInput);
-            //}
-            //Debug.Log("Volante: " + inputController.GetSteerInput() + "; sterzata effettiva: " + controller.steerInput + "; differenza: " + Math.Abs(inputController.GetSteerInput() - controller.steerInput) + "; maxDifferenza = " + maxDifferenza);
+            float inputAttuale = inputController.GetSteerInput();
+            if (Math.Abs(inputAttuale - inputPrecedente) > 0.0001f && inputPrecedente != 9999)
+            //if (inputAttuale != inputPrecedente && inputPrecedente != 9999)
+            {
+                //intervento all aguida
+                if (!primoIntervento)
+                {
+                    primoIntervento = true;
+                    sterzataRiferimento = controller.steerInput;
+                }
+                motor.interventoAllaGuidaSterzata = true;
+                controller.steerInput = sterzataRiferimento + inputController.GetSteerInput();
+            }
+            else
+            {
+                primoIntervento = false;
+                if (motor.interventoAllaGuidaSterzata)
+                {
+                    motor.interventoAllaGuidaSterzata = false;
+                }
+            }
+            inputPrecedente = inputAttuale;
         }
-        //controller.steerInput = inputController.GetSteerInput();
-        //controller.accellInput = inputController.GetAccelBrakeInput();
+
     }
 
     public void setMotor(TrafAIMotor motor)
