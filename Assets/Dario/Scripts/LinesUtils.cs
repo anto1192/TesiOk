@@ -5,8 +5,6 @@ using UnityEngine;
 
 public class LinesUtils { //maybe I have to consider if substituting the two lineRenderer/Texture2D variables with Lists can be a better choice
 
-    protected GameObject lineRendererEmpty = null; //this is to store the Empty which contains the LineRenderer Component of the main navigation line
-    protected GameObject centerLineRendererEmpty = null; //this is to store the Empty which contains the LineRenderer Component of the center line
     protected List<Vector3> LinePoints = new List<Vector3>();
     protected List<Vector3> CenterPoints = new List<Vector3>();
     protected LineRenderer lineRenderer; //lineRenderer of the main navigation line for Player or TrafficCars
@@ -15,8 +13,8 @@ public class LinesUtils { //maybe I have to consider if substituting the two lin
     protected Color32 centerLineColor;
     protected Texture2D glowTexture; //create on-the-fly 16x16 texture useful to enable glow effect for LineRenderer
     protected Texture2D glowTexture2;//create on-the-fly 16x16 texture useful to enable glow effect for LineRenderer2
-    public GameObject LineRendererEmpty { get { return lineRendererEmpty; } }
-    public GameObject CenterLineRendererEmpty { get { return centerLineRendererEmpty; } }
+    public GameObject lineRendererEmpty;
+    public GameObject centerLineRendererEmpty; 
     public LineRenderer LineRend { get { return lineRenderer; } set { lineRenderer = value; } }
     public LineRenderer LineRend2 { get { return lineRenderer2; } set { lineRenderer2 = value; } }
     public Color32 CenterLineColor { get { return centerLineColor; } set { centerLineColor = value; } }
@@ -103,7 +101,7 @@ public class LinesUtils { //maybe I have to consider if substituting the two lin
         CenterPoints.Clear();
     }
 
-    public LineRenderer CreateLineRenderer(GameObject empty, string name, float lineWidth, Color32 col, Material mat, Func<Texture2D> initTxt)
+    public LineRenderer CreateLineRenderer(ref GameObject empty, string name, float lineWidth, Color32 col, Material mat, Func<Texture2D> initTxt)
     {
         LineRenderer lineR;
         empty = new GameObject(name);

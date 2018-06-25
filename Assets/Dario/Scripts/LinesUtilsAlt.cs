@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,8 +12,6 @@ public class LinesUtilsAlt : LinesUtils
 
     public void DrawLine(GameObject car, CurvySpline curvySpline, float carTf)
     {
-        //CurvySpline curvySpline = path.GetComponent<CurvySpline>();
-        //carTf = curvySpline.GetNearestPointTF(car.transform.position);
         float increaseAmount = 1f / (curvySpline.Length * SPLINE_GIZMO_SMOOTHNESS);
         int direction = 1;
         float endTf = carTf;
@@ -27,46 +26,59 @@ public class LinesUtilsAlt : LinesUtils
         lineRenderer.positionCount = LinePoints.Count;
         lineRenderer.SetPositions(LinePoints.ToArray());
         LinePoints.Clear();
-    }
+    } //NavigationLine of PlayerCar and TrafficCar in PCH
 
     public void DrawLine(GameObject car)
     {
         List<Vector3> initialList = new List<Vector3>();
+        TrafAIMotor trafAIMotor = car.GetComponent<TrafAIMotor>();
 
-        if (car.GetComponent<TrafAIMotor>() != null)
+        if (trafAIMotor != null)
         {
-            LinePoints.Add(car.transform.position);
-            TrafAIMotor trafAIMotor = car.GetComponent<TrafAIMotor>();
-            if (trafAIMotor.hasNextEntry && trafAIMotor.nextEntry.isIntersection())
+            
+            if (trafAIMotor.hasNextEntry /*&& trafAIMotor.nextEntry.isIntersection()*/)
             {//I am waiting at the intersection
-                List<Vector3> smoothedPoints = MakeSmoothCurve(trafAIMotor.nextEntry.waypoints.ToArray(), 5.0f);
+                LinePoints.Add(car.transform.position);
+                List<Vector3> smoothedPoints = ChaikinCurve(trafAIMotor.nextEntry.waypoints.ToArray(), 4);
                 initialList.AddRange(smoothedPoints);
             }
             else if (!trafAIMotor.hasNextEntry && trafAIMotor.currentEntry.isIntersection())
             {//I am crossing the intersection
-                List<Vector3> smoothedPoints = MakeSmoothCurve(trafAIMotor.currentEntry.waypoints.ToArray(), 5.0f);
-                initialList.AddRange(smoothedPoints);
+                LinePoints.Add(car.transform.position);
+                List<Vector3> pointsToSmooth = ChaikinCurve(trafAIMotor.currentEntry.waypoints.ToArray(), 4);
+                int nearest = CalculatePointDistance(pointsToSmooth, car);
+                Vector3 heading = pointsToSmooth[nearest] - car.transform.position;
+                if (Vector3.Dot(heading, car.transform.forward) > 0)
+                    for (int i = nearest; i < pointsToSmooth.Count; i++)
+                        initialList.Add(pointsToSmooth[i]);
+                else
+                    for (int i = nearest + 1; i < pointsToSmooth.Count; i++)
+                        initialList.Add(pointsToSmooth[i]);
             }
             else if (!trafAIMotor.hasNextEntry && !trafAIMotor.currentEntry.isIntersection())
             {//I am on curves or on straight lines
+                LinePoints.Add(car.transform.position);
                 if (trafAIMotor.currentEntry.waypoints.Count == 2)
                     initialList.Add(trafAIMotor.currentEntry.waypoints[trafAIMotor.currentEntry.waypoints.Count - 1]);
                 else if (trafAIMotor.currentEntry.waypoints.Count > 2)
                 {
-                    //foreach (var s in trafAIMotor.currentEntry.waypoints)
+                    List<Vector3> pointsToSmooth = ChaikinCurve(trafAIMotor.currentEntry.waypoints.ToArray(), 2);
+                    //foreach (var s in pointsToSmooth)
                     //{
                     //    GameObject game = new GameObject("Node");
                     //    game.transform.position = s;
                     //    SphereCollider sphereCol = game.AddComponent<SphereCollider>();
                     //}
-                    int nearest = CalculatePointDistance(trafAIMotor.currentEntry.waypoints, car);
-                    Vector3 heading = trafAIMotor.currentEntry.waypoints[nearest] - car.transform.position;
+
+                    int nearest = CalculatePointDistance(pointsToSmooth, car);
+                    Vector3 heading = pointsToSmooth[nearest] - car.transform.position;
                     if (Vector3.Dot(heading, car.transform.forward) > 0)
-                        for (int i = nearest; i < trafAIMotor.currentEntry.waypoints.Count - 1; i++)
-                            initialList.Add(trafAIMotor.currentEntry.waypoints[i]);
+                        for (int i = nearest; i < pointsToSmooth.Count; i++)
+                            initialList.Add(pointsToSmooth[i]);
                     else
-                        for (int i = nearest + 1; i < trafAIMotor.currentEntry.waypoints.Count - 1; i++)
-                            initialList.Add(trafAIMotor.currentEntry.waypoints[i]);
+                        for (int i = nearest + 1; i < pointsToSmooth.Count; i++)
+                            initialList.Add(pointsToSmooth[i]);
+
                 }
             }
 
@@ -79,19 +91,20 @@ public class LinesUtilsAlt : LinesUtils
                 LinePoints.Add(correctedPoint);
             }
 
+            
             lineRenderer.positionCount = LinePoints.Count;
             lineRenderer.SetPositions(LinePoints.ToArray());
             LinePoints.Clear();
         }
-    }
+    } //NavigationLine of PlayerCar and TrafficCar in SF
 
-    public void DrawCenterLine(float carTf, EnvironmentSensingAltTrigger.Lane lane, CurvySpline curvySpline)
+    public void DrawCenterLine(float carTf, PlayerCarLines.Lane lane, CurvySpline curvySpline)
     {
         float increaseAmount = 1f / (curvySpline.Length * SPLINE_GIZMO_SMOOTHNESS);
         
         float endTf = carTf;
         
-        if (lane.Equals(EnvironmentSensingAltTrigger.Lane.RIGHT))
+        if (lane.Equals(PlayerCarLines.Lane.RIGHT))
         {
             int direction = 1;
             curvySpline.MoveByLengthFast(ref endTf, ref direction, 75.0f, CurvyClamping.Clamp); //this is to determine a constant length of the curve drawn, since Tf isn't proportional to the curve length, so you can't use a constant value!
@@ -203,4 +216,28 @@ public class LinesUtilsAlt : LinesUtils
 
         return curvedPoints;
     }
+
+    public List<Vector3> ChaikinCurve(Vector3[] pts, int passes)
+    {
+        Stack<Vector3[]> stack = new Stack<Vector3[]>();
+        stack.Push(pts);
+        
+        for (int k = 1; k <= passes; k++)
+        {
+            Vector3[] oldPts = stack.Pop();
+            Vector3[] newPts = new Vector3[(oldPts.Length - 2) * 2 + 2];
+            newPts[0] = oldPts[0];
+            newPts[newPts.Length - 1] = oldPts[oldPts.Length - 1];
+
+            int j = 1;
+            for (int i = 0; i < oldPts.Length - 2; i++)
+            {
+                newPts[j] = oldPts[i] + (oldPts[i + 1] - oldPts[i]) * 0.75f;
+                newPts[j + 1] = oldPts[i + 1] + (oldPts[i + 2] - oldPts[i + 1]) * 0.25f;
+                j += 2;
+            }
+            stack.Push(newPts);
+        }
+        return new List<Vector3>(stack.Pop());
+    } //Chaikin algorithm is used to smooth SF navigation lines since they have discrete point that would result in a jagged line drawn
 }

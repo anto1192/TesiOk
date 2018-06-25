@@ -14,26 +14,21 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
     private Material[] mats;
     private Sprite[] sprites;
     private Dictionary<int, float> CSVDictionary = new Dictionary<int, float>(); //this is to store the precomputed values of angle(speed)
-    private Dictionary<int, CubesAndTags> IDsAndGos = new Dictionary<int, CubesAndTags>(); //this is to store gameobjects ids and their relative cubes
+    public Dictionary<int, CubesAndTags> IDsAndGos = new Dictionary<int, CubesAndTags>(); //this is to store gameobjects ids and their relative cubes. It is public because I needl to call it from BaseObstacle
+
     private Quaternion rot0; //this is to store the initial rotation of the needle
     private GameObject[] prefabs;
-    private GameObject pathEnhanced = null;
-    private GameObject centerLine = null;
+    
     private GameObject speedPanel; //this is used to semplify the search into the car hierarchy which is very deep
     private Vector3 obstaclePrevPos; //this is to store the initial position of the obstacle in order to compute its speed
-    private LinesUtilsAlt linesUtilsAlt = new LinesUtilsAlt();
+    
     private LayerMask mask;
-    public enum Lane {RIGHT, OPPOSITE}
-    private HashSet<Transform> curColls = new HashSet<Transform>(); //this is to store the root transform of the colliders 
+    
     private Transform rayCastPos;
     private RectTransform speed;
     private RectTransform needle;
     private Rigidbody rigidbody;
 
-    private CurvySplineSegment curSegment = null;
-    private List<CurvySplineSegment> segmentsToSearch = new List<CurvySplineSegment>();
-    
-    
     private DriverCamera driverCam;
 
     public GameObject SpeedPanel { set { speedPanel = value; } }
@@ -50,21 +45,26 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
             this.boundingCube = boundingCube;
             this.infoTag = infoTag;
             this.bounds = bounds;
-        }   
+        }
+
+        public void DestroyCubesAndTags()
+        {
+            Destroy(this.boundingCube);
+            Destroy(this.infoTag);
+        }
     }
 
-    void OnEnable()
-    {
-        TrafSpawnerPCH.OnSpawnHeaps += HandleOnSpawnHeaps;
-    }
+    //void OnEnable()
+    //{
+    //    TrafSpawnerPCH.OnSpawnHeaps += HandleOnSpawnHeaps;
+    //}
 
-    void OnDisable()
-    {
-        TrafSpawnerPCH.OnSpawnHeaps -= HandleOnSpawnHeaps;
-    }
+    //void OnDisable()
+    //{
+    //    TrafSpawnerPCH.OnSpawnHeaps -= HandleOnSpawnHeaps;
+    //}
 
     void Awake() {
-        
         LoadDictionary();
         LoadMaterials();
         LoadPrefabs();
@@ -74,44 +74,30 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
     void Start() {
 
         LoadCarHierarchy();
-        rigidbody = gameObject.GetComponent<Rigidbody>();
+
         obstaclePrevPos = Vector3.zero; //init position of obstacle spawned
-        rot0 = speed.localRotation; //init rotation of speed needle
+        
         mask = (1 << LayerMask.NameToLayer("Traffic")) | (1 << LayerMask.NameToLayer("obstacle")) | (1 << LayerMask.NameToLayer("EnvironmentProp")) | (1 << LayerMask.NameToLayer("Signage")); //restrict OnTriggerEnter only to the layers of interest
 
-        foreach (Transform t in driverCam.transform)
-            if (t.name.Equals("Center"))
-            {
-                t.GetComponent<Camera>().allowHDR = true;
-                MKGlow mkg = t.gameObject.AddComponent<MKGlow>();
-                mkg.GlowType = MKGlowType.Selective;
-                mkg.GlowLayer = LayerMask.GetMask("Graphics");
-                break;
-            }
-        CreatePathEnhanced(); 
-        CreateCenterLine();
-        linesUtilsAlt.LineRend = linesUtilsAlt.CreateLineRenderer(linesUtilsAlt.LineRendererEmpty, "LineRenderer", 2.5f, new Color32(0x3A, 0xC1, 0xAA, 0xFF), mats[3], () => linesUtilsAlt.InitGlowTexture());
-        linesUtilsAlt.LineRend2 = linesUtilsAlt.CreateLineRenderer(linesUtilsAlt.CenterLineRendererEmpty, "centerLineRenderer", 0.5f, new Color32(0xFF, 0xFF, 0xFF, 0xFF), mats[3], () => linesUtilsAlt.InitGlowTexture2());
-        linesUtilsAlt.CenterLineLerper();
-
-        StartCoroutine(InitNavigationLine());
-        StartCoroutine(NavigationLine(0.25f));
-        StartCoroutine(LaneKeeping(0.25f));
+        //foreach (Transform t in driverCam.transform)
+        //    if (t.name.Equals("Center"))
+        //    {
+        //        t.GetComponent<Camera>().allowHDR = true;
+        //        MKGlow mkg = t.gameObject.AddComponent<MKGlow>();
+        //        mkg.GlowType = MKGlowType.Selective;
+        //        mkg.GlowLayer = LayerMask.GetMask("Graphics");
+        //        break;
+        //    }
+        
     }
 
-    void Update() {
-
-            //NavigationLine();
-            //LaneKeeping();
-            SetSpeed();
+    void Update()
+    {
+        SetSpeed();
     }
 
     void OnDrawGizmos()
     {
-        //this is for debugging purposes: see OverlapSphere bounds
-
-        //Gizmos.color = Color.blue;
-        //Gizmos.DrawWireSphere(gameObject.transform.position, 3.5f);
         DebugExtension.DrawCone(rayCastPos.position, rayCastPos.forward * 150f, Color.magenta, 11);
     }
 
@@ -136,12 +122,7 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
                             bounds.center = Quaternion.Euler(other.transform.localEulerAngles) * new Vector3(sphereCol.center.x * other.transform.localScale.x, sphereCol.center.y * other.transform.localScale.y, sphereCol.center.z * other.transform.localScale.z);
                             bounds.size = new Vector3(sphereCol.radius * 2.0f * other.transform.localScale.x, sphereCol.radius * 2.0f * other.transform.localScale.y, sphereCol.radius * 2.0f * other.transform.localScale.z);
                         }
-                        GameObject boundingCube = CreateBoundingCube(other.transform, other.transform.position + bounds.center, bounds.size);
-                        GameObject infoTag = CreateInfoTag(other.transform.position + bounds.center);
-                        boundingCube.GetComponent<Renderer>().enabled = false;
-                        infoTag.GetComponent<Canvas>().enabled = false;
-                        CubesAndTags cubesAndTags = new CubesAndTags(boundingCube, infoTag, bounds);
-                        IDsAndGos.Add(other.gameObject.GetInstanceID(), cubesAndTags);
+                        UpdateIDsAndGos(other, bounds);
                     }
                     break;
                 case 17:
@@ -150,12 +131,7 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
                         BoxCollider boxCol = other as BoxCollider;
                         bounds.center = boxCol.center;
                         bounds.size = boxCol.size * 1.25f;
-                        GameObject boundingCube = CreateBoundingCube(other.transform, other.transform.position + bounds.center, bounds.size);
-                        GameObject infoTag = CreateInfoTag(other.transform.position + bounds.center);
-                        boundingCube.GetComponent<Renderer>().enabled = false;
-                        infoTag.GetComponent<Canvas>().enabled = false;
-                        CubesAndTags cubesAndTags = new CubesAndTags(boundingCube, infoTag, bounds);
-                        IDsAndGos.Add(other.gameObject.GetInstanceID(), cubesAndTags);
+                        UpdateIDsAndGos(other, bounds);
                     }
                     break;
                 case 12:
@@ -165,10 +141,9 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
                         GameObject infoTag = null;
                         if (other.transform.root.name.StartsWith("Mercedes"))
                         {
-                            if (!curColls.Contains(other.transform.root))
+                            if (other.transform.name.Equals("Body1"))
                             { //this is in order to check if an object has more colliders than one; if so, one is sufficient so simply discard other otherwise the cube instantiated would be equal to the number of colliders
                                 bounds = ComputeBounds(other.transform.root);
-                                curColls.Add(other.transform.root);
                                 boundingCube = CreateBoundingCube(other.transform.root, bounds.center, bounds.size);
                                 boundingCube.transform.SetParent(other.transform.root);
                                 infoTag = CreateInfoTag(bounds.center);
@@ -194,7 +169,7 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
                     break;
                 case 8:
                     {   //Traffic
-                        if (!curColls.Contains(other.transform.root))
+                        if (other.transform.name.Equals("Body1") && other.transform.root.tag.Equals("TrafficCar"))
                         { //this is in order to check if an object has more colliders than one; if so, one is sufficient so simply discard other otherwise the cube instantiated would be equal to the number of colliders
                             Bounds bounds = ComputeBounds(other.transform.root);
                             GameObject boundingCube = CreateBoundingCube(other.transform, bounds.center, bounds.size);
@@ -205,27 +180,22 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
                             infoTag.GetComponent<Canvas>().enabled = false;
                             CubesAndTags cubesAndTags = new CubesAndTags(boundingCube, infoTag, bounds); //I need to recompute the bounds since obstacles are dynamic, so I pass an empty bounds here
                             IDsAndGos.Add(other.gameObject.GetInstanceID(), cubesAndTags);
-                            curColls.Add(other.transform.root);
+                            
                         }
                     }
                     break;
             }
         }
 
+        if (other.gameObject.layer.Equals(20)) //handstest
+            Debug.Log("car collided with " + other.name);
+
+
     }
 
     void OnTriggerExit(Collider other)
     {
-        if (IDsAndGos.ContainsKey(other.gameObject.GetInstanceID()))
-        {
-            Destroy(IDsAndGos[other.gameObject.GetInstanceID()].boundingCube);
-            Destroy(IDsAndGos[other.gameObject.GetInstanceID()].infoTag);
-            IDsAndGos.Remove(other.gameObject.GetInstanceID());
-            if (curColls.Count != 0) //this is necessary otherwise if I don't clear the list from the 2nd time I would intercept a previous intercepted car I will not detect it since there is already a collider inside the list!
-                curColls.Clear();
-            
-        }
-
+        CleanObjects(other);
     }
 
     void OnTriggerStay(Collider other)
@@ -244,15 +214,13 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
                         {
                             if (other.transform.tag.Equals("Rock"))
                             {
-                                trasl = Quaternion.Euler(-other.transform.localEulerAngles) * bounds.size; //infoTag trasl
+                                trasl = bounds.size; //infoTag trasl
                                 trasl = new Vector3(Mathf.Abs(trasl.z) * 0.5f + 2.0f, Mathf.Abs(trasl.y) * 0.5f, 0);
                                 UpdateInfoTag(other, "0" + " KPH", Mathf.RoundToInt(dist).ToString() + " M", "", sprites[64], bounds, dist, trasl);
                             } else if (other.transform.tag.Equals("Tree"))
                             {
-                                trasl = Quaternion.Euler(-other.transform.localEulerAngles) * bounds.size; //infoTag trasl
-                                trasl = new Vector3(Mathf.Abs(trasl.z) * 0.5f + 2.0f, 0, 0);
-                                if (other.transform.name.Equals("tree_PCH(2)"))
-                                    Debug.Log(trasl);
+                                trasl = bounds.size; //infoTag trasl
+                                trasl = new Vector3(Mathf.Abs(trasl.x) * 0.5f + 2.0f, - Mathf.Abs(trasl.z) * 0.25f, 0);
                                 UpdateInfoTag(other, "0" + " KPH", Mathf.RoundToInt(dist).ToString() + " M", "", sprites[64], bounds, dist, trasl);
                             }
                         }
@@ -280,7 +248,7 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
                 case 12: //obstacle
                     {
                         Bounds bounds = IDsAndGos[other.gameObject.GetInstanceID()].bounds;
-                        UpdateInfoTag(other, Mathf.RoundToInt(CalculateObstacleSpeed(other.transform)).ToString() + " KPH", Mathf.RoundToInt(dist).ToString() + " M", "", sprites[28], bounds, dist, Vector3.zero);
+                        UpdateInfoTag(other, Mathf.RoundToInt(CalculateObstacleSpeed(other.transform)).ToString() + " KPH", Mathf.RoundToInt(dist).ToString() + " M", "", sprites[64], bounds, dist, Vector3.zero);
                     }
                     break;
                 case 8: //TrafficCar
@@ -324,7 +292,6 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
     GameObject CreateBoundingCube(Transform tr, Vector3 center, Vector3 size)
     {
         GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        //go.GetComponent<BoxCollider>().isTrigger = true; //this in order to avoid to register collision of incoming Car rigidbody
         Destroy(go.GetComponent<BoxCollider>());
         go.layer = LayerMask.NameToLayer("Graphics");
         go.transform.position = center;
@@ -340,12 +307,22 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
         return infoTag;
     }
 
+    void UpdateIDsAndGos(Collider other, Bounds bounds)
+    {
+        GameObject boundingCube = CreateBoundingCube(other.transform, other.transform.position + bounds.center, bounds.size);
+        GameObject infoTag = CreateInfoTag(other.transform.position + bounds.center);
+        boundingCube.GetComponent<Renderer>().enabled = false;
+        infoTag.GetComponent<Canvas>().enabled = false;
+        CubesAndTags cubesAndTags = new CubesAndTags(boundingCube, infoTag, bounds);
+        IDsAndGos.Add(other.gameObject.GetInstanceID(), cubesAndTags);
+    }
+
     void UpdateInfoTag(Collider other, string text, string text1, string text2, Sprite sprite, Bounds bounds, float dist, Vector3 trasl)
     {
         Renderer visibility = IDsAndGos[other.gameObject.GetInstanceID()].boundingCube.GetComponent<Renderer>();
         Canvas canvas = IDsAndGos[other.gameObject.GetInstanceID()].infoTag.GetComponent<Canvas>();
-        Transform textPanel = IDsAndGos[other.gameObject.GetInstanceID()].infoTag.transform.GetChild(0);
-        Transform imagePanel = IDsAndGos[other.gameObject.GetInstanceID()].infoTag.transform.GetChild(1);
+        Transform Panel = IDsAndGos[other.gameObject.GetInstanceID()].infoTag.transform.GetChild(0);
+        
 
         IDsAndGos[other.gameObject.GetInstanceID()].infoTag.transform.rotation = transform.rotation;
         if (other.gameObject.layer.Equals(16))
@@ -360,7 +337,7 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
         {
             IDsAndGos[other.gameObject.GetInstanceID()].infoTag.transform.position = other.transform.position + bounds.center + IDsAndGos[other.gameObject.GetInstanceID()].infoTag.transform.TransformDirection(-Vector3.forward);
         }
-        else if (other.gameObject.layer.Equals(8) || other.gameObject.layer.Equals(12))
+        else if (other.gameObject.layer.Equals(8))
         {
             Vector3 relativePoint = transform.InverseTransformPoint(other.transform.position); //this is to recognize if the object is to the left/right with respect to the car
             if (relativePoint.x < 0.0f)
@@ -369,12 +346,33 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
                 IDsAndGos[other.gameObject.GetInstanceID()].infoTag.transform.position = other.transform.position + IDsAndGos[other.gameObject.GetInstanceID()].infoTag.transform.TransformDirection(Vector3.right.x * -bounds.size.x, Vector3.up.y * bounds.size.y * 0.5f, 0); //object is to the right or directly ahead
         }
 
-        imagePanel.transform.GetChild(0).GetComponent<Image>().sprite = sprite;
-        textPanel.transform.GetChild(0).GetComponent<Text>().text = text;
-        textPanel.transform.GetChild(1).GetComponent<Text>().text = text1;
-        textPanel.transform.GetChild(2).GetComponent<Text>().text = text2;
+        else if (other.gameObject.layer.Equals(12))
+        {
+            Vector3 relativePoint = transform.InverseTransformPoint(other.transform.position); //this is to recognize if the object is to the left/right with respect to the car
+            if (relativePoint.x < 0.0f)
+                IDsAndGos[other.gameObject.GetInstanceID()].infoTag.transform.position = other.transform.position + IDsAndGos[other.gameObject.GetInstanceID()].infoTag.transform.TransformDirection(Vector3.right.x * (bounds.size.z + 0.5f), Vector3.up.y * bounds.size.y * 0.5f, 0); //object is to the left  
+            else if (relativePoint.x >= 0.0f)
+                IDsAndGos[other.gameObject.GetInstanceID()].infoTag.transform.position = other.transform.position + IDsAndGos[other.gameObject.GetInstanceID()].infoTag.transform.TransformDirection(Vector3.right.x * -(bounds.size.z + 0.5f), Vector3.up.y * bounds.size.y * 0.5f, 0); //object is to the right or directly ahead
+        }
+
+        Panel.transform.GetChild(0).GetComponent<Text>().text = text;
+        Panel.transform.GetChild(1).GetComponent<Text>().text = text1;
+        Panel.transform.GetChild(2).GetComponent<Text>().text = text2;
+        Panel.transform.GetChild(3).GetComponent<Image>().sprite = sprite;
+       
+
+        Vector3 windShieldPos = rayCastPos.position + rayCastPos.up * 0.5f;
+        windShieldPos -= rayCastPos.forward * 1.8f;
+        Vector3 offset = IDsAndGos[other.gameObject.GetInstanceID()].infoTag.transform.position - windShieldPos;
         visibility.enabled = true;
-        canvas.enabled = true;
+        if (offset.sqrMagnitude < 3 * 3)  //if infoTags are too close to the playerCar I disable them
+        {
+            canvas.enabled = false;
+        } else
+        {
+            canvas.enabled = true;
+        }
+       
     }
 
     void LoadCarHierarchy()
@@ -387,19 +385,15 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
         speed = speedPanelChildren["Speed"];
         needle = speedPanelChildren["Needle"];
         
-        foreach (Transform t in transform)
+        foreach (Transform t in transform.parent)
             if (t.name.Equals("rayCastPos")) {
                 rayCastPos = t;
                 break;
             }
 
-        SphereCollider sphereCol = gameObject.AddComponent<SphereCollider>();
-        sphereCol.radius = 150;
-        sphereCol.isTrigger = true;
+        rigidbody = transform.parent.gameObject.GetComponent<Rigidbody>();
 
-        //Debug.Log(speed);
-        //Debug.Log(needle);
-        //Debug.Log(rayCastPos);
+        rot0 = speed.localRotation; //init rotation of speed needle
     }
 
     void LoadDictionary() {
@@ -548,86 +542,6 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
 
     }
 
-    Lane MonitorLane(Vector3 Point)
-    {
-        if (Vector3.Dot(gameObject.transform.TransformDirection(Vector3.forward), Point) < 0 )
-            return Lane.OPPOSITE;
-        else
-            return Lane.RIGHT;
-    }
-
-    IEnumerator InitNavigationLine()
-    {
-        CurvySpline curvySpline = pathEnhanced.GetComponent<CurvySpline>();
-        while (!curvySpline.IsInitialized)
-            yield return null;
-        float carTf = curvySpline.GetNearestPointTF(transform.position);
-        curSegment = curvySpline.TFToSegment(carTf);
-    }
-
-    IEnumerator NavigationLine(float waitTime)
-    {
-        while (true)
-        {
-            yield return new WaitForSeconds(waitTime);
-            CurvySpline curvySpline = pathEnhanced.GetComponent<CurvySpline>();
-            segmentsToSearch.Add(curSegment);
-            segmentsToSearch.Add(curvySpline[curSegment.SegmentIndex + 1].GetComponent<CurvySplineSegment>());
-            segmentsToSearch.Add(curvySpline[curSegment.SegmentIndex - 1].GetComponent<CurvySplineSegment>());
-            
-            float carTf = curvySpline.GetNearestPointTFExt(transform.position, segmentsToSearch.ToArray());
-
-                Lane lane = MonitorLane(curvySpline.GetTangentFast(carTf));
-                if (lane == Lane.RIGHT)
-                    linesUtilsAlt.DrawLine(gameObject, curvySpline, carTf);
-                else
-                    linesUtilsAlt.LineRend.positionCount = 0; //delete the LineRenderer
-            
-            curSegment = curvySpline.TFToSegment(carTf);
-            segmentsToSearch.Clear();
-
-        }
-    }
-
-    IEnumerator LaneKeeping(float waitTime)
-    {
-        while (true)
-        {
-            yield return new WaitForSeconds(waitTime);
-
-            RaycastHit hit;
-            CurvySpline curvySpline = null;
-            if (Physics.Raycast(rayCastPos.position, rayCastPos.TransformDirection(-Vector3.up), out hit, 10.0f, 1 << LayerMask.NameToLayer("Graphics")))
-            {
-                curvySpline = hit.collider.gameObject.GetComponent<CurvySpline>();
-                if (curvySpline.IsInitialized)
-                {
-                    float carTf = curvySpline.GetNearestPointTF(transform.position); //determine the nearest t of the car with respect to the centerLine
-                    float carTf2 = pathEnhanced.GetComponent<CurvySpline>().GetNearestPointTF(transform.position);
-                    float dist = Vector3.Distance(transform.position, curvySpline.Interpolate(carTf));
-                    Lane lane = MonitorLane(pathEnhanced.GetComponent<CurvySpline>().GetTangentFast(carTf2)); //this is to understand if I am partially in the oncoming lane
-                    if (dist < 4.0f && lane == Lane.RIGHT)
-                        linesUtilsAlt.CenterLineColor = linesUtilsAlt.ChangeMatByDistance(dist);
-                    else if (dist >= 4.0f && lane == Lane.RIGHT)
-                        linesUtilsAlt.CenterLineColor = new Color32(0xFF, 0xFF, 0xFF, 0xFF);
-                    else if (lane == Lane.OPPOSITE)
-                        linesUtilsAlt.CenterLineColor = new Color32(0xFF, 0x00, 0x00, 0xFF);
-                    linesUtilsAlt.DrawCenterLine(carTf, MonitorLane(curvySpline.GetTangentFast(carTf)), curvySpline);
-                }
-            }
-        }
-    }
-
-    void CreatePathEnhanced() {
-        //pathEnhanced = new GameObject("PathEnhanced"); //since the scene has been loaded it can be instantiated a new empty with all the nodes of the path
-        //pathEnhanced.AddComponent<AutoPathHelper>();
-        pathEnhanced = Instantiate(prefabs[10]);
-    }
-
-    void CreateCenterLine() {
-        centerLine = Instantiate(prefabs[8]);
-    }
-
     void SetSpeed() {
         float targetAngle;
         speed.GetComponent<Text>().text = Mathf.RoundToInt(rigidbody.velocity.magnitude * 3.6f).ToString(); //speed in kph
@@ -647,49 +561,19 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
         inputStream.Close();
     }
 
-    void HandleOnSpawnHeaps(bool spawned) {
-        TrafPCH[] allTraffic = FindObjectsOfType(typeof(TrafPCH)) as TrafPCH[];
-        if (spawned == true)
+    void CleanObjects(Collider other)
+    {
+        if (IDsAndGos.ContainsKey(other.gameObject.GetInstanceID()))
         {
-            foreach (TrafPCH t in allTraffic)
-                t.gameObject.AddComponent<TrafficCarNavigationLine>();
-        }
-        else
-        {
-            foreach (LineRenderer line in FindObjectsOfType(typeof(LineRenderer)))
-                if (line.gameObject.name.Equals("TrafLineRenderer"))
-                    Destroy(line.gameObject);
+            if (other.gameObject.layer.Equals(LayerMask.NameToLayer("Traffic")))
+            {
+                Destroy(other.transform.root.GetComponent<TrafficCarNavigationLineUrban>());
+                Destroy(other.transform.root.GetComponentInChildren<LineRenderer>().gameObject);
+            }
 
-            //foreach (TrafPCH t in allTraffic)
-            //{
-            //    MeshCollider other = t.transform.GetChild(0).GetChild(0).GetComponent<MeshCollider>();
-            //    if (IDsAndGos.ContainsKey(other.gameObject.GetInstanceID()))
-            //    {
-            //        Destroy(IDsAndGos[other.gameObject.GetInstanceID()].boundingCube);
-            //        Destroy(IDsAndGos[other.gameObject.GetInstanceID()].infoTag);
-            //        IDsAndGos.Remove(other.gameObject.GetInstanceID());
-            //    }
-            //}
+            IDsAndGos[other.gameObject.GetInstanceID()].DestroyCubesAndTags();
+            IDsAndGos.Remove(other.gameObject.GetInstanceID());
+
         }
     }
-
 }
-
-
-
-//RaycastHit hit;
-//Vector3 right = rayCastPos.TransformDirection(Vector3.right);
-//        if (Physics.Raycast(rayCastPos.position, -right, out hit, 50f, 1 << LayerMask.NameToLayer("Graphics")) && hit.collider.tag.Equals("Guardrail"))
-//        { //remember that in order to let this work it needs to be enabled Physics--->Queries hit backfaces, otherwise raycast won't detect the guardrail
-//            Debug.DrawLine(rayCastPos.position, hit.point, Color.yellow);
-    
-//        }
-//        else
-//        {
-//            if (checkLane)
-//            {
-                
-//                Debug.DrawLine(rayCastPos.position, rayCastPos.position + (-right* 50f), Color.magenta);
-//            }
-
-//        }

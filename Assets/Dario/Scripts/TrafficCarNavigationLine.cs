@@ -20,7 +20,7 @@ public class TrafficCarNavigationLine : MonoBehaviour {
 
     void Start()
     {
-        linesUtilsAlt.LineRend = linesUtilsAlt.CreateLineRenderer(linesUtilsAlt.LineRendererEmpty, "TrafLineRenderer", 1.0f, new Color32(0x4C, 0x8B, 0xDD, 0xFF), mat, () => linesUtilsAlt.InitGlowTexture());
+        linesUtilsAlt.LineRend = linesUtilsAlt.CreateLineRenderer(ref linesUtilsAlt.lineRendererEmpty, "TrafLineRenderer", 1.0f, new Color32(0x4C, 0x8B, 0xDD, 0xFF), mat, () => linesUtilsAlt.InitGlowTexture());
         pathEnhanced = GameObject.Find("SplinePCH(Clone)");
         vc = FindObjectOfType(typeof(VehicleController)) as VehicleController;
         StartCoroutine(InitNavigationLine());

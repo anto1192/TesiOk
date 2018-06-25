@@ -6,9 +6,8 @@ public class EnvironmentSensingAltController : MonoBehaviour
 {
 
     private Environment selectedEnv = Environment.NONE;
-    //private EnvironmentSensingAlt envSensing;
+    
     private EnvironmentSensingAltTrigger envSensing;
-    //private EnvironmentSensingAltUrban envSensingUrban;
     private EnvironmentSensingAltUrbanTrigger envSensingUrban;
 
     public GameObject speedPanel; //this is used to semplify the search into the car hierarchy which is very deep
@@ -26,25 +25,36 @@ public class EnvironmentSensingAltController : MonoBehaviour
 
     void HandleOnCreateScene(Environment env)
     {
+        GameObject ColliderEnv = new GameObject("colliderEnv");
+        ColliderEnv.transform.SetParent(transform);
+        ColliderEnv.transform.localPosition = Vector3.zero;
+        ColliderEnv.transform.localRotation = Quaternion.identity;
+
+        SphereCollider sphereCol = ColliderEnv.AddComponent<SphereCollider>();
+        sphereCol.radius = 150;
+        sphereCol.isTrigger = true;
+        sphereCol.gameObject.layer = LayerMask.NameToLayer("PlayerCar");
+
         selectedEnv = env; //store selectedEnvironment in order to decide how to behave based on the current scene
         if (selectedEnv.Equals(Environment.COASTAL))
         {
-            //envSensing = gameObject.AddComponent<EnvironmentSensingAlt>();
-            envSensing = gameObject.AddComponent<EnvironmentSensingAltTrigger>();
+            transform.gameObject.AddComponent<PlayerCarLines>();
+
+            envSensing = ColliderEnv.transform.gameObject.AddComponent<EnvironmentSensingAltTrigger>();
             envSensing.DriverCam = driverCam;
             envSensing.SpeedPanel = speedPanel;
             envSensing.enabled = true;
 
         } else if(selectedEnv.Equals(Environment.URBAN)) {
-            //envSensingUrban = gameObject.AddComponent<EnvironmentSensingAltUrban>();
-            envSensingUrban = gameObject.AddComponent<EnvironmentSensingAltUrbanTrigger>();
-            //envSensingUrban.DriverCam = driverCam;
-            envSensingUrban.DriverCam = GameObject.Find("DriverCamera").GetComponent<DriverCamera>();
-            Debug.Log(GameObject.Find("DriverCamera").GetComponent<DriverCamera>());
+            
+            transform.gameObject.AddComponent<PlayerCarLinesUrban>();
+
+            envSensingUrban = ColliderEnv.transform.gameObject.AddComponent<EnvironmentSensingAltUrbanTrigger>();
+            envSensingUrban.DriverCam = driverCam;
             envSensingUrban.SpeedPanel = speedPanel;
             envSensingUrban.enabled = true;
         }
-        
-        this.enabled = false;
+
+        Destroy(this);
     }
 }

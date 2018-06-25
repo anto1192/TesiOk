@@ -180,15 +180,15 @@ public class lineSFtest : MonoBehaviour {
             if (kids[i].gameObject.transform.parent != null)
             {
 
-                //Vector3 currentSpot = kids[i].transform.position;
-                //RaycastHit hit;
-                //Physics.Raycast(currentSpot + Vector3.up * 2, -Vector3.up, out hit, 100f, (1 << LayerMask.NameToLayer("Roads"))); //the layer is EnvironmentProp and not Roads since there is a hidden mesh before roads!
-                //kids[i].transform.position = new Vector3(currentSpot.x, hit.point.y + 0.2f, currentSpot.z);
+                Vector3 currentSpot = kids[i].transform.position;
+                RaycastHit hit;
+                Physics.Raycast(currentSpot + Vector3.up * 2, -Vector3.up, out hit, 100f, (1 << LayerMask.NameToLayer("Roads"))); //the layer is EnvironmentProp and not Roads since there is a hidden mesh before roads!
+                kids[i].transform.position = new Vector3(currentSpot.x, hit.point.y + 0.2f, currentSpot.z);
 
-                //kids[i].transform.position += kids[i].transform.right * .4f;
+                //kids[i].transform.position -= kids[i].transform.right * 1.5f;
 
                 //kids[i].transform.SetSiblingIndex(kids[i].GetComponent<CurvySplineSegment>().ControlPointIndex);
-                
+
 
 
 
