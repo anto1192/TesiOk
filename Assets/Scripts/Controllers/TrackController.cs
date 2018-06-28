@@ -183,7 +183,7 @@ public class TrackController : UnitySingleton<TrackController> {
     public float mapZPos = 0f;
 
     //ANTONELLO
-    public bool visualizzaInfrazioni = true;
+    public bool visualizzaInfrazioni = false;
 
     public void AddInfraction(DrivingInfraction d)
     {
@@ -1168,7 +1168,8 @@ public class TrackController : UnitySingleton<TrackController> {
             }
             if (id == 11)
             {
-                obs = GameObject.Instantiate(obstacles[2], Vector3.zero, Quaternion.identity) as GameObject;
+                //obs = GameObject.Instantiate(obstacles[2], Vector3.zero, Quaternion.identity) as GameObject;
+                obs = GameObject.Instantiate(obstacles[1], Vector3.zero, Quaternion.identity) as GameObject;
             }
             BaseObstacle ob = obs.GetComponent<BaseObstacle>();
             obs.transform.position = spot[0];

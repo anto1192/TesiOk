@@ -20,6 +20,7 @@ public class TrafSpawner : MonoBehaviour, ITrafficSpawner {
     public TrafSystem system;
 
     public GameObject[] prefabs;
+    public GameObject prefabMacchinaOstacolo;
     public GameObject[] fixedPrefabs;
 
     public int numberToSpawn = 50;
@@ -211,7 +212,7 @@ public class TrafSpawner : MonoBehaviour, ITrafficSpawner {
             {
                 //potremmo fare una finestra che chiede sei sicuro di voler avviare lo scenario di test?
                 Debug.Log("Scenario di test avviato");
-                scenario = new ScenarioTestUrbano(system, prefabs);
+                scenario = new ScenarioTestUrbano(system, prefabs, prefabMacchinaOstacolo);
                 scenarioUrbano = true;
             } else
             {
