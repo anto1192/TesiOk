@@ -26,4 +26,10 @@ public class PID : MonoBehaviour
             lastError = present;
             return present * pFactor + integral * iFactor + deriv * dFactor;
         }
+
+        public void resetValues()
+        {
+            integral = 0;
+            lastError = 0;
+        }
 }

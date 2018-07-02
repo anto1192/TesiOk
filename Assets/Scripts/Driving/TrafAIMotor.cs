@@ -293,6 +293,18 @@ public class TrafAIMotor : MonoBehaviour
         if (!inited)
             return;
 
+        if (this.tag.Equals("Player"))
+        {
+            velocitaAttuale = GetComponent<Rigidbody>().velocity.magnitude;
+        }
+        else
+        {
+            velocitaAttuale = currentSpeed;
+        }
+
+        accelerazione = (velocitaAttuale - velocitaPrecedente) / Time.deltaTime;
+        velocitaPrecedente = velocitaAttuale;
+
         if (inchiodata)
         {
             inchioda();
@@ -305,17 +317,7 @@ public class TrafAIMotor : MonoBehaviour
             return;
         }
 
-        if (this.tag.Equals("Player"))
-        {
-            velocitaAttuale = GetComponent<Rigidbody>().velocity.magnitude;
-        }
-        else
-        {
-            velocitaAttuale = currentSpeed;
-        }
-
-        accelerazione = (velocitaAttuale - velocitaPrecedente) / Time.deltaTime;
-        velocitaPrecedente = velocitaAttuale;
+        
 
 
         if (!currentEntry.isIntersection() && currentIndex > 0 && !hasNextEntry)
@@ -402,7 +404,7 @@ public class TrafAIMotor : MonoBehaviour
             if (distanzaWaypointFramePrecedente != 0 && (distanzaWaypoint - distanzaWaypointFramePrecedente) > 0)
             {
                 contatore++;
-                if (contatore >= 3)
+                if (contatore >= 5)
                 {
                     //abbiamo saltato il waypoint
                     if ((numeroWaypointSaltati++) >= 7)
@@ -490,7 +492,6 @@ public class TrafAIMotor : MonoBehaviour
 
             if (!hasStopTarget && nextEntry.light.State == TrafLightState.RED)
             {
-                Debug.Log("Inizio la valutazione del semaforo rosso a: " + Vector3.Distance(nextTarget, nose.transform.position));
                 //light is red, stop here           
                 //ANTONELLO
                 if (!autoScorretta)
@@ -1156,6 +1157,13 @@ public class TrafAIMotor : MonoBehaviour
     //METODO PER FAR MUOVERE LA MACCHINA USANDO IL VEHICLE CONTROLLER - ANTONELLO
     void MoveCarUtenteAccelerazione()
     {
+
+        if (velocitaAttuale < 0.01f && currentThrottle == 0f)
+        {
+            //sono fermo ad incrocio
+            PIDControllerAccelerazione.resetValues();
+        }
+
         float throttlePrecedente = GetComponent<VehicleController>().accellInput;
 
         float speedDifference = currentSpeed - velocitaAttuale;
@@ -1371,6 +1379,59 @@ public class TrafAIMotor : MonoBehaviour
         return new ProssimoTarget(target, false);
     }
 
+   /* private void casoAutoIntersezione()
+    {
+        Vector3 puntoIntersezione; // gia sai come calcolarlo
+        Vector3 posizioneOstacolo;  //transform.position dell'ostacolo o dell'auto del traffico
+        float velocitaOstacolo; //velocità a cui sta andando l'ostacolo o l'auto del traffico -> in m/s
+        //(Nel caso della macchina del traffico puoi prenderla da TrafAIMotor, non prenderla da velocity.magnitude, ti darebbe 0)
+        //(In TrafAIMotor hai currentSpeed che va bene solo per le macchine del traffico oppure posso rendere pubblica velocitaAttuale che va bene sia
+        //per le macchine del traffico che per la mia auto)
+
+        float distanzaOstacoloPuntoIntersezione = Vector3.Distance(puntoIntersezione, posizioneOstacolo);
+        //v -> velocita; s -> spazio; t -> tempo
+        //v = s/t => t = s / v
+        float secondiOstacoloIntersezione = distanzaOstacoloPuntoIntersezione / velocitaOstacolo; //rappresentano i secondi che l'ostacolo o l'auto impiegherà per arrivare al punto di intersezione
+
+        float miaVelocita; //la velocità della mia macchina (questa puoi prenderla da velocity.magnitude oppure da TrafAIMotor (rendendo pubblica velocitaAttuale)
+        float decelerazioneSoft = 2f; //da provare quale valore vada bene
+
+        //la prima cosa che farei è verificare io quanto tempo impiego ad arrivare al punto di intersezione, e controllare che i tempi siano piu o meno uguali, 
+        //anche se nel nostro caso però è inutile
+        Vector3 miaPosizione = transform.position;
+        float distanzaMacchinaPuntoIntersezione = Vector3.Distance(puntoIntersezione, miaPosizione);
+        float secondiMiaMacchinaIntersezione = distanzaMacchinaPuntoIntersezione / velocitaOstacolo; //rappresentano i secondi che l'ostacolo o l'auto impiegherà per arrivare al punto di intersezione
+        float offsetSecondi = 2f; //da provare
+        if (Math.Abs(secondiMiaMacchinaIntersezione -secondiOstacoloIntersezione) > offsetSecondi) {
+            //siamo in una situazione in cui le auto si incrociano ma non si scontrano
+            //darei comunque un grado di pericolo all'ostacolo o all'auto, segnandolo come poco pericoloso al minimo possibile
+            return;
+        }
+
+        //se siamo arrivati qui significa che se la mia auto non frena le auto si scontrano
+
+        //calcolo quanto tempo impiega la mia auto a fermarsi con una decelerazione soft
+        float secondiStop = miaVelocita / decelerazioneSoft;
+
+        if (secondiStop < secondiOstacoloIntersezione)
+        {
+            //riesco a fermarmi in meno tempo rispetto al tempo che impiegherebbe l'ostacolo a intersecare il mio percorso, con una decelerazione soft
+            //non c'è pericolo
+        } else
+        {
+            //non riesco a fermami in tempo con una decelerazione soft => se non freno con maggior forza mi scontro! => PERICOLO
+
+            //per avere un indice di pericolo io farei cosi:
+            float indicePericolosita = secondiOstacoloIntersezione / secondiStop;
+            //questo indice viene tra 0 e 1
+            //se è vicino a 1 significa che è meno pericoloso perchè i secondi sarebbero quasi uguali e ciò significa che con una decelerazione poco maggiore a quella soft riuscirei a fermarmi
+            //al contrario, più è vicina a 0 piu è pericolosa la situazione, perchè significa che dovrei decelerare molto di piu
+
+            //secondo me 1-> giallo e a 0.5 gia deve essere rosso
+        }
+
+    }
+    */
 
     internal class GestoreCollisioni : MonoBehaviour
     {
@@ -1417,7 +1478,8 @@ public class TrafAIMotor : MonoBehaviour
                 motor.ostacoloEvitare = other.gameObject;
 
                 //PS: se l'ostacolo improvvisamente compare davanti l'auto significa che è in movimento
-                float angolo = Vector3.SignedAngle(motor.transform.position, other.gameObject.transform.position, motor.transform.forward);
+                //float angolo = Vector3.SignedAngle(motor.transform.position, other.gameObject.transform.position, motor.transform.forward);
+                float angolo = Vector3.SignedAngle(transform.forward, other.gameObject.transform.position - transform.position, Vector3.up);
                 if (angolo >= 0)
                 {
                     //l'oggetto è a destra ma si sta spostando (verso sinistra), lo evito buttandomi a destra

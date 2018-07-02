@@ -229,7 +229,7 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     public void evento1755()
     {
         car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 11f;
-
+        car.GetComponent<CarExternalInputAutoPathAdvanced>().limiteVelocita = 45f;
     }
 
     public void evento1820()
@@ -267,6 +267,7 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     public void evento1935()
     {
         car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 15f;
+        car.GetComponent<CarExternalInputAutoPathAdvanced>().limiteVelocita = 60f;
     }
 
     public void evento1923()
@@ -284,7 +285,8 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     public void evento1980()
     {
         macchinaTraffico[9].GetComponent<TrafPCH>().maxSpeed = 3f;
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 10f;        
+        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 10f;
+        car.GetComponent<CarExternalInputAutoPathAdvanced>().limiteVelocita = 40f;
     }
 
     public void evento1990()
@@ -296,6 +298,11 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     {
         car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 10f;
         macchinaTraffico[9].GetComponent<TrafPCH>().maxSpeed = 10f;
+    }
+
+    public void evento2005()
+    {
+        car.GetComponent<CarExternalInputAutoPathAdvanced>().limiteVelocita = 70f;
     }
 
     public void evento2010()
@@ -459,6 +466,7 @@ public class ScenarioTestExtraurbano : MonoBehaviour
             }
         }
         newAp.raycastOrigin = posizioneRaycast;
+        newAp.limiteVelocita = 70f;
         newAp.Init();
         guidaAutomatica = newAp;
     }

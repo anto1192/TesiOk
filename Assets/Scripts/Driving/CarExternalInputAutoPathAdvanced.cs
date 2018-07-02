@@ -70,6 +70,7 @@ public class CarExternalInputAutoPathAdvanced : MonoBehaviour
     private GameObject raggioSinistra;
     private GameObject raggioDestra;
     public bool sbacchettamento = false;
+    public float limiteVelocita;
 
     public delegate void Delegato(int idPrecedene, int idCorrente);
     public event Delegato ChangeProperty;

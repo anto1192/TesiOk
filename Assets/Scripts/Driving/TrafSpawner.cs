@@ -206,7 +206,7 @@ public class TrafSpawner : MonoBehaviour, ITrafficSpawner {
         }
 
         //ANTONELLO
-        else if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.S)
+        /*else if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.S)
         {
             if (!scenarioUrbano)
             {
@@ -219,7 +219,7 @@ public class TrafSpawner : MonoBehaviour, ITrafficSpawner {
                 fineTestScenarioUrbano();
             }
             
-        }
+        }*/
     }
     //ANTONELLO
     private bool guidaAutomatica = false;

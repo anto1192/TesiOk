@@ -1153,6 +1153,12 @@ public class TrackController : UnitySingleton<TrackController> {
             spot[0] = new Vector3(1281.8f, 8f, 961.1f);
             spot[1] = new Vector3(1281.8f, 8f, 955.1f);
         }
+        if (id == 13) //&& spot[0] == Vector3.zero)
+        {
+            //non si è settato spot, lo setto io
+            spot[0] = new Vector3(1418f, 12.1f, 808.5f);
+            spot[1] = new Vector3(1412f, 12.1f, 808.5f);
+        }
 
 
         if (spot[0] != Vector3.zero)
@@ -1168,7 +1174,10 @@ public class TrackController : UnitySingleton<TrackController> {
             }
             if (id == 11)
             {
-                //obs = GameObject.Instantiate(obstacles[2], Vector3.zero, Quaternion.identity) as GameObject;
+                obs = GameObject.Instantiate(obstacles[2], Vector3.zero, Quaternion.identity) as GameObject;               
+            }
+            if (id == 13)
+            {
                 obs = GameObject.Instantiate(obstacles[1], Vector3.zero, Quaternion.identity) as GameObject;
             }
             BaseObstacle ob = obs.GetComponent<BaseObstacle>();
@@ -1189,6 +1198,12 @@ public class TrackController : UnitySingleton<TrackController> {
             if (id == 12)
             {
                 obs.transform.position = obs.transform.position - obs.transform.forward * 2f;
+                return;
+            }
+            if (id == 13)
+            {
+                // obs.transform.position = new Vector3(1418f, 12.1f, 823.36f) - obs.transform.forward * 22.5f;
+                obs.transform.position = new Vector3(1418f, 12.1f, 823.36f) - obs.transform.forward * 5f;
                 return;
             }
 

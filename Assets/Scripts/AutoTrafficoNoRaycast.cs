@@ -683,7 +683,8 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
                 //currentSpeed = 0;
             }
             else
-                currentSpeed += Mathf.Min(maxAccell * Time.deltaTime, targetSpeed - currentSpeed);
+                //currentSpeed += Mathf.Min(maxAccell * Time.deltaTime, targetSpeed - currentSpeed);
+                currentSpeed = targetSpeed;
             //currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, Time.fixedDeltaTime * _pidPars.velocitaFrenata);
 
         }
