@@ -1214,7 +1214,7 @@ public class TrafAIMotor : MonoBehaviour
         }
         else
         {
-            if (hasStopTarget || frenata || (hasNextEntry && intersectionCornerSpeed < 0.8f))
+            if (hasStopTarget || frenata || (hasNextEntry && intersectionCornerSpeed < 0.8f && velocitaAttuale > 5f))
             {
                 currentThrottle = frenataPrecedente;
             }

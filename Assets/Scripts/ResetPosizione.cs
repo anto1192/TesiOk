@@ -37,7 +37,8 @@ public class ResetPosizione : MonoBehaviour {
 
             Vector3 offsetPos = CenterEyeAnchor.position - posizioneTesta.position;
             Vector3 posizioneTarget = transform.position - offsetPos;
-            transform.position = new Vector3(posizioneTarget.x, transform.position.y, posizioneTarget.z);
+            //transform.position = new Vector3(posizioneTarget.x, transform.position.y, posizioneTarget.z);
+            transform.position = transform.position - offsetPos;
         }
     }
 }
