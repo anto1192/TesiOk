@@ -343,7 +343,7 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
 
                 if (newNode == null)
                 {
-                    Debug.Log("no edges on " + currentEntry.identifier + "_" + currentEntry.subIdentifier);
+                    //Debug.Log("no edges on " + currentEntry.identifier + "_" + currentEntry.subIdentifier);
                     //ANTONELLO
                     if (!this.tag.Equals("Player"))
                     {
@@ -389,8 +389,7 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
                     //abbiamo saltato il waypoint
                     if ((numeroWaypointSaltati++) >= 10)
                     {
-                        //l'utente è intervenuto alla guida allontandandosi troppo, fermiamo il test
-                        Property = "9999"; //settando Property a 9999 verrà chiamato il metodo che interrompe il test
+                        Destroy(gameObject);
                     }
                     Debug.Log("waypoint saltato");
                     distanzaWaypoint = 0;
@@ -714,10 +713,6 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
                         //se invece c'è qualcosa davanti, frenata è true, ma la distanza è maggiore di 4f (piu è basso piu riparte prima quando si ferma dietro un'auto)
                         //e l'auto è ferma, significa che l'auto davanti a me sta ripartendo quindi posso ripartire anche io
                         frenata = false;
-                        if (this.tag.Equals("Player"))
-                        {
-                            Debug.Log("Frenata false, hitinfo.distance = " + hitInfo.distance);
-                        }
                         /*autoDavanti = true;
                         distanzaSicurezza = (Math.Pow((velocitaAttuale * 3.6f / 10f), 2) + 3.5f); //+ questo valore perchè la distanza viene calcolata dal centro dell'auto del traffico
                         //distanzaSicurezza = (Math.Pow((frontSpeed * 3.6f / 10f), 2) + 3.5f); //+ questo valore perchè la distanza viene calcolata dal centro dell'auto del traffico
@@ -926,7 +921,7 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
                 //CONTROLLA QUESTO PEZZO DI CODICE; POTREBBE DISTRUGGERE LA MACCHINA
                 if (newNode == null)
                 {
-                    Debug.Log("no edges on " + currentEntry.identifier + "_" + currentEntry.subIdentifier);
+                   // Debug.Log("no edges on " + currentEntry.identifier + "_" + currentEntry.subIdentifier);
                     Destroy(gameObject);
                     inited = false;
                     return;

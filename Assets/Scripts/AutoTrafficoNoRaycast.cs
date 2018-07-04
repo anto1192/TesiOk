@@ -407,8 +407,6 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
                     //abbiamo saltato il waypoint
                     if ((numeroWaypointSaltati++) >= 7)
                     {
-                        //l'utente è intervenuto alla guida allontandandosi troppo, fermiamo il test
-
                         Destroy(gameObject);
                     }
                     Debug.Log("waypoint saltato");
@@ -491,7 +489,6 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
 
             if (!hasStopTarget && nextEntry.light.State == TrafLightState.RED)
             {
-                Debug.Log("Inizio la valutazione del semaforo rosso a: " + Vector3.Distance(nextTarget, nose.transform.position));
                 //light is red, stop here           
                 //ANTONELLO
                 if (!autoScorretta)
@@ -543,7 +540,14 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
             nextRaycast = NextRaycastTime();
         }
 
-
+        if (somethingInFront)
+        {
+            if (hitInfo.collider.gameObject.tag.Equals("Player"))
+            {
+                currentSpeed = 0;
+                return;
+            }
+        }
 
 
         if (frenata)
@@ -741,7 +745,7 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
                 //CONTROLLA QUESTO PEZZO DI CODICE; POTREBBE DISTRUGGERE LA MACCHINA
                 if (newNode == null)
                 {
-                    Debug.Log("no edges on " + currentEntry.identifier + "_" + currentEntry.subIdentifier);
+                    //Debug.Log("no edges on " + currentEntry.identifier + "_" + currentEntry.subIdentifier);
                     Destroy(gameObject);
                     inited = false;
                     return;

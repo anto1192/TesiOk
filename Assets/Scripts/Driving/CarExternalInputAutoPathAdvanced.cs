@@ -421,7 +421,6 @@ public class CarExternalInputAutoPathAdvanced : MonoBehaviour
 
     private void inchioda()
     {
-        Debug.Log("sto inchiodando");
         //questo metodo fa si che l'auto inchiodi, in modo da non colpire un ostacolo davanti a noi
         if (currentThrottle != -1f)
         {
@@ -436,7 +435,6 @@ public class CarExternalInputAutoPathAdvanced : MonoBehaviour
 
     private void evita()
     {
-        Debug.Log("Sto evitando");
         //questo metodo fa si che l'auto eviti un ostacolo imminente e frenando e sterzando bruscamente
         float sterzata = 20f;
         currentThrottle = -1f;

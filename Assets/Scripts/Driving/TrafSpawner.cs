@@ -193,7 +193,6 @@ public class TrafSpawner : MonoBehaviour, ITrafficSpawner {
         //ANTONELLO
         else if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.A)
         {
-            Debug.Log("Premuto A");
             if (!guidaAutomatica)
             {
                 guidaAutomaticaSF();
@@ -243,7 +242,6 @@ public class TrafSpawner : MonoBehaviour, ITrafficSpawner {
     //ANTONELLO
     private void guidaAutomaticaSF()
     {
-        Debug.Log("sono in guidaAtuomaticaSF");
         //Vector3 tempPos = transform.position;
         int id = Random.Range(0, maxIdent);
         int subId = Random.Range(0, maxSub);
@@ -313,7 +311,6 @@ public class TrafSpawner : MonoBehaviour, ITrafficSpawner {
             motor.targetHeight = 0f;
             motor.waypointThreshold = 3f;
 
-            Debug.Log("pos.position: x = " + pos.position.x + "; y = " + pos.position.y + "; z = " + pos.position.z + "; targetIndex = " + pos.targetIndex);
             guidaAutomatica = true;
 
 

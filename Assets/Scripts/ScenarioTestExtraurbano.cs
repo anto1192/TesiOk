@@ -73,6 +73,7 @@ public class ScenarioTestExtraurbano : MonoBehaviour
 
         car.transform.position = posizionePartenza.transform.position;
         car.transform.rotation = posizionePartenza.transform.rotation;
+        car.GetComponent<xSimScript>().enabled = true;
     }
 
     public void iniziaTest()
@@ -286,7 +287,7 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     {
         macchinaTraffico[9].GetComponent<TrafPCH>().maxSpeed = 3f;
         car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 10f;
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().limiteVelocita = 40f;
+        car.GetComponent<CarExternalInputAutoPathAdvanced>().limiteVelocita = 45f;
     }
 
     public void evento1990()

@@ -12,6 +12,7 @@ public class ScenarioTestUrbano : MonoBehaviour
     public GameObject prefabMacchinaOstacolo;
     //private TrafAIMotor macchinaTraffico;
     private MacchinaTrafficoInchiodata macchinaTraffico;
+    private AutoTrafficoNoRayCast macchinaTrafficoScorretta;
 
     private bool scenarioAvviato = false;
     private bool fineTest = false;
@@ -29,7 +30,9 @@ public class ScenarioTestUrbano : MonoBehaviour
         }
 
         attivaGuidaAutomatica(car, percorsoPlayer, percorsoPlayer[0].id, percorsoPlayer[0].subId); //-> facciamo apparire la macchina utente nella posizione con id e subId specificati, che rappresenta il punto di partenza
-                                                                                                  //la macchina seguirà il percorso definito in percorsoPlayer
+                                                                                                   //la macchina seguirà il percorso definito in percorsoPlayer
+
+        car.GetComponent<xSimScript>().enabled = true;
 
         TrafAIMotor motor = car.GetComponent<TrafAIMotor>();
         motor.ChangeProperty += new TrafAIMotor.Delegato(gestisciEvento);
@@ -102,6 +105,18 @@ public class ScenarioTestUrbano : MonoBehaviour
             co.isTrigger = true;
             Debug.Log("wp: " + wp.x + "; " + wp.y + "; " + wp.z);
         }*/
+
+        List<Vector3> listaWaypStrada5 = system.GetEntry(5, 0).waypoints;
+        Vector3 wayp5_0 = system.GetEntry(5, 0).waypoints[0];
+        system.GetEntry(5, 0).waypoints[0] = new Vector3(wayp5_0.x, wayp5_0.y, 380.73f);
+        /*foreach (Vector3 wp in system.GetEntry(5, 0).waypoints)
+        {
+            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.transform.position = wp;
+            Collider co = go.GetComponent<Collider>();
+            co.isTrigger = true;
+            Debug.Log("wp: " + wp.x + "; " + wp.y + "; " + wp.z);
+        }*/
     }
 
     void Start()
@@ -165,7 +180,7 @@ public class ScenarioTestUrbano : MonoBehaviour
     {
         string nomeMetodo = "evento" + nuovoId;
         MethodInfo mi = this.GetType().GetMethod(nomeMetodo);
-        Debug.Log("Sono in gestisciEvento " + nomeMetodo + "; mi == null? " + mi == null);
+        //Debug.Log("Sono in gestisciEvento " + nomeMetodo + "; mi == null? " + mi == null);
         if (mi != null)
         {
             mi.Invoke(this, null);
@@ -723,10 +738,13 @@ public class ScenarioTestUrbano : MonoBehaviour
 
         //AutoTrafficoNoRayCast macchinaTrafficoScorretta = CreaMacchinaTrafficoNoRaycast(162, 0, 0.97f, percorso159_5); //macchinaTraffico che non rispetta il semaforo e va piu veloce
         //macchinaTrafficoScorretta.maxSpeed = 15f;
-        AutoTrafficoNoRayCast macchinaTrafficoScorretta = CreaMacchinaTrafficoNoRaycast(162, 0, 0.57f, percorso159_5); //macchinaTraffico che non rispetta il semaforo e va piu veloce
+        //AutoTrafficoNoRayCast macchinaTrafficoScorretta = CreaMacchinaTrafficoNoRaycast(162, 0, 0.57f, percorso159_5); //macchinaTraffico che non rispetta il semaforo e va piu veloce
+        macchinaTrafficoScorretta = CreaMacchinaTrafficoNoRaycast(162, 0, 0.57f, percorso159_5); //macchinaTraffico che non rispetta il semaforo e va piu veloce
+
+
 
         macchinaTrafficoScorretta.autoScorretta = true;
-        //macchinaTrafficoScorretta.maxSpeed = 10f;
+        macchinaTrafficoScorretta.maxSpeed = 10f;
         SetLayer(12, macchinaTrafficoScorretta.transform);
 
 
@@ -826,9 +844,9 @@ public class ScenarioTestUrbano : MonoBehaviour
         TrafficLightContainer container2 = entry2.light;
         TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
         lights[0].StopAllCoroutines();
-        lights[0].StartCoroutine(courutineSemaforoRosso(container));
-        lights[0].StartCoroutine(courutineSemaforoVerde(container1));
-        lights[0].StartCoroutine(courutineSemaforoVerde(container2));
+        lights[0].StartCoroutine(courutineSemaforoRossoLungo(container));
+        lights[0].StartCoroutine(courutineSemaforoVerdeLungo(container1));
+        lights[0].StartCoroutine(courutineSemaforoVerdeLungo(container2));
     }
 
 
@@ -1296,10 +1314,10 @@ public class ScenarioTestUrbano : MonoBehaviour
         listaWaypoint[0] = waypModificato;
         traf.currentEntry.waypoints = listaWaypoint;
 
-        foreach (Vector3 wayp in listaWaypoint)
-        {
-            Debug.Log("Wayp: " + wayp.x + " - " + wayp.y + " - " + wayp.z);
-        }
+        //foreach (Vector3 wayp in listaWaypoint)
+        //{
+        //    Debug.Log("Wayp: " + wayp.x + " - " + wayp.y + " - " + wayp.z);
+        //}
 
 
         ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().maxSpeed = 11f;
@@ -1386,29 +1404,26 @@ public class ScenarioTestUrbano : MonoBehaviour
 
 
 
-    /* public void evento1011()
+     public void evento1011()
      {
-         GameObject go = ottieniRiferimentoPlayer();
-         TrafAIMotor traf = go.GetComponent<TrafAIMotor>();
-         List<Vector3> listaWaypoint = traf.currentEntry.waypoints;
-         int contatore = 0;
-         foreach (Vector3 wp in listaWaypoint)
-         {
-             contatore++;
-             Debug.Log("waypoint " + contatore + ": " + wp.x + "," + wp.y + "," + wp.z);
-         }
-         List<Vector3> listaWaypointOk = new List<Vector3>();
-         listaWaypointOk.Add(listaWaypoint[0]);
-         Vector3 nuovoWaypoint = listaWaypoint[3];
-         nuovoWaypoint.x = 1328f;
-         listaWaypointOk.Add(nuovoWaypoint);
-         traf.currentEntry.waypoints = listaWaypointOk;
+        if (secondaVolta)
+        {
+            return;
+        }
+        /*if (macchinaTrafficoScorretta.currentEntry.identifier != 1011)
+        {
+            car.GetComponent<TrafAIMotor>().maxSpeed = 1f;
+        } else
+        {*/
+            car.GetComponent<TrafAIMotor>().maxSpeed = 8f;
+        //}
      }
-     */
+     
     public void evento9999()
     {
         Debug.Log("Test interrotto!!!!");
         //fineGuidaAutomatica();
+        car.GetComponent<xSimScript>().enabled = false;
         fineTest = true;
     }
 
@@ -4261,7 +4276,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             motor.targetHeight = 0f;
             motor.waypointThreshold = 6f;
 
-            Debug.Log("pos.position: x = " + pos.position.x + "; y = " + pos.position.y + "; z = " + pos.position.z + "; targetIndex = " + pos.targetIndex);
+            //Debug.Log("pos.position: x = " + pos.position.x + "; y = " + pos.position.y + "; z = " + pos.position.z + "; targetIndex = " + pos.targetIndex);
             //guidaAutomatica = true;
 
             List<RoadGraphEdge> percorsoPlayer = percorso.GetRange(1, percorso.Count - 1);
@@ -4462,11 +4477,11 @@ public class ScenarioTestUrbano : MonoBehaviour
         GameObject go = ottieniRiferimentoPlayer();
         TrafAIMotor traf = go.GetComponent<TrafAIMotor>();
         List<Vector3> listaWaypoint = traf.currentEntry.waypoints;
-        Debug.Log("waypont:");
-        foreach (Vector3 wp in listaWaypoint)
-        {
-            Debug.Log(wp.x + "," + wp.y + "," + wp.z);
-        }
+        //Debug.Log("waypont:");
+        //foreach (Vector3 wp in listaWaypoint)
+        //{
+        //    Debug.Log(wp.x + "," + wp.y + "," + wp.z);
+        //}
         return listaWaypoint;
     }
 
