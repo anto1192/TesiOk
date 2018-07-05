@@ -739,12 +739,12 @@ public class ScenarioTestUrbano : MonoBehaviour
         //AutoTrafficoNoRayCast macchinaTrafficoScorretta = CreaMacchinaTrafficoNoRaycast(162, 0, 0.97f, percorso159_5); //macchinaTraffico che non rispetta il semaforo e va piu veloce
         //macchinaTrafficoScorretta.maxSpeed = 15f;
         //AutoTrafficoNoRayCast macchinaTrafficoScorretta = CreaMacchinaTrafficoNoRaycast(162, 0, 0.57f, percorso159_5); //macchinaTraffico che non rispetta il semaforo e va piu veloce
-        macchinaTrafficoScorretta = CreaMacchinaTrafficoNoRaycast(162, 0, 0.57f, percorso159_5); //macchinaTraffico che non rispetta il semaforo e va piu veloce
+        macchinaTrafficoScorretta = CreaMacchinaTrafficoNoRaycast(162, 0, 0.7f, percorso159_5); //macchinaTraffico che non rispetta il semaforo e va piu veloce
 
 
 
         macchinaTrafficoScorretta.autoScorretta = true;
-        macchinaTrafficoScorretta.maxSpeed = 10f;
+        //macchinaTrafficoScorretta.maxSpeed = 10f;
         SetLayer(12, macchinaTrafficoScorretta.transform);
 
 
@@ -1230,6 +1230,7 @@ public class ScenarioTestUrbano : MonoBehaviour
     }
 
     bool secondaVolta = false;
+    bool secondaVolta1011 = false;
 
     /*public void evento1008()
     {
@@ -1325,6 +1326,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
 
         semaforo163a();
+        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().sterzataMassima = false;
     }
 
 
@@ -1377,7 +1379,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(157, 3, 0.75f, percorso30_5);
         CreaMacchinaTraffico(157, 2, 0f, percorso30_6);
         CreaMacchinaTraffico(157, 2, 0f, percorso30_7);
-        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().sterzataMassima = false;
+        
     }
 
     public void evento158()
@@ -1406,24 +1408,24 @@ public class ScenarioTestUrbano : MonoBehaviour
 
      public void evento1011()
      {
-        if (secondaVolta)
+        if (secondaVolta1011)
         {
             return;
         }
+        secondaVolta1011 = true;
         /*if (macchinaTrafficoScorretta.currentEntry.identifier != 1011)
         {
             car.GetComponent<TrafAIMotor>().maxSpeed = 1f;
         } else
         {*/
-            car.GetComponent<TrafAIMotor>().maxSpeed = 8f;
+            car.GetComponent<TrafAIMotor>().maxSpeed = 3f;
         //}
      }
      
     public void evento9999()
     {
         Debug.Log("Test interrotto!!!!");
-        //fineGuidaAutomatica();
-        car.GetComponent<xSimScript>().enabled = false;
+        //fineGuidaAutomatica();       
         fineTest = true;
     }
 
@@ -2972,7 +2974,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         edge3.subId = 3;
 
         edge4.id = 23;
-        edge4.subId = 1;
+        edge4.subId = 0;
 
 
         List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
@@ -4195,6 +4197,8 @@ public class ScenarioTestUrbano : MonoBehaviour
         }
 
         secondaVolta = false;
+        secondaVolta1011 = false;
+        car.GetComponent<xSimScript>().enabled = false;
     }
 
     private void attivaGuidaAutomatica(GameObject go, List<RoadGraphEdge> percorso, int id, int subId)

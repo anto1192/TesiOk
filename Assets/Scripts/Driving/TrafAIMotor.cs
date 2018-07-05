@@ -118,7 +118,6 @@ public class TrafAIMotor : MonoBehaviour
     private float distanzaInizialeInchiodata;
     public Vector3 frenataTarget;
     public bool autoScorretta = false;
-    private bool inchiodata;
     private bool evitare;
     private bool direzioneSpostamentoDestra;
     private float velocitaInizialeFrenata;
@@ -306,13 +305,6 @@ public class TrafAIMotor : MonoBehaviour
         accelerazione = Mathf.Lerp(accelerazionePrecedente, (velocitaAttuale - velocitaPrecedente) / Time.deltaTime, Time.deltaTime);
         velocitaPrecedente = velocitaAttuale;
         accelerazionePrecedente = accelerazione;
-
-
-        if (inchiodata)
-        {
-            inchioda();
-            return;
-        }
 
         if (evitare)
         {
@@ -1108,12 +1100,7 @@ public class TrafAIMotor : MonoBehaviour
         //Limit the steering angle
         steeringAngle = Mathf.Clamp(steeringAngle, -45, 45);
 
-        bool trattoStradaDritto = false;
-
-        if (Math.Abs(this.transform.position.x - target.x) <= 1 || Math.Abs(this.transform.position.z - target.z) <= 1)
-        {
-            trattoStradaDritto = true;
-        }
+        
 
 
 
@@ -1148,7 +1135,24 @@ public class TrafAIMotor : MonoBehaviour
         }
         currentTurn = averageSteeringAngle;
 
+
+        bool trattoStradaDritto = false;
+
+        if (Math.Abs(this.transform.position.x - target.x) <= 1 || Math.Abs(this.transform.position.z - target.z) <= 1)
+        {
+            trattoStradaDritto = true;
+        }
         currentTurn = Mathf.Clamp(Mathf.Lerp(turnPrecedente, currentTurn, steerSpeed * Time.deltaTime), -45f, 45f);
+        /*
+        if (trattoStradaDritto)
+        {
+            currentTurn = Mathf.Clamp(Mathf.Lerp(turnPrecedente, currentTurn, steerSpeed * Time.deltaTime), -45f, 45f);
+        } else
+        {
+            currentTurn = Mathf.Clamp(Mathf.Lerp(turnPrecedente, currentTurn, steerSpeedCurva * Time.deltaTime), -45f, 45f);
+        }
+        */
+        
 
 
 
@@ -1156,6 +1160,7 @@ public class TrafAIMotor : MonoBehaviour
 
     public float maxThrottle = 0.8f;
     public float steerSpeed = 4.0f;
+    public float steerSpeedCurva = 10.0f;
     public float throttleSpeed = 3.0f;
     public float brakeSpeed = 1f;
     private float m_targetSteer = 0.0f;
@@ -1272,17 +1277,6 @@ public class TrafAIMotor : MonoBehaviour
     }
 
 
-    private void inchioda()
-    {
-        //questo metodo fa si che l'auto inchiodi, in modo da non colpire un ostacolo davanti a noi
-        if (currentThrottle != -1f)
-        {
-            currentThrottle = -1f;
-            //VehicleController vehicleController = GetComponent<VehicleController>();
-            vehicleController.accellInput = currentThrottle;
-        } //altrimenti sto gia inchiodando, non faccio niente
-
-    }
 
     private void evita()
     {
@@ -1472,18 +1466,18 @@ public class TrafAIMotor : MonoBehaviour
         void OnTriggerEnter(Collider other)
         {
 
-            if (!other.gameObject.layer.Equals(12) || motor.inchiodata == true || motor.hasStopTarget == true)
+            if (!other.gameObject.layer.Equals(12) || motor.evitare == true || motor.hasStopTarget == true)
             {
                 //layer 12 equivale a obstacle: se l'oggetto incontrato non è un ostacolo allora non faccio niente, sono elementi dell'ambiente oppure auto del traffico, gia gestite tramite raycast
                 //se sto gia inchiodando non faccio nulla
                 //se hasStopTarget = true significa che l'ostacolo si trova in corrispondenza di un incrocio al quale devo fermami ed ho gia iniziato la procedura, dunque non faccio nulla
                 return;
             }
-            float distanza = Vector3.Distance(motor.transform.position, other.gameObject.transform.position);
+            //float distanza = Vector3.Distance(motor.transform.position, other.gameObject.transform.position);
 
-            double spazioFrenata = (Math.Pow(motor.GetComponent<Rigidbody>().velocity.magnitude, 2)) / (2 * 2.3f);
+            /*double spazioFrenata = (Math.Pow(motor.GetComponent<Rigidbody>().velocity.magnitude, 2)) / (2 * 2.3f);
             if (distanza < spazioFrenata)
-            {
+            {*/
                 //l'ostacolo è troppo vicino, non riesco a inchiodare, lo evito
                 motor.evitare = true;
                 motor.ostacoloEvitare = other.gameObject;
@@ -1502,11 +1496,11 @@ public class TrafAIMotor : MonoBehaviour
                     motor.direzioneSpostamentoDestra = false;
                 }
 
-            }
+            /*}
             else
             {
                 motor.inchiodata = true;
-            }
+            }*/
         }
 
 
@@ -1517,7 +1511,6 @@ public class TrafAIMotor : MonoBehaviour
             {
                 return;
             }
-            motor.inchiodata = false;
             motor.evitare = false;
         }
 

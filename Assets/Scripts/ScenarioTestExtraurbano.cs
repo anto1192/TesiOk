@@ -180,7 +180,7 @@ public class ScenarioTestExtraurbano : MonoBehaviour
         guidaAutomatica.sbacchettamento = false;
     }
 
-    public void evento2049()
+    public void evento2050()
     {
         guidaAutomatica.sbacchettamento = true;
     }

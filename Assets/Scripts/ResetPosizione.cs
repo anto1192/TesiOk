@@ -6,7 +6,10 @@ public class ResetPosizione : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		
+		if (!UnityEngine.XR.XRDevice.isPresent)
+        {
+            gameObject.SetActive(false);
+        }
 	}
 
     public Transform posizioneTesta;
@@ -34,10 +37,13 @@ public class ResetPosizione : MonoBehaviour {
     {
         if ((CenterEyeAnchor != null))
         {
+            //aggiusto la rotazione
+            float offsetRot = CenterEyeAnchor.rotation.eulerAngles.y - posizioneTesta.eulerAngles.y;
+            transform.Rotate(0f, -offsetRot, 0f);
 
-            Vector3 offsetPos = CenterEyeAnchor.position - posizioneTesta.position;
+            //aggiusto la posizione
+            Vector3 offsetPos = CenterEyeAnchor.position - posizioneTesta.position;          
             Vector3 posizioneTarget = transform.position - offsetPos;
-            //transform.position = new Vector3(posizioneTarget.x, transform.position.y, posizioneTarget.z);
             transform.position = transform.position - offsetPos;
         }
     }
