@@ -228,6 +228,7 @@ public class TrafAIMotor : MonoBehaviour
 
     }
 
+    private float targetHeightPrecedente = 0;
     //TODO: tend to target height over time
     void CheckHeight()
     {
@@ -241,7 +242,12 @@ public class TrafAIMotor : MonoBehaviour
 
         }
         targetHeight = heightHit.point.y;
+        if (heightHit.distance < 1f)
+        {
+            targetHeight = Mathf.Lerp(targetHeightPrecedente, targetHeight, Time.deltaTime * 10f);          
+        }       
         transform.position = new Vector3(transform.position.x, targetHeight, transform.position.z);
+        targetHeightPrecedente = targetHeight;
     }
 
     void FixedUpdate()
