@@ -234,17 +234,17 @@ public class TrafAIMotor : MonoBehaviour
     {
         if (this.gameObject.layer == 12)
         {
-            Physics.Raycast(transform.position + Vector3.up * 2, -transform.up, out heightHit, 100f, ~(1 << LayerMask.NameToLayer("obstacle")));
+            Physics.Raycast(transform.position + Vector3.up * 2, -transform.up, out heightHit, 100f, ~(1 << LayerMask.NameToLayer("obstacle") | 1 << LayerMask.NameToLayer("Graphics"))); //DARIO
         }
         else
         {
-            Physics.Raycast(transform.position + Vector3.up * 2, -transform.up, out heightHit, 100f, ~(1 << LayerMask.NameToLayer("Traffic")));
+            Physics.Raycast(transform.position + Vector3.up * 2, -transform.up, out heightHit, 100f, ~(1 << LayerMask.NameToLayer("Traffic") | 1 << LayerMask.NameToLayer("Graphics"))); //DARIO
 
         }
         targetHeight = heightHit.point.y;
         if (heightHit.distance < 1f)
         {
-            targetHeight = Mathf.Lerp(targetHeightPrecedente, targetHeight, Time.deltaTime * 10f);          
+            targetHeight = Mathf.Lerp(targetHeightPrecedente, targetHeight, Time.deltaTime /** 10f*/);          
         }       
         transform.position = new Vector3(transform.position.x, targetHeight, transform.position.z);
         targetHeightPrecedente = targetHeight;
