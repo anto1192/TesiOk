@@ -19,16 +19,27 @@ public class GuidaManuale : MonoBehaviour
     private bool primoIntervento = false;
     private float sterzataRiferimento;
 
+    private ResetPosizione posizione = null;
+
     void Awake()
     {
         controller = GetComponent<VehicleController>();
+        posizione = gameObject.GetComponentInChildren<ResetPosizione>();
     }
 
-    /*DateTime tempo;
-    float velocitaIniziale; */
 
     void Update()
     {
+        if (posizione != null)
+        {
+            if (!posizione.interventoAllaGuidaConsentito)
+            {
+                return;
+            }
+        } else
+        {
+            Debug.Log("posizione Null");
+        }
         //grab input values
         var inputController = AppController.Instance.UserInput;
         //Debug.Log("sterzata: " + inputController.GetSteerInput() + "; accelerazione: " + inputController.GetAccelBrakeInput());

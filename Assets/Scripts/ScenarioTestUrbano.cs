@@ -17,11 +17,18 @@ public class ScenarioTestUrbano : MonoBehaviour
     private bool scenarioAvviato = false;
     private bool fineTest = false;
     private GameObject car;
+    private float limiteVelocita = 13.8f;
 
     public int numeroInizioTest = 0;
 
+    private PIDPars _pidPars;
 
-    private void avviaScenarioTest() { 
+
+    private void avviaScenarioTest() {
+        if (_pidPars == null)
+            _pidPars = Resources.Load<PIDPars>("PIDPars_steeringWheel");
+
+
         List<RoadGraphEdge> percorsoPlayer = ottieniPercorsoPlayer();
 
         if (car == null)
@@ -136,6 +143,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             //l'auto è ferma
             scenarioAvviato = false;
             fineGuidaAutomatica();
+            fineTest = false;
         }
     }
 
@@ -263,7 +271,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             //yield return null;
             contenitore1.Set(TrafLightState.GREEN);
             contenitore2.Set(TrafLightState.RED);
-            yield return new WaitForSeconds(6f);
+            yield return new WaitForSeconds(4f);
             contenitore1.Set(TrafLightState.YELLOW);
             yield return new WaitForSeconds(3f);
             contenitore1.Set(TrafLightState.RED);
@@ -275,7 +283,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             contenitore2.Set(TrafLightState.RED);
             yield return new WaitForSeconds(2f);
             contenitore1.Set(TrafLightState.GREEN);
-            yield return new WaitForSeconds(9f);
+            yield return new WaitForSeconds(11f);
         }
     }
 
@@ -287,9 +295,9 @@ public class ScenarioTestUrbano : MonoBehaviour
             contenitore1.Set(TrafLightState.GREEN);
             contenitore2.Set(TrafLightState.RED);
             contenitore3.Set(TrafLightState.RED);
-            yield return new WaitForSeconds(6f);
+            yield return new WaitForSeconds(4f);
             contenitore1.Set(TrafLightState.YELLOW);
-            yield return new WaitForSeconds(3f);
+            yield return new WaitForSeconds(3.5f);
             contenitore1.Set(TrafLightState.RED);
             yield return new WaitForSeconds(2f);
             contenitore2.Set(TrafLightState.GREEN);
@@ -302,7 +310,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             contenitore3.Set(TrafLightState.RED);
             yield return new WaitForSeconds(2f);
             contenitore1.Set(TrafLightState.GREEN);
-            yield return new WaitForSeconds(9f);
+            yield return new WaitForSeconds(11f);
         }
     }
 
@@ -313,7 +321,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             //yield return null;
             contenitore1.Set(TrafLightState.GREEN);
             contenitore2.Set(TrafLightState.RED);
-            yield return new WaitForSeconds(3.5f);
+            yield return new WaitForSeconds(2.5f);  //3
             contenitore1.Set(TrafLightState.YELLOW);
             yield return new WaitForSeconds(3f);
             contenitore1.Set(TrafLightState.RED);
@@ -325,7 +333,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             contenitore2.Set(TrafLightState.RED);
             yield return new WaitForSeconds(2f);
             contenitore1.Set(TrafLightState.GREEN);
-            yield return new WaitForSeconds(10.5f);
+            yield return new WaitForSeconds(13f);
         }
     }
 
@@ -435,6 +443,19 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(42, 0, 0f, percorso49_5);
     }
 
+    public void semaforo50()
+    {
+        TrafEntry entry = system.GetEntry(1010, 4);
+        TrafEntry entry1 = system.GetEntry(1010, 2);
+        TrafEntry entry2 = system.GetEntry(1010, 0);
+        TrafficLightContainer container = entry.light;
+        TrafficLightContainer container1 = entry1.light;
+        TrafficLightContainer container2 = entry2.light;
+        TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+        lights[0].StopAllCoroutines();
+        lights[0].StartCoroutine(courutineSemaforoArancionePasso(container1, container2));
+    }
+
     public void semaforo50a()
     {
         TrafEntry entry = system.GetEntry(1010, 4);
@@ -486,6 +507,21 @@ public class ScenarioTestUrbano : MonoBehaviour
         lights[0].StartCoroutine(courutineSemaforoVerde(container1));
     }
 
+    private void semaforo13a()
+    {
+        TrafEntry entry = system.GetEntry(1012, 6);
+        TrafEntry entry1 = system.GetEntry(1012, 0);
+        TrafEntry entry2 = system.GetEntry(1012, 2);
+        TrafficLightContainer container = entry.light;
+        TrafficLightContainer container1 = entry1.light;
+        TrafficLightContainer container2 = entry2.light;
+        TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+        lights[0].StopAllCoroutines();
+        lights[0].StartCoroutine(courutineSemaforoVerdeLungo(container));
+        lights[0].StartCoroutine(courutineSemaforoRossoLungo(container1));
+        lights[0].StartCoroutine(courutineSemaforoRossoLungo(container2));
+    }
+
     public void semaforo13()
     {
         TrafEntry entry = system.GetEntry(1012, 6);
@@ -511,13 +547,28 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(11, 2, 0.3f, percorso13_1);
         CreaMacchinaTraffico(12, 0, 0f, percorso13_2);
         //CreaMacchinaTraffico(11, 3, 0.7f, percorso13_3);
-        CreaMacchinaTraffico(11, 3, 0.75f, percorso13_3).autoScorretta = true;
+        CreaMacchinaTrafficoNoRaycast(11, 3, 0.95f, percorso13_3).autoScorretta = true;
         CreaMacchinaTraffico(12, 1, 0.6f, percorso13_4);
         CreaMacchinaTraffico(12, 0, 0.8f, percorso13_5);
     }
 
     public void semaforo14a()
     {
+        //faccio diventare rosso quello di prima, in modo che le auto ferme all'incrocio prendono il verde e vadano subito
+        TrafEntry entry3 = system.GetEntry(1012, 6);
+        TrafEntry entry4 = system.GetEntry(1012, 0);
+        TrafEntry entry5 = system.GetEntry(1012, 2);
+        TrafficLightContainer container3 = entry3.light;
+        TrafficLightContainer container4 = entry4.light;
+        TrafficLightContainer container5 = entry5.light;
+        TrafficLight[] lights1 = container3.gameObject.GetComponentsInParent<TrafficLight>();
+        lights1[0].StopAllCoroutines();
+        lights1[0].StartCoroutine(courutineSemaforoRossoLungo(container3));
+        lights1[0].StartCoroutine(courutineSemaforoVerdeLungo(container4));
+        lights1[0].StartCoroutine(courutineSemaforoVerdeLungo(container5));
+
+
+
         TrafEntry entry = system.GetEntry(1048, 2);
         TrafEntry entry1 = system.GetEntry(1048, 4);
         TrafficLightContainer container = entry.light;
@@ -547,18 +598,16 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public void semaforo16()
     {
-        TrafEntry entry = system.GetEntry(1049, 5);
-        TrafEntry entry1 = system.GetEntry(1049, 0);
-        TrafficLightContainer container = entry.light;
-        TrafficLightContainer container1 = entry1.light;
-        TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
-        lights[0].StopAllCoroutines();
-        lights[0].StartCoroutine(courutineSemaforoRosso(container));
-        lights[0].StartCoroutine(courutineSemaforoVerde(container1));
+        soloSemaforo16();
         evento16a();
+        if (macchinaTraffico != null)
+        {
+            macchinaTraffico.maxSpeed = limiteVelocita;
+        }
+        
     }
 
-    public void semaforo16a()
+    private void soloSemaforo16()
     {
         TrafEntry entry = system.GetEntry(1049, 5);
         TrafEntry entry1 = system.GetEntry(1049, 0);
@@ -568,6 +617,11 @@ public class ScenarioTestUrbano : MonoBehaviour
         lights[0].StopAllCoroutines();
         lights[0].StartCoroutine(courutineSemaforoRosso(container));
         lights[0].StartCoroutine(courutineSemaforoVerde(container1));
+    }
+
+    public void semaforo16a()
+    {
+        soloSemaforo16();
         evento16a();
     }
 
@@ -586,6 +640,8 @@ public class ScenarioTestUrbano : MonoBehaviour
         {
             motor.currentEntry.subIdentifier = 0;
         }
+
+        
     }
 
     public void semaforo5()
@@ -596,9 +652,10 @@ public class ScenarioTestUrbano : MonoBehaviour
         TrafficLightContainer container1 = entry1.light;
         TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
         lights[0].StopAllCoroutines();
-        lights[0].StartCoroutine(courutineSemaforoArancioneMiFermo(container, container1));
+        lights[0].StartCoroutine(courutineSemaforoRosso(container));
+        lights[0].StartCoroutine(courutineSemaforoVerde(container1));
 
-        TrackController.Instance.TriggerObstacle1();
+        //TrackController.Instance.TriggerObstacle1();
 
         TrafEntry entry2 = system.GetEntry(1031, 3);
         TrafEntry entry3 = system.GetEntry(1031, 8);
@@ -739,8 +796,8 @@ public class ScenarioTestUrbano : MonoBehaviour
         //AutoTrafficoNoRayCast macchinaTrafficoScorretta = CreaMacchinaTrafficoNoRaycast(162, 0, 0.97f, percorso159_5); //macchinaTraffico che non rispetta il semaforo e va piu veloce
         //macchinaTrafficoScorretta.maxSpeed = 15f;
         //AutoTrafficoNoRayCast macchinaTrafficoScorretta = CreaMacchinaTrafficoNoRaycast(162, 0, 0.57f, percorso159_5); //macchinaTraffico che non rispetta il semaforo e va piu veloce
-        macchinaTrafficoScorretta = CreaMacchinaTrafficoNoRaycast(162, 0, 0.7f, percorso159_5); //macchinaTraffico che non rispetta il semaforo e va piu veloce
-
+        //macchinaTrafficoScorretta = CreaMacchinaTrafficoNoRaycast(162, 0, 0.7f, percorso159_5); //macchinaTraffico che non rispetta il semaforo e va piu veloce
+        macchinaTrafficoScorretta = CreaMacchinaTrafficoNoRaycast(162, 0, _pidPars.partenzaAuto, percorso159_5);
 
 
         macchinaTrafficoScorretta.autoScorretta = true;
@@ -910,6 +967,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(50, 0, 0.2f, percorso49_0);
         CreaMacchinaTraffico(50, 1, 0f, percorso49_1);
 
+
     }
 
     public void evento50()
@@ -921,11 +979,11 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(50, 1, 0f, percorso49_1);
 
         List<RoadGraphEdge> percorso50_0 = ottieniPercorso50_0();
-        List<RoadGraphEdge> percorso50_1 = ottieniPercorso50_1();
+        //List<RoadGraphEdge> percorso50_1 = ottieniPercorso50_1();
         List<RoadGraphEdge> percorso50_2 = ottieniPercorso50_2();
         List<RoadGraphEdge> percorso50_3 = ottieniPercorso50_3();
-        CreaMacchinaTraffico(51, 0, 0.7f, percorso50_0);
-        CreaMacchinaTraffico(51, 1, 0.2f, percorso50_1);
+        CreaMacchinaTraffico(51, 0, 0.9f, percorso50_0);
+        //CreaMacchinaTraffico(51, 1, 0.2f, percorso50_1);
         CreaMacchinaTraffico(62, 0, 0.4f, percorso50_2);
         CreaMacchinaTraffico(62, 0, 0f, percorso50_3);
 
@@ -993,7 +1051,9 @@ public class ScenarioTestUrbano : MonoBehaviour
         List<RoadGraphEdge> percorso65_3 = ottieniPercorso65_3();
         List<RoadGraphEdge> percorso65_4 = ottieniPercorso65_4();
         macchinaTraffico = CreaMacchinaTrafficoInchiodata(25, 3, 0.3f, percorso65_0);
-        CreaMacchinaTraffico(25, 2, 0f, percorso65_1);
+        macchinaTraffico.maxSpeed = limiteVelocita;
+        TrafAIMotor macchinaLenta = CreaMacchinaTraffico(25, 2, 0.75f, percorso65_1);
+        macchinaLenta.maxSpeed = 3f;
         CreaMacchinaTraffico(25, 1, 0.4f, percorso65_2);
         CreaMacchinaTraffico(25, 0, 0.6f, percorso65_3);
         CreaMacchinaTraffico(25, 3, 0f, percorso65_4);
@@ -1002,8 +1062,20 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public void evento13()
     {
+        semaforo13a();
         macchinaTraffico.maxSpeed = 5f;
+        TrafEntry entry = system.GetEntry(1049, 5);
+        TrafficLightContainer container = entry.light;
+        TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+        lights[0].StartCoroutine(attesa13());
     }
+
+    public IEnumerator attesa13()
+    {
+        yield return new WaitForSeconds(12f);
+        macchinaTraffico.maxSpeed = limiteVelocita;
+    }
+
 
     public void evento14()
     {
@@ -1017,8 +1089,8 @@ public class ScenarioTestUrbano : MonoBehaviour
 
 
         List<RoadGraphEdge> percorso13_1 = ottieniPercorso13_1();
-        CreaMacchinaTraffico(11, 2, 0.35f, percorso13_1);
-
+        TrafAIMotor autoLato = CreaMacchinaTraffico(11, 2, 0.45f, percorso13_1);
+        autoLato.maxSpeed = 12f;
     }
 
     public void evento15()
@@ -1040,50 +1112,54 @@ public class ScenarioTestUrbano : MonoBehaviour
     {
         List<RoadGraphEdge> percorso16_0 = ottieniPercorso16_0();
         List<RoadGraphEdge> percorso16_1 = ottieniPercorso16_1();
-        List<RoadGraphEdge> percorso16_2 = ottieniPercorso16_2();
+        //List<RoadGraphEdge> percorso16_2 = ottieniPercorso16_2();
         List<RoadGraphEdge> percorso16_3 = ottieniPercorso16_3();
         List<RoadGraphEdge> percorso16_4 = ottieniPercorso16_4();
         CreaMacchinaTraffico(17, 1, 0.4f, percorso16_0);
         CreaMacchinaTraffico(17, 3, 0.2f, percorso16_1);
-        CreaMacchinaTraffico(17, 0, 0f, percorso16_2);
+        //CreaMacchinaTraffico(17, 0, 0f, percorso16_2);
         CreaMacchinaTraffico(17, 0, 0.1f, percorso16_3);
         CreaMacchinaTraffico(17, 0, 0.5f, percorso16_4);
     }
 
     public IEnumerator attesa18()
     {
-        yield return new WaitForSeconds(25f);
-        evento18a();
+        yield return new WaitForSeconds(1f);
+        if (macchinaTraffico != null)
+        {
+            macchinaTraffico.maxSpeed = 3f;           
+        }
+        else
+        {
+            ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().maxSpeed = 3f;
+        }
     }
 
     TrafAIMotor macchinaAccodarmi = null;
     public void evento18()
     {
         //semaforo18a();
-        if (macchinaTraffico != null)
-        {
-            macchinaTraffico.maxSpeed = 3f;
-        }
-        else
-        {
-            ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().maxSpeed = 3f;
-        }
+        
+
+        soloSemaforo16();
 
         List<RoadGraphEdge> percorso18_0 = ottieniPercorso18_0();
         List<RoadGraphEdge> percorso18_1 = ottieniPercorso18_1();
         //CreaMacchinaTraffico(17, 0, 0.5f, percorso18_0);
-        macchinaAccodarmi = CreaMacchinaTraffico(17, 0, 0.3f, percorso18_1);
+        macchinaAccodarmi = CreaMacchinaTraffico(17, 0, 0.99f, percorso18_1);
 
+        evento18a();
 
         TrafEntry entry = system.GetEntry(1049, 5);
         TrafficLightContainer container = entry.light;
         TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
         lights[0].StartCoroutine(attesa18());
+
     }
 
     public IEnumerator attesa18_2()
     {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
         evento18a();
     }
 
@@ -1098,10 +1174,9 @@ public class ScenarioTestUrbano : MonoBehaviour
             return;
         }
 
-        if (go.GetComponent<TrafAIMotor>().maxSpeed != 11f)
-        {
-            go.GetComponent<TrafAIMotor>().maxSpeed = 11f;
-        }
+        
+        go.GetComponent<TrafAIMotor>().maxSpeed = 11f;
+
 
         TrafEntry entry = system.GetEntry(18, 0);
         Vector3 puntoArrivo = go.GetComponent<TrafAIMotor>().target;
@@ -1127,6 +1202,8 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public void evento5()
     {
+        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().maxSpeed = limiteVelocita;
+
         semaforo5a();
         List<RoadGraphEdge> percorso5_0 = ottieniPercorso5_0();
         List<RoadGraphEdge> percorso5_1 = ottieniPercorso5_1();
@@ -1321,7 +1398,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         //}
 
 
-        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().maxSpeed = 11f;
+        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().maxSpeed = limiteVelocita;
         macchinaTrafficoScorrettaDavanti.maxSpeed = 8f;
 
 
@@ -1361,7 +1438,7 @@ public class ScenarioTestUrbano : MonoBehaviour
     {
         semaforo30a();
         //TrackController.Instance.LanciaOstacolo(11);
-        TrackController.Instance.LanciaOstacolo(13);
+        //TrackController.Instance.LanciaOstacolo(13);
         List<RoadGraphEdge> percorso30_0 = ottieniPercorso30_0();
         List<RoadGraphEdge> percorso30_1 = ottieniPercorso30_1();
         List<RoadGraphEdge> percorso30_2 = ottieniPercorso30_2();
@@ -1405,6 +1482,19 @@ public class ScenarioTestUrbano : MonoBehaviour
     }
 
 
+    public void evento164()
+    {
+        TrafEntry entry2 = system.GetEntry(164, 2);
+        TrafEntry entry1 = system.GetEntry(164, 1);
+        int numeroWaypoint = entry1.waypoints.Count;
+        entry1.waypoints[numeroWaypoint - 1] = entry2.waypoints[numeroWaypoint - 1];
+        entry1.waypoints[numeroWaypoint - 2] = entry2.waypoints[numeroWaypoint - 2];
+        entry1.waypoints[numeroWaypoint - 3] = entry2.waypoints[numeroWaypoint - 3];
+        entry1.waypoints[numeroWaypoint - 3] = entry2.waypoints[numeroWaypoint - 3];
+        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().currentEntry = entry1;
+    }
+
+
 
      public void evento1011()
      {
@@ -1418,7 +1508,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             car.GetComponent<TrafAIMotor>().maxSpeed = 1f;
         } else
         {*/
-            car.GetComponent<TrafAIMotor>().maxSpeed = 3f;
+            car.GetComponent<TrafAIMotor>().maxSpeed = 2f;
         //}
      }
      
@@ -4185,7 +4275,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         Destroy(go.GetComponent<TrafAIMotor>());
         Destroy(go.GetComponent<GuidaManuale>());
         go.GetComponent<VehicleInputController>().enabled = true;
-        go.GetComponent<VehicleController>().accellInput = 0f;
+       // go.GetComponent<VehicleController>().accellInput = 0f;
         //guidaAutomatica = false;
 
         foreach (Transform game in go.GetComponentsInChildren<Transform>())
@@ -4368,6 +4458,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             motor.system = system;
             motor.fixedRoute = true;
             motor.fixedPath = percorso;
+            motor.maxSpeed = 11f; //40km/h
             motor.Init();
 
             if (OnSpawnHeaps != null)
@@ -4472,6 +4563,14 @@ public class ScenarioTestUrbano : MonoBehaviour
         if (go == null)
         {
             go = GameObject.Find("TeslaModelS_2_Rigged(Clone)");
+        }
+        if (go == null)
+        {
+            go = GameObject.Find("TeslaModelS_2_RiggedLOD");
+        }
+        if (go == null)
+        {
+            go = GameObject.Find("TeslaModelS_2_RiggedLOD(Clone)");
         }
         return go;
     }

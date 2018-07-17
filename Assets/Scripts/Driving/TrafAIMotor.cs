@@ -56,7 +56,8 @@ public class TrafAIMotor : MonoBehaviour
     public float waypointThreshold = 0.6f;
     //ANTONELLO
     //public float maxSpeed = 10f;
-    public float maxSpeed = 11f;
+    //public float maxSpeed = 11f;
+    public float maxSpeed = 13.8f;
     public float maxTurn = 45f;
     //public float maxAccell = 3f;
     public float maxAccell = 2.5f; //ANTONELLO
@@ -524,8 +525,11 @@ public class TrafAIMotor : MonoBehaviour
             {
                 //yellow, stop if we aren't zooming on through
                 //TODO: carry on if we are too fast/close
-
-                if (Vector3.Distance(nextTarget, nose.transform.position) > yellowLightGoDistance)
+                //calcolo la decellerazione necessaria per fermarci al semaforo
+                float riduzioneVelocitaNecessaria = velocitaAttuale / Vector3.Distance(nextTarget, nose.transform.position);
+                // if (Vector3.Distance(nextTarget, nose.transform.position) > yellowLightGoDistance)
+                
+               if (riduzioneVelocitaNecessaria < 0.7f)
                 {
                     //ANTONELLO
                     hasStopTarget = true;
@@ -831,7 +835,7 @@ public class TrafAIMotor : MonoBehaviour
             {
                 distanzaCorrente = Math.Abs(vettoreDifferenza.z);
             }
-            distanzaCorrente -= 2f;
+            distanzaCorrente -= 3f;
             Debug.DrawLine(stopTarget, transform.position);
             targetSpeed = velocitaInizialeFrenata * distanzaCorrente / distanzaIniziale;
             /*if (velocitaInizialeFrenata >= 6f)
@@ -903,8 +907,8 @@ public class TrafAIMotor : MonoBehaviour
                 //currentSpeed = 0;
             }
             else
-                currentSpeed += Mathf.Min(maxAccell * Time.deltaTime, targetSpeed - currentSpeed);
-            //currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, Time.fixedDeltaTime * _pidPars.velocitaFrenata);
+                //currentSpeed += Mathf.Min(maxAccell * Time.deltaTime, targetSpeed - currentSpeed);
+            currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, Time.fixedDeltaTime * _pidPars.velocitaAccelerazione);
 
         }
         else
@@ -1283,25 +1287,45 @@ public class TrafAIMotor : MonoBehaviour
     }
 
 
-
+    //private bool primaVoltaEvita = true;
     private void evita()
     {
         //questo metodo fa si che l'auto eviti un ostacolo imminente e frenando e sterzando bruscamente
+        //if (hasStopTarget)
+        //{
+        //    //mi sto fermando allo stop o al semaforo e c'è un ostacolo in prossimità (es. pedone che attraversa la strada)
+        //    //mi fermerò comunque però freno leggermente di piu
+        //    if (primaVoltaEvita)
+        //    {
+        //        currentThrottle = Mathf.Clamp(currentThrottle - 0.2f, -1f, -0.2f);
+        //        vehicleController.accellInput = currentThrottle;
+        //        primaVoltaEvita = false;
+        //    } else
+        //    {
+        //        vehicleController.accellInput = currentThrottle;
+        //    }           
+        //    return;
+        //}
+        //primaVoltaEvita = true;
         float sterzata = 0;
         if (direzioneSpostamentoDestra == true)
         {
-            sterzata = 45f;
+            sterzata = 25f;
         }
         else
         {
-            sterzata = -45f;
+            sterzata = -25f;
         }
 
+        //calcolo la quantita di freno necessaria
+        float riduzioneVelocitaNecessaria = velocitaAttuale / Vector3.Distance(ostacoloEvitare.transform.position, nose.transform.position);
+        Debug.Log("riduzione Velocita necessaria: " + riduzioneVelocitaNecessaria);
 
-        currentThrottle = -1f;
+        
+        currentThrottle = Mathf.Clamp(-riduzioneVelocitaNecessaria, -1f, -0.5f);
         vehicleController.accellInput = currentThrottle;
 
-        if (Vector3.Distance(transform.position, ostacoloEvitare.transform.position) < 8f)
+        if (Vector3.Distance(transform.position, ostacoloEvitare.transform.position) < 8f && currentThrottle < -0.5f)
         {
             vehicleController.steerInput = sterzata / 45;
         }
@@ -1376,6 +1400,14 @@ public class TrafAIMotor : MonoBehaviour
         if (go == null)
         {
             go = GameObject.Find("TeslaModelS_2_Rigged(Clone)");
+        }
+        if (go == null)
+        {
+            go = GameObject.Find("TeslaModelS_2_RiggedLOD");
+        }
+        if (go == null)
+        {
+            go = GameObject.Find("TeslaModelS_2_RiggedLOD(Clone)");
         }
         return go;
     }
@@ -1477,6 +1509,10 @@ public class TrafAIMotor : MonoBehaviour
                 //layer 12 equivale a obstacle: se l'oggetto incontrato non è un ostacolo allora non faccio niente, sono elementi dell'ambiente oppure auto del traffico, gia gestite tramite raycast
                 //se sto gia inchiodando non faccio nulla
                 //se hasStopTarget = true significa che l'ostacolo si trova in corrispondenza di un incrocio al quale devo fermami ed ho gia iniziato la procedura, dunque non faccio nulla
+                //if (motor.hasStopTarget)
+                //{
+                //    motor.distanzaIniziale += 2f;
+                //}
                 return;
             }
             //float distanza = Vector3.Distance(motor.transform.position, other.gameObject.transform.position);

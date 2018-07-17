@@ -296,14 +296,14 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
         }
 
         TrafAIMotor motor = GetComponent<TrafAIMotor>();
-        if (velocitaVera)
-        {
-            motor.currentSpeed = currentSpeed;
-        } else
-        {
-            motor.currentSpeed = currentSpeed + 0.25f;
-        }
-        
+        //if (velocitaVera)
+        //{
+        //    motor.currentSpeed = currentSpeed;
+        //} else
+        //{
+        //    motor.currentSpeed = currentSpeed + 0.25f;
+        //}
+        motor.currentSpeed = currentSpeed;
         motor.hasStopTarget = hasStopTarget;
         motor.frenata = frenata;
 
@@ -518,12 +518,16 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
         {
             if (hitInfo.rigidbody != null && (hitInfo.rigidbody.tag.Equals("TrafficCar") || hitInfo.rigidbody.tag.Equals("Player")))
             {
-                if (hitInfo.rigidbody.GetComponent<TrafAIMotor>().autoScorretta)
+                if (hitInfo.rigidbody.GetComponent<AutoTrafficoNoRayCast>() != null)
                 {
-                    targetSpeed = 0;
-                    autoPassata = true;
-                    tempoInizio = DateTime.Now;
+                    if (hitInfo.rigidbody.GetComponent<AutoTrafficoNoRayCast>().autoScorretta)
+                    {
+                        targetSpeed = 0;
+                        autoPassata = true;
+                        tempoInizio = DateTime.Now;
+                    }
                 }
+                
                 Debug.DrawLine(this.transform.position, hitInfo.transform.position);
                 if (hitInfo.distance <= 35f)
                 {
@@ -794,7 +798,7 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
             {
                 distanzaCorrente = Math.Abs(vettoreDifferenza.z);
             }
-            distanzaCorrente -= 2f;
+            distanzaCorrente -= 3f;
             Debug.DrawLine(stopTarget, transform.position);
             targetSpeed = velocitaInizialeFrenata * distanzaCorrente / distanzaIniziale;
             /*if (velocitaInizialeFrenata >= 6f)
@@ -865,7 +869,8 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
                 //currentSpeed = 0;
             }
             else
-                currentSpeed += Mathf.Min(maxAccell * Time.deltaTime, targetSpeed - currentSpeed);
+                //currentSpeed += Mathf.Min(maxAccell * Time.deltaTime, targetSpeed - currentSpeed);
+                currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, Time.fixedDeltaTime * 4f);
 
         }
         else
@@ -1198,6 +1203,14 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
         if (go == null)
         {
             go = GameObject.Find("TeslaModelS_2_Rigged(Clone)");
+        }
+        if (go == null)
+        {
+            go = GameObject.Find("TeslaModelS_2_RiggedLOD");
+        }
+        if (go == null)
+        {
+            go = GameObject.Find("TeslaModelS_2_RiggedLOD(Clone)");
         }
         return go;
     }

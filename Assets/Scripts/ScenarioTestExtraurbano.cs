@@ -378,6 +378,14 @@ public class ScenarioTestExtraurbano : MonoBehaviour
         {
             go = GameObject.Find("TeslaModelS_2_Rigged(Clone)");
         }
+        if (go == null)
+        {
+            go = GameObject.Find("TeslaModelS_2_RiggedLOD");
+        }
+        if (go == null)
+        {
+            go = GameObject.Find("TeslaModelS_2_RiggedLOD(Clone)");
+        }
         return go;
     }
 

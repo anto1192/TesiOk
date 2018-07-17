@@ -27,8 +27,8 @@ public class PIDPars : ScriptableObject
     public float p_sterzataPCH = 41f;
     public float i_sterzataPCH = 0.3f;
     public float d_sterzataPCH = 0.3f;
-    public float velocitaFrenata = 8f;
-
+    public float velocitaFrenata = 10f;
+    public float velocitaAccelerazione = 10f;
     public float offsetSpringForce = 1.6f;
 
     public int offset = 0;
@@ -36,4 +36,6 @@ public class PIDPars : ScriptableObject
     public int coefficiente = 10000;
 
     public int violenzaPiattaforma = 7;
+
+    public float partenzaAuto = 0.95f;
 }

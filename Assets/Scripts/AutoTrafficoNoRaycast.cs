@@ -146,10 +146,10 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
         if (_pidPars == null)
             _pidPars = Resources.Load<PIDPars>("PIDPars_steeringWheel");
         target = currentEntry.waypoints[currentIndex];
-        //CheckHeight();
+        CheckHeight();
         inited = true;
         nextRaycast = 0f;
-        //CheckHeight();
+        CheckHeight();
 
         if (!this.tag.Equals("Player"))
         {
@@ -1147,6 +1147,14 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
         if (go == null)
         {
             go = GameObject.Find("TeslaModelS_2_Rigged(Clone)");
+        }
+        if (go == null)
+        {
+            go = GameObject.Find("TeslaModelS_2_RiggedLOD");
+        }
+        if (go == null)
+        {
+            go = GameObject.Find("TeslaModelS_2_RiggedLOD(Clone)");
         }
         return go;
     }
