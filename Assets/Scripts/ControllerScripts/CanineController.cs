@@ -5,5 +5,34 @@
  * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
  */
 
-using UnityEngine;using System.Collections;public class CanineController : MonoBehaviour {	[SerializeField] Animator animator;	[SerializeField] float moveSpeed;	[SerializeField]  Rigidbody rb;	// Use this for initialization	void Start () {		animator.SetBool("Idle", true);	}		// Update is called once per frame	void Update () {		if ((animator.GetBool("Walk") == true || animator.GetBool("Run")) && !animator.GetBool("Idle")) {			rb.MovePosition(transform.position + transform.forward * moveSpeed * Time.deltaTime);		}	}	//Call ChooseAnimation(animChoice) where animChoice is an integer to enter an animation state	//If 0 or 1 is chosen it sets the controller boolean to either idle = 0 or walk = 1	void ChooseAnimation (int animChoice) {		if (animChoice == 0) {			animator.SetBool("Idle", true);			animator.SetBool("Walk", false);            animator.SetBool("Run", false);
-        } else if (animChoice == 1) {			animator.SetBool("Run", true);			animator.SetBool("Idle", false);		}	}}
+using UnityEngine;
+using System.Collections;
+
+public class CanineController : MonoBehaviour {
+	[SerializeField] Animator animator;
+	[SerializeField] float moveSpeed;
+	[SerializeField]  Rigidbody rb;
+	// Use this for initialization
+	void Start () {
+		animator.SetBool("Idle", true);
+	}
+	
+	// Update is called once per frame
+	void FixedUpdate () {
+		if ((animator.GetBool("Walk") == true || animator.GetBool("Run")) && !animator.GetBool("Idle")) {
+			rb.MovePosition(transform.position + transform.forward * moveSpeed * Time.fixedDeltaTime);
+		}
+	}
+	//Call ChooseAnimation(animChoice) where animChoice is an integer to enter an animation state
+	//If 0 or 1 is chosen it sets the controller boolean to either idle = 0 or walk = 1
+	void ChooseAnimation (int animChoice) {
+		if (animChoice == 0) {
+			animator.SetBool("Idle", true);
+			animator.SetBool("Walk", false);
+            animator.SetBool("Run", false);
+        } else if (animChoice == 1) {
+			animator.SetBool("Run", true);
+			animator.SetBool("Idle", false);
+		}
+	}
+}

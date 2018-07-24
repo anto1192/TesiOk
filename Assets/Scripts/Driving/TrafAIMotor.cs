@@ -21,8 +21,15 @@ public class TrafAIMotor : MonoBehaviour
     {
         set
         {
-            ChangeProperty(idCorrente, int.Parse(value));
-            idCorrente = int.Parse(value);
+            try
+            {
+                ChangeProperty(idCorrente, int.Parse(value));
+                idCorrente = int.Parse(value);
+            } catch (Exception e)
+            {
+                Debug.Log("Eccezione " + e + " in SetProperty");
+            }
+            
         }
     }
 
@@ -32,8 +39,16 @@ public class TrafAIMotor : MonoBehaviour
         {
             if (int.Parse(value) != semaforo)
             {
-                modificaSemaforo(semaforo, int.Parse(value));
-                semaforo = int.Parse(value);
+                try
+                {
+                    modificaSemaforo(semaforo, int.Parse(value));
+                    semaforo = int.Parse(value);
+                }
+                catch (Exception e)
+                {
+                    Debug.Log("Eccezione " + e + " in SetSemaforo");
+                }
+
             }
 
         }
@@ -140,6 +155,9 @@ public class TrafAIMotor : MonoBehaviour
     public GameObject ostacoloEvitare;
 
 
+    private float valoreOriginaleMaxSpeed = 0;
+
+
     //ANTONELLO
     public void Init()
     {
@@ -178,7 +196,7 @@ public class TrafAIMotor : MonoBehaviour
         raggioSinistra.transform.localRotation = Quaternion.identity;
         raggioSinistra.transform.localScale = Vector3.zero;
 
-
+        valoreOriginaleMaxSpeed = maxSpeed;
     }
 
     private void Start()
@@ -256,6 +274,8 @@ public class TrafAIMotor : MonoBehaviour
         if (!inited)
             return;
 
+        Guida();
+
         //ANTONELLO
         if (!this.tag.Equals("Player"))
         {
@@ -295,7 +315,7 @@ public class TrafAIMotor : MonoBehaviour
     private float accelerazionePrecedente = 0;
     private bool inizioValutazioneSemaforo = false;
 
-    void Update()
+    void Guida()
     {
         if (!inited)
             return;
@@ -406,10 +426,10 @@ public class TrafAIMotor : MonoBehaviour
             if (distanzaWaypointFramePrecedente != 0 && (distanzaWaypoint - distanzaWaypointFramePrecedente) > 0)
             {
                 contatore++;
-                if (contatore >= 5)
+                if (contatore >= 10)
                 {
                     //abbiamo saltato il waypoint
-                    if ((numeroWaypointSaltati++) >= 7)
+                    if ((numeroWaypointSaltati++) >= 10)
                     {
                         if (this.tag.Equals("Player"))
                         {
@@ -417,11 +437,12 @@ public class TrafAIMotor : MonoBehaviour
                             Property = "9999"; //settando Property a 9999 verrà chiamato il metodo che interrompe il test
                         } else
                         {
+                            Debug.Log(gameObject + "distrutto perchè ha saltato troppi waypoint");
                             Destroy(gameObject);
                         }
                         
                     }
-                    Debug.Log("waypoint saltato");
+                    Debug.Log("waypoint saltato; " + gameObject);
                     distanzaWaypoint = 0;
                     contatore = 0;
                     modificaTarget(true);
@@ -786,7 +807,7 @@ public class TrafAIMotor : MonoBehaviour
             }
             if (this.tag.Equals("Player"))
             {
-                distanzaCorrente -= 5f;
+                distanzaCorrente -= 6f;
             }
             else
             {
@@ -835,7 +856,14 @@ public class TrafAIMotor : MonoBehaviour
             {
                 distanzaCorrente = Math.Abs(vettoreDifferenza.z);
             }
-            distanzaCorrente -= 3f;
+            if (nextEntry.intersection.stopSign)
+            {
+                //distanzaCorrente -= 2f;
+            } else
+            {
+                distanzaCorrente -= 5f;
+            }
+            
             Debug.DrawLine(stopTarget, transform.position);
             targetSpeed = velocitaInizialeFrenata * distanzaCorrente / distanzaIniziale;
             /*if (velocitaInizialeFrenata >= 6f)
@@ -1042,6 +1070,8 @@ public class TrafAIMotor : MonoBehaviour
     public float centerSteerDifference = 2f;
     float averageSteeringAngle = 0f;
 
+    private bool ridottoMaxSpeed = false;
+
     void SteerCar()
     {
         PIDControllerSterzata.pFactor = _pidPars.p_sterzata;
@@ -1082,11 +1112,29 @@ public class TrafAIMotor : MonoBehaviour
         bool sterzataAmpia = false;
         //Debug.Log("indice: " + indice);
 
+        if (ridottoMaxSpeed && this.tag.Equals("Player"))
+        {
+            maxSpeed = valoreOriginaleMaxSpeed;
+            ridottoMaxSpeed = false;
+        }
+
         if (steeringAngle > 25f)
         {
             if (sterzataMassima)
             {
                 steeringAngle = 45f;
+                if (this.tag.Equals("Player") && maxSpeed > 8f)
+                {
+                    ridottoMaxSpeed = true;
+                    valoreOriginaleMaxSpeed = maxSpeed;
+                    maxSpeed = 8f;
+                }
+            } else
+            {
+                if (this.tag.Equals("Player"))
+                {
+                    maxSpeed = valoreOriginaleMaxSpeed;
+                }
             }
             sterzataAmpia = true;
         }
@@ -1095,6 +1143,20 @@ public class TrafAIMotor : MonoBehaviour
             if (sterzataMassima)
             {
                 steeringAngle = -45f;
+                if (this.tag.Equals("Player") && maxSpeed > 8f)
+                {
+                    ridottoMaxSpeed = true;
+                    valoreOriginaleMaxSpeed = maxSpeed;
+                    maxSpeed = 8f;
+                }
+                
+            } else
+            {
+                if (this.tag.Equals("Player"))
+                {
+                    maxSpeed = valoreOriginaleMaxSpeed;
+                }
+                
             }
             //steeringAngle = -45f;
             sterzataAmpia = true;
@@ -1287,26 +1349,29 @@ public class TrafAIMotor : MonoBehaviour
     }
 
 
-    //private bool primaVoltaEvita = true;
+    private bool primaVoltaEvita = true;
+    private float throttleOk = 0;
     private void evita()
     {
         //questo metodo fa si che l'auto eviti un ostacolo imminente e frenando e sterzando bruscamente
-        //if (hasStopTarget)
-        //{
-        //    //mi sto fermando allo stop o al semaforo e c'è un ostacolo in prossimità (es. pedone che attraversa la strada)
-        //    //mi fermerò comunque però freno leggermente di piu
-        //    if (primaVoltaEvita)
-        //    {
-        //        currentThrottle = Mathf.Clamp(currentThrottle - 0.2f, -1f, -0.2f);
-        //        vehicleController.accellInput = currentThrottle;
-        //        primaVoltaEvita = false;
-        //    } else
-        //    {
-        //        vehicleController.accellInput = currentThrottle;
-        //    }           
-        //    return;
-        //}
-        //primaVoltaEvita = true;
+        if (hasStopTarget)
+        {
+            //mi sto fermando allo stop o al semaforo e c'è un ostacolo in prossimità (es. pedone che attraversa la strada)
+            //mi fermerò comunque però freno leggermente di piu
+            if (primaVoltaEvita)
+            {
+                currentThrottle = Mathf.Clamp(currentThrottle - 0.1f, -1f, -0.2f);
+                throttleOk = currentThrottle;
+                vehicleController.accellInput = currentThrottle;
+                primaVoltaEvita = false;
+            }
+            else
+            {
+                vehicleController.accellInput = throttleOk;
+            }
+            return;
+        }
+        primaVoltaEvita = true;
         float sterzata = 0;
         if (direzioneSpostamentoDestra == true)
         {
@@ -1319,7 +1384,6 @@ public class TrafAIMotor : MonoBehaviour
 
         //calcolo la quantita di freno necessaria
         float riduzioneVelocitaNecessaria = velocitaAttuale / Vector3.Distance(ostacoloEvitare.transform.position, nose.transform.position);
-        Debug.Log("riduzione Velocita necessaria: " + riduzioneVelocitaNecessaria);
 
         
         currentThrottle = Mathf.Clamp(-riduzioneVelocitaNecessaria, -1f, -0.5f);
@@ -1504,7 +1568,7 @@ public class TrafAIMotor : MonoBehaviour
         void OnTriggerEnter(Collider other)
         {
 
-            if (!other.gameObject.layer.Equals(12) || motor.evitare == true || motor.hasStopTarget == true)
+            if (!other.gameObject.layer.Equals(12) || motor.evitare == true) //|| motor.hasStopTarget == true)
             {
                 //layer 12 equivale a obstacle: se l'oggetto incontrato non è un ostacolo allora non faccio niente, sono elementi dell'ambiente oppure auto del traffico, gia gestite tramite raycast
                 //se sto gia inchiodando non faccio nulla

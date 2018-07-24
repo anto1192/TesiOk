@@ -250,6 +250,9 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
         if (!inited)
             return;
 
+
+        Guida();
+
         //ANTONELLO
         if (!this.tag.Equals("Player"))
         {
@@ -276,7 +279,7 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
     DateTime tempoInizio;
     private bool velocitaVera = false;
 
-    void Update()
+    void Guida()
     {
         if (!inited)
             return;
@@ -384,14 +387,14 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
             if (distanzaWaypointFramePrecedente != 0 && (distanzaWaypoint - distanzaWaypointFramePrecedente) > 0)
             {
                 contatore++;
-                if (contatore >= 5)
+                if (contatore >= 10)
                 {
                     //abbiamo saltato il waypoint
                     if ((numeroWaypointSaltati++) >= 10)
                     {
                         Destroy(gameObject);
                     }
-                    Debug.Log("waypoint saltato");
+                    Debug.Log("waypoint saltato; " + gameObject);
                     distanzaWaypoint = 0;
                     contatore = 0;
                     modificaTarget(true);
@@ -870,7 +873,7 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
             }
             else
                 //currentSpeed += Mathf.Min(maxAccell * Time.deltaTime, targetSpeed - currentSpeed);
-                currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, Time.fixedDeltaTime * 4f);
+                currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, Time.fixedDeltaTime * 3f);
 
         }
         else

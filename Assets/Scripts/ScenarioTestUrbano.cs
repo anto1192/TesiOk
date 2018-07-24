@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Reflection;
+using System;
 
 public class ScenarioTestUrbano : MonoBehaviour
 {
@@ -10,6 +11,9 @@ public class ScenarioTestUrbano : MonoBehaviour
     public TrafSystem system;
     public GameObject[] prefabs;
     public GameObject prefabMacchinaOstacolo;
+    public GameObject prefabScooter;
+
+
     //private TrafAIMotor macchinaTraffico;
     private MacchinaTrafficoInchiodata macchinaTraffico;
     private AutoTrafficoNoRayCast macchinaTrafficoScorretta;
@@ -522,6 +526,8 @@ public class ScenarioTestUrbano : MonoBehaviour
         lights[0].StartCoroutine(courutineSemaforoRossoLungo(container2));
     }
 
+    TrafAIMotor macchinaTagliaStrada = null;
+
     public void semaforo13()
     {
         TrafEntry entry = system.GetEntry(1012, 6);
@@ -543,14 +549,16 @@ public class ScenarioTestUrbano : MonoBehaviour
         List<RoadGraphEdge> percorso13_3 = ottieniPercorso13_3();
         List<RoadGraphEdge> percorso13_4 = ottieniPercorso13_4();
         List<RoadGraphEdge> percorso13_5 = ottieniPercorso13_5();
-        CreaMacchinaTraffico(11, 2, 0f, percorso13_0);
-        CreaMacchinaTraffico(11, 2, 0.3f, percorso13_1);
-        CreaMacchinaTraffico(12, 0, 0f, percorso13_2);
+        CreaMacchinaTraffico(11, 2, 0.3f, percorso13_0);
+        CreaMacchinaTraffico(11, 2, 0.6f, percorso13_1);
+        macchinaTagliaStrada = CreaMacchinaTraffico(12, 0, 0.3f, percorso13_2);
         //CreaMacchinaTraffico(11, 3, 0.7f, percorso13_3);
         CreaMacchinaTrafficoNoRaycast(11, 3, 0.95f, percorso13_3).autoScorretta = true;
         CreaMacchinaTraffico(12, 1, 0.6f, percorso13_4);
         CreaMacchinaTraffico(12, 0, 0.8f, percorso13_5);
     }
+
+
 
     public void semaforo14a()
     {
@@ -593,7 +601,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public void semaforo15()
     {
-        semaforo15a();
+        semaforo15a();  
     }
 
     public void semaforo16()
@@ -639,6 +647,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         if (motor.currentEntry.subIdentifier != 0)
         {
             motor.currentEntry.subIdentifier = 0;
+            motor.maxSpeed = 3f;
         }
 
         
@@ -801,14 +810,14 @@ public class ScenarioTestUrbano : MonoBehaviour
 
 
         macchinaTrafficoScorretta.autoScorretta = true;
-        //macchinaTrafficoScorretta.maxSpeed = 10f;
+        macchinaTrafficoScorretta.maxSpeed = 13f;
         SetLayer(12, macchinaTrafficoScorretta.transform);
 
 
         List<RoadGraphEdge> percorso159_4 = ottieniPercorso159_4();
         macchinaTrafficoScorrettaDavanti = CreaMacchinaTraffico(162, 3, 0.807f, percorso159_4);
         macchinaTrafficoScorrettaDavanti.autoScorretta = true;
-        macchinaTrafficoScorrettaDavanti.maxSpeed = 4.05f;
+        macchinaTrafficoScorrettaDavanti.maxSpeed = 5.2f;
 
         //ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().maxSpeed = 10f;
 
@@ -982,7 +991,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         //List<RoadGraphEdge> percorso50_1 = ottieniPercorso50_1();
         List<RoadGraphEdge> percorso50_2 = ottieniPercorso50_2();
         List<RoadGraphEdge> percorso50_3 = ottieniPercorso50_3();
-        CreaMacchinaTraffico(51, 0, 0.9f, percorso50_0);
+        CreaMacchinaTraffico(51, 0, 0.95f, percorso50_0);
         //CreaMacchinaTraffico(51, 1, 0.2f, percorso50_1);
         CreaMacchinaTraffico(62, 0, 0.4f, percorso50_2);
         CreaMacchinaTraffico(62, 0, 0f, percorso50_3);
@@ -1063,7 +1072,7 @@ public class ScenarioTestUrbano : MonoBehaviour
     public void evento13()
     {
         semaforo13a();
-        macchinaTraffico.maxSpeed = 5f;
+        macchinaTraffico.maxSpeed = 4f;
         TrafEntry entry = system.GetEntry(1049, 5);
         TrafficLightContainer container = entry.light;
         TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
@@ -1083,7 +1092,8 @@ public class ScenarioTestUrbano : MonoBehaviour
         List<RoadGraphEdge> percorso14_0 = ottieniPercorso14_0();
         List<RoadGraphEdge> percorso14_1 = ottieniPercorso14_1();
         List<RoadGraphEdge> percorso14_2 = ottieniPercorso14_2();
-        CreaMacchinaTraffico(20, 3, 0.3f, percorso14_0);
+        /*TrafAIMotor macchinaPiuLenta = CreaMacchinaTraffico(20, 3, 0.5f, percorso14_0);
+        macchinaPiuLenta.maxSpeed = 8f;*/
         CreaMacchinaTraffico(20, 2, 0.6f, percorso14_1);
         CreaMacchinaTraffico(20, 1, 0.8f, percorso14_2);
 
@@ -1096,16 +1106,154 @@ public class ScenarioTestUrbano : MonoBehaviour
     public void evento15()
     {
         semaforo15a();
-        macchinaTraffico.maxSpeed = 11f;
+        if (macchinaTraffico != null)
+        {
+            macchinaTraffico.maxSpeed = 11f;
+        }
+        
         List<RoadGraphEdge> percorso15_0 = ottieniPercorso15_0();
         List<RoadGraphEdge> percorso15_1 = ottieniPercorso15_1();
         CreaMacchinaTraffico(3, 3, 0.4f, percorso15_0);
         //CreaMacchinaTraffico(3, 0, 0.6f, percorso15_1); //QUESTA SCOMPARE!!! ATTENZIONE
+
+
+        eventoTaglioStrada();
+        
+
     }
+
+    private void eventoTaglioStrada()
+    {
+        
+        if (macchinaTagliaStrada == null)
+        {
+            return;
+        }
+        if (macchinaTagliaStrada.currentEntry.identifier != 15)
+        {
+            return;
+        }
+
+        if (Vector3.Distance(macchinaTagliaStrada.transform.position, macchinaTagliaStrada.currentEntry.waypoints[macchinaTagliaStrada.currentEntry.waypoints.Count - 1]) < 20)
+        {
+            macchinaTagliaStrada.maxSpeed = 0f;
+            return;
+        }
+
+        if (Vector3.Distance(car.transform.position, car.GetComponent<TrafAIMotor>().currentEntry.waypoints[car.GetComponent<TrafAIMotor>().currentEntry.waypoints.Count -1]) < 50)
+        {
+            float xMacchinaTagliaStrada = macchinaTagliaStrada.transform.position.x;
+            float miaX = car.transform.position.x;
+            float xMacchinaDavanti = macchinaTraffico.transform.position.x;
+            if ((miaX - xMacchinaTagliaStrada) > 5f && (xMacchinaTagliaStrada - xMacchinaDavanti) > 5f)
+            {
+                //la macchina che deve tagliarmi la strada deve essere pu avanti rispetto a me ma piu indietro rispetto alla macchina che ho davanti
+                //se si trova in queste condizioni mi tagli la strada altrimenti si ferma per evitare il blocco presente nella strada
+
+                macchinaTagliaStrada.maxSpeed = 5f;
+                tagliaStrada();
+                //TrafEntry entry = system.GetEntry(1049, 5);
+                //TrafficLightContainer container = entry.light;
+                //TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+                //lights[0].StartCoroutine(attesa15_2());
+                SetLayer(12, macchinaTagliaStrada.transform);
+                return;
+            }
+            macchinaTagliaStrada.maxSpeed = 0f; //non puo tagliarmi la strada; si ferma
+            return;
+        }
+
+        float distanza = macchinaTagliaStrada.transform.position.x - car.transform.position.x;
+        Debug.Log("distanza mia macchina e macchinatagliastrada " + distanza);
+        //if (distanza < -30)
+        if (distanza < -35)
+        {
+            macchinaTagliaStrada.maxSpeed = Mathf.Clamp(macchinaTagliaStrada.maxSpeed -1, 3f, limiteVelocita);
+            TrafEntry entry = system.GetEntry(1049, 5);
+            TrafficLightContainer container = entry.light;
+            TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+            lights[0].StartCoroutine(attesa15());
+            //attesa15();
+            return;
+        }
+        //if (distanza > -5)
+        if (distanza > -20)
+        {
+            //macchinaTagliaStrada.maxSpeed = Mathf.Clamp(macchinaTagliaStrada.maxSpeed + 1, 3f, limiteVelocita);
+            macchinaTagliaStrada.maxSpeed = limiteVelocita;
+            TrafEntry entry = system.GetEntry(1049, 5);
+            TrafficLightContainer container = entry.light;
+            TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+            lights[0].StartCoroutine(attesa15());
+            return;
+        }
+        macchinaTagliaStrada.maxSpeed = macchinaTraffico.maxSpeed;
+        //if (Vector3.Distance(car.transform.position, car.GetComponent<TrafAIMotor>().target) < 65)
+        
+
+        
+
+        //macchinaTagliaStrada.maxSpeed++;
+        TrafEntry entry1 = system.GetEntry(1049, 5);
+        TrafficLightContainer container1 = entry1.light;
+        TrafficLight[] lights1 = container1.gameObject.GetComponentsInParent<TrafficLight>();
+        lights1[0].StartCoroutine(attesa15());
+    }
+
+    public IEnumerator attesa15()
+    {
+        yield return new WaitForSeconds(0.5f);
+        eventoTaglioStrada();
+
+    }
+
+    public IEnumerator attesa15_2()
+    {
+        if (Vector3.Distance(car.transform.position, macchinaTagliaStrada.transform.position) > 12f)
+        {
+            Debug.Log("aspetto 0.5f");
+            yield return new WaitForSeconds(0.3f);
+            Debug.Log("fine attesa");
+        }       
+        SetLayer(12, macchinaTagliaStrada.transform);
+    }
+    
+
+    private void tagliaStrada()
+    {
+        //la macchina mi taglia la strada
+        TrafEntry entry2 = system.GetEntry(15, 2);
+        TrafEntry entry3 = system.GetEntry(15, 3);
+        entry3.waypoints[1] = entry2.waypoints[1];
+        macchinaTagliaStrada.target = entry2.waypoints[1];
+        macchinaTagliaStrada.currentEntry = entry3;
+
+        Debug.DrawLine(macchinaTagliaStrada.transform.position, entry3.waypoints[1]);
+    }
+
+
+    public void evento1031()
+    {
+        SetLayer(8, macchinaTagliaStrada.transform);
+    }
+
 
     public void evento16()
     {
         semaforo16a();
+
+
+        if (macchinaTagliaStrada.maxSpeed == 0)
+        {
+            //la macchina non mi ha tagliato la strada ma è ferma; gli faccio evitare il blocco di cemento e la faccio proseguire
+            macchinaTagliaStrada.maxSpeed = 7f;
+            tagliaStrada();           
+        } else
+        {
+            //mi ha tagliato la strada, risetto il livello a Traffic
+            SetLayer(8, macchinaTagliaStrada.transform);
+        }
+        GameObject.Destroy(GameObject.Find("Barriera"));
     }
 
     public void evento16a()
@@ -1113,26 +1261,33 @@ public class ScenarioTestUrbano : MonoBehaviour
         List<RoadGraphEdge> percorso16_0 = ottieniPercorso16_0();
         List<RoadGraphEdge> percorso16_1 = ottieniPercorso16_1();
         //List<RoadGraphEdge> percorso16_2 = ottieniPercorso16_2();
-        List<RoadGraphEdge> percorso16_3 = ottieniPercorso16_3();
+        //List<RoadGraphEdge> percorso16_3 = ottieniPercorso16_3();
         List<RoadGraphEdge> percorso16_4 = ottieniPercorso16_4();
         CreaMacchinaTraffico(17, 1, 0.4f, percorso16_0);
         CreaMacchinaTraffico(17, 3, 0.2f, percorso16_1);
         //CreaMacchinaTraffico(17, 0, 0f, percorso16_2);
-        CreaMacchinaTraffico(17, 0, 0.1f, percorso16_3);
+        //CreaMacchinaTraffico(17, 0, 0.1f, percorso16_3);
         CreaMacchinaTraffico(17, 0, 0.5f, percorso16_4);
     }
 
     public IEnumerator attesa18()
     {
         yield return new WaitForSeconds(1f);
-        if (macchinaTraffico != null)
+        try
         {
-            macchinaTraffico.maxSpeed = 3f;           
-        }
-        else
+            if (macchinaTraffico.currentEntry.identifier == 18)
+            {
+                macchinaTraffico.maxSpeed = 3f;
+            } else
+            {
+                ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().maxSpeed = 2f;
+            }                     
+        } catch (Exception e)
         {
-            ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().maxSpeed = 3f;
+            //c'è stato qualche problema con macchinaTraffico
+            ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().maxSpeed = 2f;
         }
+        
     }
 
     TrafAIMotor macchinaAccodarmi = null;
@@ -1166,15 +1321,21 @@ public class ScenarioTestUrbano : MonoBehaviour
     public void evento18a()
     {
         GameObject go = ottieniRiferimentoPlayer();
-        if (macchinaAccodarmi.transform.position.z > go.transform.position.z)
+        try
+        { 
+            if (macchinaAccodarmi.transform.position.z > go.transform.position.z)
+            {
+                TrafficLightContainer container = system.GetEntry(1049, 5).light;
+                TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+                lights[0].StartCoroutine(attesa18_2());
+                return;
+            }
+        } catch (Exception e)
         {
-            TrafficLightContainer container = system.GetEntry(1049, 5).light;
-            TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
-            lights[0].StartCoroutine(attesa18_2());
-            return;
+            Debug.Log("eccezione macchinaAccodarmi: " + e);
         }
 
-        
+
         go.GetComponent<TrafAIMotor>().maxSpeed = 11f;
 
 
@@ -1244,6 +1405,9 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(15, 2, 0.15f, percorso3_5);
         CreaMacchinaTraffico(15, 1, 0.4f, percorso3_4);
         CreaMacchinaTraffico(15, 0, 0.1f, percorso3_6);
+
+        
+
     }
 
     public void evento4()
@@ -1276,7 +1440,97 @@ public class ScenarioTestUrbano : MonoBehaviour
 
         CreaMacchinaTraffico(23, 2, 0.3f, percorso4_2);
 
+
+        /*List<RoadGraphEdge> percorsoMacchinaTagliaStrada4 = ottieniPercorsoMacchinTagliaStrada4();
+        scooterTagliaStrada = CreaScooter(1031, 2, 0.5f, percorsoMacchinaTagliaStrada4);
+        eventoTaglioStrada2();*/
     }
+
+    TrafAIMotor scooterTagliaStrada = null;
+
+    private void eventoTaglioStrada2()
+    {
+
+        if (scooterTagliaStrada == null)
+        {
+            return;
+        }
+        if (scooterTagliaStrada.currentEntry.identifier != 4 && scooterTagliaStrada.currentEntry.identifier != 1031)
+        {
+            return;
+        }
+
+        float distanza = Mathf.Abs(scooterTagliaStrada.transform.position.z - car.transform.position.z);
+        Debug.Log("distanza mia macchina e macchinatagliastrada " + distanza);
+        if (distanza > 25)
+        {
+            scooterTagliaStrada.maxSpeed = Mathf.Clamp(scooterTagliaStrada.maxSpeed + 1, 3f, limiteVelocita);
+            TrafEntry entry = system.GetEntry(1049, 5);
+            TrafficLightContainer container = entry.light;
+            TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+            lights[0].StartCoroutine(attesa4());
+            //attesa15();
+            return;
+        }
+        /*if (distanza < 5)
+        {
+            macchinaTagliaStrada2.maxSpeed = Mathf.Clamp(macchinaTagliaStrada2.maxSpeed - 1, 3f, limiteVelocita);
+            TrafEntry entry = system.GetEntry(1049, 5);
+            TrafficLightContainer container = entry.light;
+            TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+            lights[0].StartCoroutine(attesa4());
+            return;
+        }*/
+        scooterTagliaStrada.maxSpeed = 11f;
+        /*if (Vector3.Distance(car.transform.position, car.GetComponent<TrafAIMotor>().target) < 65)
+        {
+            macchinaTagliaStrada2.maxSpeed = 7f;
+            tagliaStrada2();
+            return;
+        }*/
+        if (scooterTagliaStrada.currentEntry.identifier != 4)
+        {
+            TrafEntry entry = system.GetEntry(1049, 5);
+            TrafficLightContainer container = entry.light;
+            TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
+            lights[0].StartCoroutine(attesa4());
+            return;
+        }
+
+        Debug.Log("Distanza dal waypoint: " + Vector3.Distance(scooterTagliaStrada.transform.position, scooterTagliaStrada.currentEntry.waypoints[scooterTagliaStrada.currentEntry.waypoints.Count - 1]));
+        if (Vector3.Distance(scooterTagliaStrada.transform.position, scooterTagliaStrada.currentEntry.waypoints[scooterTagliaStrada.currentEntry.waypoints.Count - 1]) < 15f) 
+        {
+            Debug.Log("cambio corsia");
+            TrafEntry entry = system.GetEntry(125, 0);
+            scooterTagliaStrada.currentEntry = entry;
+            scooterTagliaStrada.target = entry.waypoints[0];
+            return;
+        }
+
+        TrafEntry entry1 = system.GetEntry(1049, 5);
+        TrafficLightContainer container1 = entry1.light;
+        TrafficLight[] lights1 = container1.gameObject.GetComponentsInParent<TrafficLight>();
+        lights1[0].StartCoroutine(attesa4());
+    }
+
+    public IEnumerator attesa4()
+    {
+        yield return new WaitForSeconds(0.5f);
+        eventoTaglioStrada2();
+
+    }
+
+    /*private void tagliaStrada2()
+    {
+        //la macchina mi taglia la strada
+        TrafEntry entry2 = system.GetEntry(15, 2);
+        TrafEntry entry3 = system.GetEntry(15, 3);
+        entry3.waypoints[1] = entry2.waypoints[1];
+        macchinaTagliaStrada.target = entry2.waypoints[1];
+        macchinaTagliaStrada.currentEntry = entry3;
+
+        Debug.DrawLine(macchinaTagliaStrada.transform.position, entry3.waypoints[1]);
+    }*/
 
     public void evento125()
     {
@@ -4260,6 +4514,29 @@ public class ScenarioTestUrbano : MonoBehaviour
         return percorso;
     }
 
+    private List<RoadGraphEdge> ottieniPercorsoMacchinTagliaStrada4()
+    {
+        RoadGraphEdge edge0 = new RoadGraphEdge();
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+
+        edge0.id = 4;
+        edge0.subId = 2;
+
+        edge1.id = 125;
+        edge1.subId = 1;
+
+        edge2.id = 164;
+        edge2.subId = 0;
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge0);
+        percorso.Add(edge1);
+        percorso.Add(edge2);        
+
+        return percorso;
+    }
+
 
 
 
@@ -4448,7 +4725,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
         if (!Physics.CheckSphere(pos.position, checkRadius, 1 << LayerMask.NameToLayer("Traffic")))
         {
-            GameObject go = GameObject.Instantiate(prefabs[Random.Range(0, prefabs.Length)], pos.position, Quaternion.identity) as GameObject;
+            GameObject go = GameObject.Instantiate(prefabs[UnityEngine.Random.Range(0, prefabs.Length)], pos.position, Quaternion.identity) as GameObject;
             TrafAIMotor motor = go.GetComponent<TrafAIMotor>();
 
 
@@ -4470,6 +4747,44 @@ public class ScenarioTestUrbano : MonoBehaviour
         }
         return null;
     }
+
+    public TrafAIMotor CreaScooter(int id, int subId, float distance, List<RoadGraphEdge> percorso)
+    {
+        //id e subId stabiliscono la entry
+        //distance da che distanza dall'inizio della entry la macchina deve apparire
+        //percorso indica il percorso che la macchina deve seguire, dopo che l'ha terminato, l'auto si distrugge
+        TrafEntry entry = system.GetEntry(id, subId);
+
+        if (entry == null)
+            return null;
+        InterpolatedPosition pos = entry.GetInterpolatedPosition(distance);
+
+
+        if (!Physics.CheckSphere(pos.position, checkRadius, 1 << LayerMask.NameToLayer("Traffic")))
+        {
+            GameObject go = GameObject.Instantiate(prefabScooter, pos.position, Quaternion.identity) as GameObject;
+            TrafAIMotor motor = go.GetComponent<TrafAIMotor>();
+
+
+            motor.currentIndex = pos.targetIndex;
+            motor.currentEntry = entry;
+            go.transform.LookAt(entry.waypoints[pos.targetIndex]);
+            motor.system = system;
+            motor.fixedRoute = true;
+            motor.fixedPath = percorso;
+            motor.maxSpeed = 11f; //40km/h
+            motor.Init();
+
+            if (OnSpawnHeaps != null)
+            {
+                OnSpawnHeaps(go);
+            }
+
+            return motor;
+        }
+        return null;
+    }
+
 
     public AutoTrafficoNoRayCast CreaMacchinaTrafficoNoRaycast(int id, int subId, float distance, List<RoadGraphEdge> percorso)
     {
@@ -4524,7 +4839,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
         if (!Physics.CheckSphere(pos.position, checkRadius, 1 << LayerMask.NameToLayer("Traffic")))
         {
-            GameObject go = GameObject.Instantiate(prefabs[Random.Range(0, prefabs.Length)], pos.position, Quaternion.identity) as GameObject;
+            GameObject go = GameObject.Instantiate(prefabs[UnityEngine.Random.Range(0, prefabs.Length)], pos.position, Quaternion.identity) as GameObject;
             MacchinaTrafficoInchiodata motor = go.AddComponent<MacchinaTrafficoInchiodata>();
             motor.nose = go.GetComponent<TrafAIMotor>().nose;
             motor.raycastOrigin = go.GetComponent<TrafAIMotor>().raycastOrigin;

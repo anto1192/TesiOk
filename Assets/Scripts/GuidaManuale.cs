@@ -36,9 +36,6 @@ public class GuidaManuale : MonoBehaviour
             {
                 return;
             }
-        } else
-        {
-            Debug.Log("posizione Null");
         }
         //grab input values
         var inputController = AppController.Instance.UserInput;
