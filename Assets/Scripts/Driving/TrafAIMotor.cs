@@ -114,6 +114,7 @@ public class TrafAIMotor : MonoBehaviour
 
     private bool somethingInFront = false;
     //ANTONELLO
+    public bool noRaycast = false;
     public bool sterzataMassima = false;
 
 
@@ -578,7 +579,7 @@ public class TrafAIMotor : MonoBehaviour
 
 
 
-        if (somethingInFront && !frenata)
+        if (somethingInFront && !frenata && !noRaycast)
         {
             if (hitInfo.rigidbody != null && (hitInfo.rigidbody.tag.Equals("TrafficCar") || hitInfo.rigidbody.tag.Equals("Player")))
             {
@@ -606,52 +607,8 @@ public class TrafAIMotor : MonoBehaviour
                     else
                     {
                         TrafAIMotor macchinaDavanti = hitInfo.rigidbody.GetComponent<TrafAIMotor>();
-                        /*if (this.tag.Equals("Player") && (macchinaDavanti.frenata || macchinaDavanti.hasStopTarget) && macchinaDavanti.currentSpeed > 6f)
-                        {
-                            //se l'auto davanti si sta fermando (ma è in movimento), mi fermo anche io
-                            //if (macchinaDavanti.currentSpeed > 1f)
-                            //{                                                              
-                                frenata = true;
-                                velocitaInizialeFrenata = velocitaAttuale;
-                                Vector3 targetAutoDavanti = Vector3.zero;
-                                if (macchinaDavanti.frenata)
-                                {
-                                    targetAutoDavanti = macchinaDavanti.frenataTarget;
-                                
-                                } else
-                                {
-                                    targetAutoDavanti = macchinaDavanti.stopTarget;
-                                }
-                                Vector3 vettoreDifferenza = targetAutoDavanti - hitInfo.transform.position;
-                                if (Math.Abs(vettoreDifferenza.x) > Math.Abs(vettoreDifferenza.z))
-                                {
-                                    if (hitInfo.transform.position.x > targetAutoDavanti.x) { 
-                                        frenataTarget = new Vector3(targetAutoDavanti.x + 4f, targetAutoDavanti.y, targetAutoDavanti.z);
-                                    } else
-                                    {
-                                        frenataTarget = new Vector3(targetAutoDavanti.x - 4f, targetAutoDavanti.y, targetAutoDavanti.z);
-                                    }
-                                } 
-                                else
-                                {
-                                    if (hitInfo.transform.position.x > targetAutoDavanti.x)
-                                    {
-                                        frenataTarget = new Vector3(targetAutoDavanti.x, targetAutoDavanti.y, targetAutoDavanti.z + 4f);
-                                    }
-                                    else
-                                    {
-                                        frenataTarget = new Vector3(targetAutoDavanti.x, targetAutoDavanti.y, targetAutoDavanti.z -4f);
-                                    }
-                                }
-                                calcolaDistanzaInizialeInchiodata();*/
-                        //}
 
-                        //} else { 
-
-                        //negli altri casi valuto la velocità dell'auto davanti
-                        //float frontSpeed = hitInfo.rigidbody.velocity.magnitude;
                         float frontSpeed = macchinaDavanti.currentSpeed;
-
 
                         if (frontSpeed > 0.25f)
                         {
@@ -1208,12 +1165,12 @@ public class TrafAIMotor : MonoBehaviour
         currentTurn = averageSteeringAngle;
 
 
-        bool trattoStradaDritto = false;
+        /*bool trattoStradaDritto = false;
 
         if (Math.Abs(this.transform.position.x - target.x) <= 1 || Math.Abs(this.transform.position.z - target.z) <= 1)
         {
             trattoStradaDritto = true;
-        }
+        }*/
         currentTurn = Mathf.Clamp(Mathf.Lerp(turnPrecedente, currentTurn, steerSpeed * Time.deltaTime), -45f, 45f);
         /*
         if (trattoStradaDritto)
@@ -1266,7 +1223,7 @@ public class TrafAIMotor : MonoBehaviour
         currentThrottle = PIDControllerAccelerazione.UpdatePars(currentSpeed, velocitaAttuale, Time.fixedDeltaTime);
         if (velocitaAttuale > currentSpeed)
         {
-            if (hasStopTarget || frenata || hasGiveWayTarget || Math.Abs(speedDifference) > _pidPars.sogliaNoGas || (autoDavanti && Math.Abs(speedDifference) > sogliaNoGasTraffico) || (hasNextEntry && intersectionCornerSpeed < 0.8f))
+            if (hasStopTarget || frenata || hasGiveWayTarget || Math.Abs(speedDifference) > _pidPars.sogliaNoGas || (autoDavanti && Math.Abs(speedDifference) > sogliaNoGasTraffico) || (hasNextEntry && intersectionCornerSpeed < 0.8f) || (autoDavantiFrenata))
             {
                 //devo fermarmi o rallentare
                 currentThrottle = Mathf.Clamp(currentThrottle, -1f, 0f);
@@ -1331,10 +1288,10 @@ public class TrafAIMotor : MonoBehaviour
     void MoveCarUtenteSterzata()
     {
 
-        if (AppController.Instance.UserInput is SteeringWheelInputController)
+        /*if (AppController.Instance.UserInput is SteeringWheelInputController)
         {
-            //DirectInputWrapper.PlaySpringForce(0, Mathf.RoundToInt(currentTurn / 45f * 10000f), _pidPars.saturazione, _pidPars.coefficiente);            
-        }
+            DirectInputWrapper.PlaySpringForce(0, Mathf.RoundToInt(currentTurn / 45f * 10000f), _pidPars.saturazione, _pidPars.coefficiente);            
+        }*/
         vehicleController.steerInput = currentTurn / 45f;
     }
 
@@ -1385,8 +1342,9 @@ public class TrafAIMotor : MonoBehaviour
         //calcolo la quantita di freno necessaria
         float riduzioneVelocitaNecessaria = velocitaAttuale / Vector3.Distance(ostacoloEvitare.transform.position, nose.transform.position);
 
-        
-        currentThrottle = Mathf.Clamp(-riduzioneVelocitaNecessaria, -1f, -0.5f);
+
+        //currentThrottle = Mathf.Clamp(-riduzioneVelocitaNecessaria, -1f, -0.5f);
+        currentThrottle = Mathf.Clamp(-riduzioneVelocitaNecessaria, -1f, 0f);
         vehicleController.accellInput = currentThrottle;
 
         if (Vector3.Distance(transform.position, ostacoloEvitare.transform.position) < 8f && currentThrottle < -0.5f)
@@ -1440,15 +1398,7 @@ public class TrafAIMotor : MonoBehaviour
     }
 
 
-    //ANTONELLO
-    /*private void OnGUI()
-    {
-        if (this.tag.Equals("Player"))
-        {
-            GUI.Label(new Rect(10, 240, 500, 200), messaggioDaStampare);
-            GUI.Label(new Rect(10, 260, 500, 200), messaggioSemaforo);
-        }
-    }*/
+
 
     private GameObject ottieniRiferimentoPlayer()
     {
@@ -1486,59 +1436,6 @@ public class TrafAIMotor : MonoBehaviour
         return new ProssimoTarget(target, false);
     }
 
-   /* private void casoAutoIntersezione()
-    {
-        Vector3 puntoIntersezione; // gia sai come calcolarlo
-        Vector3 posizioneOstacolo;  //transform.position dell'ostacolo o dell'auto del traffico
-        float velocitaOstacolo; //velocità a cui sta andando l'ostacolo o l'auto del traffico -> in m/s
-        //(Nel caso della macchina del traffico puoi prenderla da TrafAIMotor, non prenderla da velocity.magnitude, ti darebbe 0)
-        //(In TrafAIMotor hai currentSpeed che va bene solo per le macchine del traffico oppure posso rendere pubblica velocitaAttuale che va bene sia
-        //per le macchine del traffico che per la mia auto)
-
-        float distanzaOstacoloPuntoIntersezione = Vector3.Distance(puntoIntersezione, posizioneOstacolo);
-        //v -> velocita; s -> spazio; t -> tempo
-        //v = s/t => t = s / v
-        float secondiOstacoloIntersezione = distanzaOstacoloPuntoIntersezione / velocitaOstacolo; //rappresentano i secondi che l'ostacolo o l'auto impiegherà per arrivare al punto di intersezione
-
-        float miaVelocita; //la velocità della mia macchina (questa puoi prenderla da velocity.magnitude oppure da TrafAIMotor (rendendo pubblica velocitaAttuale)
-        float decelerazioneSoft = 2f; //da provare quale valore vada bene
-
-        //la prima cosa che farei è verificare io quanto tempo impiego ad arrivare al punto di intersezione, e controllare che i tempi siano piu o meno uguali, 
-        //anche se nel nostro caso però è inutile
-        Vector3 miaPosizione = transform.position;
-        float distanzaMacchinaPuntoIntersezione = Vector3.Distance(puntoIntersezione, miaPosizione);
-        float secondiMiaMacchinaIntersezione = distanzaMacchinaPuntoIntersezione / velocitaOstacolo; //rappresentano i secondi che l'ostacolo o l'auto impiegherà per arrivare al punto di intersezione
-        float offsetSecondi = 2f; //da provare
-        if (Math.Abs(secondiMiaMacchinaIntersezione -secondiOstacoloIntersezione) > offsetSecondi) {
-            //siamo in una situazione in cui le auto si incrociano ma non si scontrano
-            //darei comunque un grado di pericolo all'ostacolo o all'auto, segnandolo come poco pericoloso al minimo possibile
-            return;
-        }
-
-        //se siamo arrivati qui significa che se la mia auto non frena le auto si scontrano
-
-        //calcolo quanto tempo impiega la mia auto a fermarsi con una decelerazione soft
-        float secondiStop = miaVelocita / decelerazioneSoft;
-
-        if (secondiStop < secondiOstacoloIntersezione)
-        {
-            //riesco a fermarmi in meno tempo rispetto al tempo che impiegherebbe l'ostacolo a intersecare il mio percorso, con una decelerazione soft
-            //non c'è pericolo
-        } else
-        {
-            //non riesco a fermami in tempo con una decelerazione soft => se non freno con maggior forza mi scontro! => PERICOLO
-
-            //per avere un indice di pericolo io farei cosi:
-            float indicePericolosita = secondiOstacoloIntersezione / secondiStop;
-            //questo indice viene tra 0 e 1
-            //se è vicino a 1 significa che è meno pericoloso perchè i secondi sarebbero quasi uguali e ciò significa che con una decelerazione poco maggiore a quella soft riuscirei a fermarmi
-            //al contrario, più è vicina a 0 piu è pericolosa la situazione, perchè significa che dovrei decelerare molto di piu
-
-            //secondo me 1-> giallo e a 0.5 gia deve essere rosso
-        }
-
-    }
-    */
 
     internal class GestoreCollisioni : MonoBehaviour
     {

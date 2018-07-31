@@ -606,6 +606,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public void semaforo16()
     {
+        car.GetComponent<TrafAIMotor>().maxSpeed = limiteVelocita;
         soloSemaforo16();
         evento16a();
         if (macchinaTraffico != null)
@@ -1166,7 +1167,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         float distanza = macchinaTagliaStrada.transform.position.x - car.transform.position.x;
         Debug.Log("distanza mia macchina e macchinatagliastrada " + distanza);
         //if (distanza < -30)
-        if (distanza < -35)
+        if (distanza < -30)
         {
             macchinaTagliaStrada.maxSpeed = Mathf.Clamp(macchinaTagliaStrada.maxSpeed -1, 3f, limiteVelocita);
             TrafEntry entry = system.GetEntry(1049, 5);
@@ -1177,7 +1178,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             return;
         }
         //if (distanza > -5)
-        if (distanza > -20)
+        if (distanza > -13)
         {
             //macchinaTagliaStrada.maxSpeed = Mathf.Clamp(macchinaTagliaStrada.maxSpeed + 1, 3f, limiteVelocita);
             macchinaTagliaStrada.maxSpeed = limiteVelocita;
@@ -1254,6 +1255,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             SetLayer(8, macchinaTagliaStrada.transform);
         }
         GameObject.Destroy(GameObject.Find("Barriera"));
+        car.GetComponent<TrafAIMotor>().maxSpeed = 11f;
     }
 
     public void evento16a()
@@ -1441,9 +1443,12 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(23, 2, 0.3f, percorso4_2);
 
 
-        /*List<RoadGraphEdge> percorsoMacchinaTagliaStrada4 = ottieniPercorsoMacchinTagliaStrada4();
+        List<RoadGraphEdge> percorsoMacchinaTagliaStrada4 = ottieniPercorsoMacchinTagliaStrada4();
         scooterTagliaStrada = CreaScooter(1031, 2, 0.5f, percorsoMacchinaTagliaStrada4);
-        eventoTaglioStrada2();*/
+        scooterTagliaStrada.noRaycast = true;
+        scooterTagliaStrada.GetComponent<AudioSource>().mute = true;
+        //SetLayer(8, scooterTagliaStrada.transform);
+        eventoTaglioStrada2();
     }
 
     TrafAIMotor scooterTagliaStrada = null;
@@ -1462,8 +1467,9 @@ public class ScenarioTestUrbano : MonoBehaviour
 
         float distanza = Mathf.Abs(scooterTagliaStrada.transform.position.z - car.transform.position.z);
         Debug.Log("distanza mia macchina e macchinatagliastrada " + distanza);
-        if (distanza > 25)
+        if (distanza > 40)
         {
+            
             scooterTagliaStrada.maxSpeed = Mathf.Clamp(scooterTagliaStrada.maxSpeed + 1, 3f, limiteVelocita);
             TrafEntry entry = system.GetEntry(1049, 5);
             TrafficLightContainer container = entry.light;
@@ -1472,6 +1478,9 @@ public class ScenarioTestUrbano : MonoBehaviour
             //attesa15();
             return;
         }
+
+        
+
         /*if (distanza < 5)
         {
             macchinaTagliaStrada2.maxSpeed = Mathf.Clamp(macchinaTagliaStrada2.maxSpeed - 1, 3f, limiteVelocita);
@@ -1497,12 +1506,18 @@ public class ScenarioTestUrbano : MonoBehaviour
             return;
         }
 
+        if (scooterTagliaStrada.GetComponent<AudioSource>().mute == true && Vector3.Distance(scooterTagliaStrada.transform.position, scooterTagliaStrada.currentEntry.waypoints[scooterTagliaStrada.currentEntry.waypoints.Count - 1]) < 50f)
+        {
+            scooterTagliaStrada.GetComponent<AudioSource>().mute = false;
+        }
+
         Debug.Log("Distanza dal waypoint: " + Vector3.Distance(scooterTagliaStrada.transform.position, scooterTagliaStrada.currentEntry.waypoints[scooterTagliaStrada.currentEntry.waypoints.Count - 1]));
         if (Vector3.Distance(scooterTagliaStrada.transform.position, scooterTagliaStrada.currentEntry.waypoints[scooterTagliaStrada.currentEntry.waypoints.Count - 1]) < 15f) 
         {
             Debug.Log("cambio corsia");
             TrafEntry entry = system.GetEntry(125, 0);
             scooterTagliaStrada.currentEntry = entry;
+            scooterTagliaStrada.nextEntry = entry;
             scooterTagliaStrada.target = entry.waypoints[0];
             return;
         }
@@ -1534,6 +1549,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public void evento125()
     {
+        scooterTagliaStrada.GetComponent<AudioSource>().volume = 0.15f;
         semaforo4b();
         semaforo125a();
         List<RoadGraphEdge> percorso125_0 = ottieniPercorso125_0();
@@ -1556,7 +1572,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(159, 3, 0.45f, percorso125_3);
         CreaMacchinaTraffico(159, 2, 0.6f, percorso125_4);
 
-
+        scooterTagliaStrada.maxSpeed = limiteVelocita;
 
     }
 
@@ -4764,7 +4780,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         {
             GameObject go = GameObject.Instantiate(prefabScooter, pos.position, Quaternion.identity) as GameObject;
             TrafAIMotor motor = go.GetComponent<TrafAIMotor>();
-
+            
 
             motor.currentIndex = pos.targetIndex;
             motor.currentEntry = entry;
