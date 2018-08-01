@@ -1043,7 +1043,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(54, 0, 0.8f, percorso64_0);
         CreaMacchinaTraffico(54, 1, 0.7f, percorso64_1);
         CreaMacchinaTraffico(54, 2, 0.6f, percorso64_2);
-        CreaMacchinaTraffico(65, 3, 0f, percorso64_3);
+        //CreaMacchinaTraffico(65, 3, 0f, percorso64_3);
     }
 
     public void evento65()
@@ -1165,7 +1165,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         }
 
         float distanza = macchinaTagliaStrada.transform.position.x - car.transform.position.x;
-        Debug.Log("distanza mia macchina e macchinatagliastrada " + distanza);
+        //Debug.Log("distanza mia macchina e macchinatagliastrada " + distanza);
         //if (distanza < -30)
         if (distanza < -30)
         {
@@ -1211,10 +1211,8 @@ public class ScenarioTestUrbano : MonoBehaviour
     public IEnumerator attesa15_2()
     {
         if (Vector3.Distance(car.transform.position, macchinaTagliaStrada.transform.position) > 12f)
-        {
-            Debug.Log("aspetto 0.5f");
+        {         
             yield return new WaitForSeconds(0.3f);
-            Debug.Log("fine attesa");
         }       
         SetLayer(12, macchinaTagliaStrada.transform);
     }
@@ -1466,7 +1464,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         }
 
         float distanza = Mathf.Abs(scooterTagliaStrada.transform.position.z - car.transform.position.z);
-        Debug.Log("distanza mia macchina e macchinatagliastrada " + distanza);
+        //Debug.Log("distanza mia macchina e macchinatagliastrada " + distanza);
         if (distanza > 40)
         {
             
@@ -1511,10 +1509,10 @@ public class ScenarioTestUrbano : MonoBehaviour
             scooterTagliaStrada.GetComponent<AudioSource>().mute = false;
         }
 
-        Debug.Log("Distanza dal waypoint: " + Vector3.Distance(scooterTagliaStrada.transform.position, scooterTagliaStrada.currentEntry.waypoints[scooterTagliaStrada.currentEntry.waypoints.Count - 1]));
+        //Debug.Log("Distanza dal waypoint: " + Vector3.Distance(scooterTagliaStrada.transform.position, scooterTagliaStrada.currentEntry.waypoints[scooterTagliaStrada.currentEntry.waypoints.Count - 1]));
         if (Vector3.Distance(scooterTagliaStrada.transform.position, scooterTagliaStrada.currentEntry.waypoints[scooterTagliaStrada.currentEntry.waypoints.Count - 1]) < 15f) 
         {
-            Debug.Log("cambio corsia");
+            //Debug.Log("cambio corsia");
             TrafEntry entry = system.GetEntry(125, 0);
             scooterTagliaStrada.currentEntry = entry;
             scooterTagliaStrada.nextEntry = entry;
@@ -1549,7 +1547,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public void evento125()
     {
-        scooterTagliaStrada.GetComponent<AudioSource>().volume = 0.15f;
+        scooterTagliaStrada.GetComponent<AudioSource>().volume = 0.1f;
         semaforo4b();
         semaforo125a();
         List<RoadGraphEdge> percorso125_0 = ottieniPercorso125_0();
@@ -2448,6 +2446,7 @@ public class ScenarioTestUrbano : MonoBehaviour
     {
         RoadGraphEdge edge1 = new RoadGraphEdge();
         RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
 
         edge1.id = 1036;
         edge1.subId = 0;
@@ -2455,10 +2454,14 @@ public class ScenarioTestUrbano : MonoBehaviour
         edge2.id = 64;
         edge2.subId = 3;
 
+        edge3.id = 55;
+        edge3.subId = 2;
+
 
         List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
         percorso.Add(edge1);
         percorso.Add(edge2);
+        percorso.Add(edge3);
 
         return percorso;
     }
