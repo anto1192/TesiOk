@@ -158,6 +158,8 @@ public class TrafAIMotor : MonoBehaviour
 
     private float valoreOriginaleMaxSpeed = 0;
 
+    public bool luceStop = false;
+
 
     //ANTONELLO
     public void Init()
@@ -297,8 +299,23 @@ public class TrafAIMotor : MonoBehaviour
         }
 
 
+        
+
+
     }
 
+
+    private void controllaAccensioneLuceStop(float targetSpeed)
+    {
+        if (hasStopTarget || frenata || targetSpeed < maxSpeed)
+        {
+            luceStop = true;
+        }
+        else
+        {
+            luceStop = false;
+        }
+    }
 
     //ANTONELLO
     private float distanzaWaypoint = 0;
@@ -408,7 +425,7 @@ public class TrafAIMotor : MonoBehaviour
             }
 
         }
-        if (hasNextEntry && !inizioValutazioneSemaforo && Vector3.Distance(nose.transform.position, nextTarget) <= 30f)
+        if (hasNextEntry && !inizioValutazioneSemaforo && Vector3.Distance(nose.transform.position, nextTarget) <= 35f)
         {
             inizioValutazioneSemaforo = true;
         }
@@ -582,7 +599,7 @@ public class TrafAIMotor : MonoBehaviour
 
         if (somethingInFront && !frenata && !noRaycast)
         {
-            if (hitInfo.rigidbody != null && (hitInfo.rigidbody.tag.Equals("TrafficCar") || hitInfo.rigidbody.tag.Equals("Player")))
+            if (hitInfo.rigidbody != null && (hitInfo.rigidbody.tag.Equals("TrafficCar") || hitInfo.rigidbody.tag.Equals("TrafficScooter") || hitInfo.rigidbody.tag.Equals("Player")))
             {
                 Debug.DrawLine(this.transform.position, hitInfo.transform.position);
                 if (hitInfo.distance <= 35f)
@@ -932,7 +949,7 @@ public class TrafAIMotor : MonoBehaviour
 
         }
 
-
+        controllaAccensioneLuceStop(targetSpeed);
 
     }
 
@@ -1290,10 +1307,10 @@ public class TrafAIMotor : MonoBehaviour
     void MoveCarUtenteSterzata()
     {
 
-        /*if (AppController.Instance.UserInput is SteeringWheelInputController)
+        if (AppController.Instance.UserInput is SteeringWheelInputController)
         {
             DirectInputWrapper.PlaySpringForce(0, Mathf.RoundToInt(currentTurn / 45f * 10000f), _pidPars.saturazione, _pidPars.coefficiente);            
-        }*/
+        }
         vehicleController.steerInput = currentTurn / 45f;
     }
 
@@ -1358,7 +1375,7 @@ public class TrafAIMotor : MonoBehaviour
             vehicleController.steerInput = sterzata / 45;
         }
 
-        if (velocitaAttuale < 1.5f && !inizioSosta)
+        if (velocitaAttuale < 2.5f && !inizioSosta)
         {
             inizioSostaDopoPericolo = DateTime.Now;
             inizioSosta = true;
@@ -1536,7 +1553,7 @@ public class TrafAIMotor : MonoBehaviour
             {
                 return;
             }
-            if (!motor.inizioSosta)
+            if (!motor.inizioSosta || motor.velocitaAttuale > 2f)
             {
                 motor.evitare = false;
             }

@@ -796,6 +796,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public void semaforo159()
     {
+        _pidPars.velocitaFrenata = 2.8f;
         semaforo159b();
 
         List<RoadGraphEdge> percorso159_5 = ottieniPercorso159_5();
@@ -811,7 +812,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
 
         macchinaTrafficoScorretta.autoScorretta = true;
-        macchinaTrafficoScorretta.maxSpeed = 13f;
+        macchinaTrafficoScorretta.maxSpeed = 9f;
         SetLayer(12, macchinaTrafficoScorretta.transform);
 
 
@@ -846,6 +847,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         lights[0].StartCoroutine(courutineSemaforoVerde(container2));
 
         macchinaTrafficoScorrettaDavanti.autoScorretta = false;
+        
     }
 
     public void semaforo163a()
@@ -1395,7 +1397,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         List<RoadGraphEdge> percorso3_5 = ottieniPercorso3_5();
         List<RoadGraphEdge> percorso3_6 = ottieniPercorso3_6();
         CreaMacchinaTraffico(15, 3, 0f, percorso3_0);
-        CreaMacchinaTraffico(15, 3, 0.15f, percorso3_1);
+        //CreaMacchinaTraffico(15, 3, 0.15f, percorso3_1);
         //CreaMacchinaTraffico(15, 3, 0.3f, percorso3_2);
         // CreaMacchinaTraffico(15, 3, 0.45f, percorso3_3);
         CreaMacchinaTraffico(15, 2, 0.6f, percorso3_5);
@@ -1515,7 +1517,8 @@ public class ScenarioTestUrbano : MonoBehaviour
             //Debug.Log("cambio corsia");
             TrafEntry entry = system.GetEntry(125, 0);
             scooterTagliaStrada.currentEntry = entry;
-            scooterTagliaStrada.nextEntry = entry;
+            scooterTagliaStrada.nextEntry = null;
+            scooterTagliaStrada.hasNextEntry = false;
             scooterTagliaStrada.target = entry.waypoints[0];
             return;
         }
@@ -1570,7 +1573,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(159, 3, 0.45f, percorso125_3);
         CreaMacchinaTraffico(159, 2, 0.6f, percorso125_4);
 
-        scooterTagliaStrada.maxSpeed = limiteVelocita;
+        scooterTagliaStrada.maxSpeed = 15f;
 
     }
 
@@ -1626,7 +1629,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
 
 
-        CreaMacchinaTraffico(162, 1, 0.3f, percorso159_6);
+        //CreaMacchinaTraffico(162, 1, 0.3f, percorso159_6);
     }
 
 
@@ -1672,6 +1675,8 @@ public class ScenarioTestUrbano : MonoBehaviour
 
         semaforo163a();
         ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().sterzataMassima = false;
+
+        _pidPars.velocitaFrenata = 4f;
     }
 
 
@@ -4631,8 +4636,8 @@ public class ScenarioTestUrbano : MonoBehaviour
             TrafAIMotor motor = go.AddComponent<TrafAIMotor>();
             go.GetComponent<VehicleInputController>().enabled = false;
 
-            GuidaManuale guidaManuale = go.AddComponent<GuidaManuale>();
-            guidaManuale.setMotor(motor);
+            //GuidaManuale guidaManuale = go.AddComponent<GuidaManuale>();
+            //guidaManuale.setMotor(motor);
 
 
             GameObject colliderOstacoli = new GameObject("colliderOstacoli");

@@ -279,6 +279,21 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
     DateTime tempoInizio;
     private bool velocitaVera = false;
 
+    private bool luceStop = false;
+    private bool forzaLuceStop = false;
+
+    private void controllaAccensioneLuceStop(float targetSpeed)
+    {
+        if (hasStopTarget || frenata || targetSpeed < maxSpeed || forzaLuceStop)
+        {
+            luceStop = true;
+        }
+        else
+        {
+            luceStop = false;
+        }
+    }
+
     void Guida()
     {
         if (!inited)
@@ -292,8 +307,10 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
                 autoPassata = false;
                 maxSpeed = 5f;
                 velocitaVera = true;
+                forzaLuceStop = false;
             } else
             {
+                forzaLuceStop = true;
                 maxSpeed = 0;
             }
         }
@@ -309,6 +326,7 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
         motor.currentSpeed = currentSpeed;
         motor.hasStopTarget = hasStopTarget;
         motor.frenata = frenata;
+        motor.luceStop = luceStop;
 
 
         velocitaAttuale = currentSpeed;
@@ -909,6 +927,8 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
 
 
         }
+
+        controllaAccensioneLuceStop(targetSpeed);
 
 
 

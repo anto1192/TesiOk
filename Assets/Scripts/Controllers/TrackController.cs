@@ -1139,8 +1139,8 @@ public class TrackController : UnitySingleton<TrackController> {
         if (id == 10)
         {
             //spot = GetNextIntersectionTaffic();
-            spot[0] = new Vector3(1401.8f, 11.1f, 755.7f);
-            spot[1] = new Vector3(1401.8f, 11.1f, 753.7f);
+            spot[0] = new Vector3(1401f, 11.1f, 755.7f);
+            spot[1] = new Vector3(1399.2f, 11.1f, 747.62f);
         }
         if (id == 11 ) //&& spot[0] == Vector3.zero)
         {

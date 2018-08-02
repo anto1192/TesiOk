@@ -139,6 +139,8 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
 
     public GameObject ostacoloEvitare;
 
+    private bool luceStop = false;
+
 
     //ANTONELLO
     public void Init()
@@ -179,6 +181,18 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
         raggioSinistra.transform.localScale = Vector3.zero;
 
 
+    }
+
+    private void controllaAccensioneLuceStop(float targetSpeed)
+    {
+        if (hasStopTarget || frenata || targetSpeed < maxSpeed)
+        {
+            luceStop = true;
+        }
+        else
+        {
+            luceStop = false;
+        }
     }
 
     private void Start()
@@ -250,6 +264,8 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
         if (!inited)
             return;
 
+        Guida();
+
         //ANTONELLO
         if (!this.tag.Equals("Player"))
         {
@@ -288,7 +304,7 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
     public float accelerazione = 0;
     private bool inizioValutazioneSemaforo = false;
 
-    void Update()
+    void Guida()
     {
         if (!inited)
             return;
@@ -316,6 +332,12 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
 
         accelerazione = (velocitaAttuale - velocitaPrecedente) / Time.deltaTime;
         velocitaPrecedente = velocitaAttuale;
+
+        TrafAIMotor motor = GetComponent<TrafAIMotor>();
+        motor.currentSpeed = currentSpeed;
+        motor.hasStopTarget = hasStopTarget;
+        motor.frenata = frenata;
+        motor.luceStop = luceStop;
 
 
         if (!currentEntry.isIntersection() && currentIndex > 0 && !hasNextEntry)
@@ -725,6 +747,8 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
 
 
         }
+
+        controllaAccensioneLuceStop(targetSpeed);
 
 
 
