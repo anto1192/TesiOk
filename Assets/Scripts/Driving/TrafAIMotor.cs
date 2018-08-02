@@ -158,6 +158,8 @@ public class TrafAIMotor : MonoBehaviour
 
     private float valoreOriginaleMaxSpeed = 0;
 
+    public bool luceStop = false;
+
 
     //ANTONELLO
     public void Init()
@@ -297,8 +299,23 @@ public class TrafAIMotor : MonoBehaviour
         }
 
 
+        
+
+
     }
 
+
+    private void controllaAccensioneLuceStop(float targetSpeed)
+    {
+        if (hasStopTarget || frenata || targetSpeed < maxSpeed)
+        {
+            luceStop = true;
+        }
+        else
+        {
+            luceStop = false;
+        }
+    }
 
     //ANTONELLO
     private float distanzaWaypoint = 0;
@@ -393,6 +410,7 @@ public class TrafAIMotor : MonoBehaviour
                     return;
                 }
 
+                TrafEntry prossimaStrada = system.GetEntry(fixedPath[currentFixedNode].id, fixedPath[currentFixedNode].subId);
                 nextEntry = system.GetEntry(newNode.id, newNode.subId);
                 nextTarget = nextEntry.waypoints[0];
                 hasNextEntry = true;
@@ -407,7 +425,7 @@ public class TrafAIMotor : MonoBehaviour
             }
 
         }
-        if (hasNextEntry && !inizioValutazioneSemaforo && Vector3.Distance(nose.transform.position, nextTarget) <= 30f)
+        if (hasNextEntry && !inizioValutazioneSemaforo && Vector3.Distance(nose.transform.position, nextTarget) <= 35f)
         {
             inizioValutazioneSemaforo = true;
         }
@@ -581,7 +599,7 @@ public class TrafAIMotor : MonoBehaviour
 
         if (somethingInFront && !frenata && !noRaycast)
         {
-            if (hitInfo.rigidbody != null && (hitInfo.rigidbody.tag.Equals("TrafficCar") || hitInfo.rigidbody.tag.Equals("Player")))
+            if (hitInfo.rigidbody != null && (hitInfo.rigidbody.tag.Equals("TrafficCar") || hitInfo.rigidbody.tag.Equals("TrafficScooter") || hitInfo.rigidbody.tag.Equals("Player")))
             {
                 Debug.DrawLine(this.transform.position, hitInfo.transform.position);
                 if (hitInfo.distance <= 35f)
@@ -618,7 +636,8 @@ public class TrafAIMotor : MonoBehaviour
                             bool piuVeloceDelTarget = (velocitaAttuale - velocitaTarget) >= 1f;
                             if ((piuVeloceDelTarget || sottoDistanzaSicurezza))
                             {
-                                if ((macchinaDavanti.frenata || macchinaDavanti.hasStopTarget) && (velocitaAttuale - velocitaTarget) <= 2f)
+                                //if ((macchinaDavanti.frenata || macchinaDavanti.hasStopTarget) && (velocitaAttuale - velocitaTarget) <= 2f)
+                                if ((macchinaDavanti.frenata || macchinaDavanti.hasStopTarget) && sottoDistanzaSicurezza)
                                 {
                                     autoDavantiFrenata = true;
                                     autoDavanti = false;
@@ -901,10 +920,10 @@ public class TrafAIMotor : MonoBehaviour
             //ANTONELLO
             if (hasStopTarget || hasGiveWayTarget || frenata || autoDavanti || autoDavantiFrenata)
             {
-                if (targetSpeed > currentSpeed)
+                if (targetSpeed > velocitaAttuale)
                 {
                     //serve questa condizione perchè evita di accelerare quando sono in fase di fermata
-                    targetSpeed = currentSpeed;
+                    targetSpeed = velocitaAttuale;
                 }
                 //currentSpeed = targetSpeed;
             }
@@ -930,7 +949,7 @@ public class TrafAIMotor : MonoBehaviour
 
         }
 
-
+        controllaAccensioneLuceStop(targetSpeed);
 
     }
 
@@ -1288,10 +1307,10 @@ public class TrafAIMotor : MonoBehaviour
     void MoveCarUtenteSterzata()
     {
 
-        /*if (AppController.Instance.UserInput is SteeringWheelInputController)
+        if (AppController.Instance.UserInput is SteeringWheelInputController)
         {
             DirectInputWrapper.PlaySpringForce(0, Mathf.RoundToInt(currentTurn / 45f * 10000f), _pidPars.saturazione, _pidPars.coefficiente);            
-        }*/
+        }
         vehicleController.steerInput = currentTurn / 45f;
     }
 
@@ -1308,6 +1327,10 @@ public class TrafAIMotor : MonoBehaviour
 
     private bool primaVoltaEvita = true;
     private float throttleOk = 0;
+
+    DateTime inizioSostaDopoPericolo;
+    bool inizioSosta = false;
+
     private void evita()
     {
         //questo metodo fa si che l'auto eviti un ostacolo imminente e frenando e sterzando bruscamente
@@ -1317,7 +1340,7 @@ public class TrafAIMotor : MonoBehaviour
             //mi fermerò comunque però freno leggermente di piu
             if (primaVoltaEvita)
             {
-                currentThrottle = Mathf.Clamp(currentThrottle - 0.1f, -1f, -0.2f);
+                currentThrottle = Mathf.Clamp(currentThrottle - 0.2f, -1f, -0.2f);
                 throttleOk = currentThrottle;
                 vehicleController.accellInput = currentThrottle;
                 primaVoltaEvita = false;
@@ -1350,6 +1373,22 @@ public class TrafAIMotor : MonoBehaviour
         if (Vector3.Distance(transform.position, ostacoloEvitare.transform.position) < 8f && currentThrottle < -0.5f)
         {
             vehicleController.steerInput = sterzata / 45;
+        }
+
+        if (velocitaAttuale < 2.5f && !inizioSosta)
+        {
+            inizioSostaDopoPericolo = DateTime.Now;
+            inizioSosta = true;
+        }
+        if (inizioSosta)
+        {
+            TimeSpan differenza = (DateTime.Now - inizioSostaDopoPericolo);
+            float secondi = differenza.Seconds + differenza.Milliseconds / 1000;
+            if (secondi > 1.99f)
+            {              
+                inizioSosta = false;
+                evitare = false;
+            }
         }
 
     }
@@ -1514,7 +1553,11 @@ public class TrafAIMotor : MonoBehaviour
             {
                 return;
             }
-            motor.evitare = false;
+            if (!motor.inizioSosta || motor.velocitaAttuale > 2f)
+            {
+                motor.evitare = false;
+            }
+            
         }
 
 

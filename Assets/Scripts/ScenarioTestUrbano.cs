@@ -796,6 +796,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public void semaforo159()
     {
+        _pidPars.velocitaFrenata = 2.8f;
         semaforo159b();
 
         List<RoadGraphEdge> percorso159_5 = ottieniPercorso159_5();
@@ -811,7 +812,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
 
         macchinaTrafficoScorretta.autoScorretta = true;
-        macchinaTrafficoScorretta.maxSpeed = 13f;
+        macchinaTrafficoScorretta.maxSpeed = 9f;
         SetLayer(12, macchinaTrafficoScorretta.transform);
 
 
@@ -846,6 +847,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         lights[0].StartCoroutine(courutineSemaforoVerde(container2));
 
         macchinaTrafficoScorrettaDavanti.autoScorretta = false;
+        
     }
 
     public void semaforo163a()
@@ -1043,7 +1045,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(54, 0, 0.8f, percorso64_0);
         CreaMacchinaTraffico(54, 1, 0.7f, percorso64_1);
         CreaMacchinaTraffico(54, 2, 0.6f, percorso64_2);
-        CreaMacchinaTraffico(65, 3, 0f, percorso64_3);
+        //CreaMacchinaTraffico(65, 3, 0f, percorso64_3);
     }
 
     public void evento65()
@@ -1165,7 +1167,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         }
 
         float distanza = macchinaTagliaStrada.transform.position.x - car.transform.position.x;
-        Debug.Log("distanza mia macchina e macchinatagliastrada " + distanza);
+        //Debug.Log("distanza mia macchina e macchinatagliastrada " + distanza);
         //if (distanza < -30)
         if (distanza < -30)
         {
@@ -1211,10 +1213,8 @@ public class ScenarioTestUrbano : MonoBehaviour
     public IEnumerator attesa15_2()
     {
         if (Vector3.Distance(car.transform.position, macchinaTagliaStrada.transform.position) > 12f)
-        {
-            Debug.Log("aspetto 0.5f");
+        {         
             yield return new WaitForSeconds(0.3f);
-            Debug.Log("fine attesa");
         }       
         SetLayer(12, macchinaTagliaStrada.transform);
     }
@@ -1397,7 +1397,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         List<RoadGraphEdge> percorso3_5 = ottieniPercorso3_5();
         List<RoadGraphEdge> percorso3_6 = ottieniPercorso3_6();
         CreaMacchinaTraffico(15, 3, 0f, percorso3_0);
-        CreaMacchinaTraffico(15, 3, 0.15f, percorso3_1);
+        //CreaMacchinaTraffico(15, 3, 0.15f, percorso3_1);
         //CreaMacchinaTraffico(15, 3, 0.3f, percorso3_2);
         // CreaMacchinaTraffico(15, 3, 0.45f, percorso3_3);
         CreaMacchinaTraffico(15, 2, 0.6f, percorso3_5);
@@ -1466,7 +1466,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         }
 
         float distanza = Mathf.Abs(scooterTagliaStrada.transform.position.z - car.transform.position.z);
-        Debug.Log("distanza mia macchina e macchinatagliastrada " + distanza);
+        //Debug.Log("distanza mia macchina e macchinatagliastrada " + distanza);
         if (distanza > 40)
         {
             
@@ -1511,13 +1511,14 @@ public class ScenarioTestUrbano : MonoBehaviour
             scooterTagliaStrada.GetComponent<AudioSource>().mute = false;
         }
 
-        Debug.Log("Distanza dal waypoint: " + Vector3.Distance(scooterTagliaStrada.transform.position, scooterTagliaStrada.currentEntry.waypoints[scooterTagliaStrada.currentEntry.waypoints.Count - 1]));
+        //Debug.Log("Distanza dal waypoint: " + Vector3.Distance(scooterTagliaStrada.transform.position, scooterTagliaStrada.currentEntry.waypoints[scooterTagliaStrada.currentEntry.waypoints.Count - 1]));
         if (Vector3.Distance(scooterTagliaStrada.transform.position, scooterTagliaStrada.currentEntry.waypoints[scooterTagliaStrada.currentEntry.waypoints.Count - 1]) < 15f) 
         {
-            Debug.Log("cambio corsia");
+            //Debug.Log("cambio corsia");
             TrafEntry entry = system.GetEntry(125, 0);
             scooterTagliaStrada.currentEntry = entry;
-            scooterTagliaStrada.nextEntry = entry;
+            scooterTagliaStrada.nextEntry = null;
+            scooterTagliaStrada.hasNextEntry = false;
             scooterTagliaStrada.target = entry.waypoints[0];
             return;
         }
@@ -1549,7 +1550,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public void evento125()
     {
-        scooterTagliaStrada.GetComponent<AudioSource>().volume = 0.15f;
+        scooterTagliaStrada.GetComponent<AudioSource>().volume = 0.1f;
         semaforo4b();
         semaforo125a();
         List<RoadGraphEdge> percorso125_0 = ottieniPercorso125_0();
@@ -1572,7 +1573,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(159, 3, 0.45f, percorso125_3);
         CreaMacchinaTraffico(159, 2, 0.6f, percorso125_4);
 
-        scooterTagliaStrada.maxSpeed = limiteVelocita;
+        scooterTagliaStrada.maxSpeed = 15f;
 
     }
 
@@ -1628,7 +1629,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
 
 
-        CreaMacchinaTraffico(162, 1, 0.3f, percorso159_6);
+        //CreaMacchinaTraffico(162, 1, 0.3f, percorso159_6);
     }
 
 
@@ -1674,6 +1675,8 @@ public class ScenarioTestUrbano : MonoBehaviour
 
         semaforo163a();
         ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().sterzataMassima = false;
+
+        _pidPars.velocitaFrenata = 4f;
     }
 
 
@@ -2448,6 +2451,7 @@ public class ScenarioTestUrbano : MonoBehaviour
     {
         RoadGraphEdge edge1 = new RoadGraphEdge();
         RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
 
         edge1.id = 1036;
         edge1.subId = 0;
@@ -2455,10 +2459,14 @@ public class ScenarioTestUrbano : MonoBehaviour
         edge2.id = 64;
         edge2.subId = 3;
 
+        edge3.id = 55;
+        edge3.subId = 2;
+
 
         List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
         percorso.Add(edge1);
         percorso.Add(edge2);
+        percorso.Add(edge3);
 
         return percorso;
     }
@@ -4628,8 +4636,8 @@ public class ScenarioTestUrbano : MonoBehaviour
             TrafAIMotor motor = go.AddComponent<TrafAIMotor>();
             go.GetComponent<VehicleInputController>().enabled = false;
 
-            GuidaManuale guidaManuale = go.AddComponent<GuidaManuale>();
-            guidaManuale.setMotor(motor);
+            //GuidaManuale guidaManuale = go.AddComponent<GuidaManuale>();
+            //guidaManuale.setMotor(motor);
 
 
             GameObject colliderOstacoli = new GameObject("colliderOstacoli");
