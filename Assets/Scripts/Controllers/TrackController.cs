@@ -431,14 +431,14 @@ public class TrackController : UnitySingleton<TrackController> {
         configurator.LoadSettings();
 
         //Add infraction recorder
-        car.AddComponent<InfractionRecorder>();
+        //car.AddComponent<InfractionRecorder>(); //DARIO
 
         //init new admin screen
         var newAdmin = GameObject.Find("AdminScreen");
         newAdmin.GetComponent<NewAdminScreen>().Init();
 
         //add CANDataCollector
-        car.AddComponent<CANDataCollector>();
+        //car.AddComponent<CANDataCollector>(); //DARIO
 
         //init SlipMeter
         //slipMeter = Resources.Load<GameObject>("SlipMeter");
