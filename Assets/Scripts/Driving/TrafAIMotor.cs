@@ -272,6 +272,8 @@ public class TrafAIMotor : MonoBehaviour
         targetHeightPrecedente = targetHeight;
     }
 
+    float targetSpeedIniziale = 0f;
+
     void FixedUpdate()
     {
         if (!inited)
@@ -282,6 +284,7 @@ public class TrafAIMotor : MonoBehaviour
         //ANTONELLO
         if (!this.tag.Equals("Player"))
         {
+            controllaAccensioneLuceStop(targetSpeedIniziale);
             SteerCar();
             MoveCar();
         }
@@ -304,17 +307,26 @@ public class TrafAIMotor : MonoBehaviour
 
     }
 
+    float targetSpeedPrecedente = 0;
+    private bool targetSpeedRidotto = false;
 
     private void controllaAccensioneLuceStop(float targetSpeed)
     {
-        if (hasStopTarget || frenata || targetSpeed < maxSpeed)
+        bool stiamoRallentando = (targetSpeedPrecedente - targetSpeed) >= 0.2f;
+        if (hasStopTarget || frenata || stiamoRallentando || (targetSpeed == targetSpeedPrecedente && targetSpeedRidotto && currentSpeed != targetSpeed))
         {
+            if (stiamoRallentando)
+            {
+                targetSpeedRidotto = true;
+            }
             luceStop = true;
         }
         else
         {
+            targetSpeedRidotto = false;
             luceStop = false;
         }
+        targetSpeedPrecedente = targetSpeed;
     }
 
     //ANTONELLO
@@ -332,6 +344,10 @@ public class TrafAIMotor : MonoBehaviour
     public float accelerazione = 0;
     private float accelerazionePrecedente = 0;
     private bool inizioValutazioneSemaforo = false;
+
+    //PER DARIO
+    public bool hasNextEntry50 = false;
+    public TrafEntry nextEntry50 = null;
 
     void Guida()
     {
@@ -369,6 +385,33 @@ public class TrafAIMotor : MonoBehaviour
                     Semaforo = "" + currentEntry.identifier; //Setto la proprietà quando inizio a valutare il semaforo
                 }
             }
+
+            //PER DARIO
+            if (Vector3.Distance(nose.transform.position, currentEntry.waypoints[currentEntry.waypoints.Count - 1]) <= 50f && !hasNextEntry50) //10 in piu dello spazio di freanata al semaforo
+            {
+                var node = system.roadGraph.GetNode(currentEntry.identifier, currentEntry.subIdentifier);
+
+                RoadGraphEdge newNode;
+
+                if (fixedRoute)
+                {
+                    if ((currentFixedNode+1) >= fixedPath.Count)
+                        currentFixedNode = 0;
+                    newNode = system.FindJoiningIntersection(node, fixedPath[currentFixedNode+1]);
+                }
+                else
+                {
+                    newNode = node.SelectRandom();
+                }
+
+                
+
+                nextEntry50 = system.GetEntry(fixedPath[currentFixedNode+1].id, fixedPath[currentFixedNode+1].subId);
+                /*nextEntry = system.GetEntry(newNode.id, newNode.subId);
+                nextTarget = nextEntry.waypoints[0];*/
+                hasNextEntry50 = true;           
+            }
+
 
 
             //last waypoint in this entry, grab the next path when we are in range
@@ -410,7 +453,7 @@ public class TrafAIMotor : MonoBehaviour
                     return;
                 }
 
-                TrafEntry prossimaStrada = system.GetEntry(fixedPath[currentFixedNode].id, fixedPath[currentFixedNode].subId);
+                //TrafEntry prossimaStrada = system.GetEntry(fixedPath[currentFixedNode].id, fixedPath[currentFixedNode].subId);
                 nextEntry = system.GetEntry(newNode.id, newNode.subId);
                 nextTarget = nextEntry.waypoints[0];
                 hasNextEntry = true;
@@ -425,7 +468,7 @@ public class TrafAIMotor : MonoBehaviour
             }
 
         }
-        if (hasNextEntry && !inizioValutazioneSemaforo && Vector3.Distance(nose.transform.position, nextTarget) <= 35f)
+        if (hasNextEntry && !inizioValutazioneSemaforo && Vector3.Distance(nose.transform.position, nextTarget) <= 40f)
         {
             inizioValutazioneSemaforo = true;
         }
@@ -887,7 +930,7 @@ public class TrafAIMotor : MonoBehaviour
             }
 
         }
-        float targetSpeedIniziale = targetSpeed;
+        targetSpeedIniziale = targetSpeed;
         if (targetSpeed > currentSpeed)
         {
             float distanzaCorrente = 0;
@@ -949,7 +992,7 @@ public class TrafAIMotor : MonoBehaviour
 
         }
 
-        controllaAccensioneLuceStop(targetSpeed);
+        
 
     }
 
@@ -982,6 +1025,7 @@ public class TrafAIMotor : MonoBehaviour
                 currentEntry = system.GetEntry(newNode.id, newNode.subId);
                 nextEntry = null;
                 hasNextEntry = false;
+                hasNextEntry50 = false;
                 inizioValutazioneSemaforo = false;
                 if (this.tag.Equals("Player"))
                 {
@@ -1006,6 +1050,7 @@ public class TrafAIMotor : MonoBehaviour
                         currentEntry = nextEntry;
                         nextEntry = null;
                         hasNextEntry = false;
+                        hasNextEntry50 = false;
                         inizioValutazioneSemaforo = false;
                         targetTangent = Vector3.zero;
                         if (this.tag.Equals("Player"))

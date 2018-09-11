@@ -183,17 +183,28 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
 
     }
 
+    float targetSpeedPrecedente = 0;
+    private bool targetSpeedRidotto = false;
+
     private void controllaAccensioneLuceStop(float targetSpeed)
     {
-        if (hasStopTarget || frenata || targetSpeed < maxSpeed)
+        bool stiamoRallentando = (targetSpeedPrecedente - targetSpeed) >= 0.2f;
+        if (hasStopTarget || frenata || stiamoRallentando || (targetSpeed == targetSpeedPrecedente && targetSpeedRidotto && currentSpeed != targetSpeed))
         {
+            if (stiamoRallentando)
+            {
+                targetSpeedRidotto = true;
+            }
             luceStop = true;
         }
         else
         {
+            targetSpeedRidotto = false;
             luceStop = false;
         }
+        targetSpeedPrecedente = targetSpeed;
     }
+
 
     private void Start()
     {
@@ -748,7 +759,7 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
 
         }
 
-        controllaAccensioneLuceStop(targetSpeed);
+        controllaAccensioneLuceStop(targetSpeedIniziale);
 
 
 

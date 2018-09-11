@@ -282,7 +282,30 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
     private bool luceStop = false;
     private bool forzaLuceStop = false;
 
+    float targetSpeedPrecedente = 0;
+    private bool targetSpeedRidotto = false;
+
     private void controllaAccensioneLuceStop(float targetSpeed)
+    {
+        bool stiamoRallentando = (targetSpeedPrecedente - targetSpeed) >= 0.2f;
+        if (hasStopTarget || frenata || stiamoRallentando || (targetSpeed == targetSpeedPrecedente && targetSpeedRidotto && currentSpeed != targetSpeed) || forzaLuceStop)
+        {
+            if (stiamoRallentando)
+            {
+                targetSpeedRidotto = true;
+            }
+            luceStop = true;
+        }
+        else
+        {
+            targetSpeedRidotto = false;
+            luceStop = false;
+        }
+        targetSpeedPrecedente = targetSpeed;
+    }
+
+
+    /*private void controllaAccensioneLuceStop(float targetSpeed)
     {
         if (hasStopTarget || frenata || targetSpeed < maxSpeed || forzaLuceStop)
         {
@@ -292,7 +315,7 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
         {
             luceStop = false;
         }
-    }
+    }*/
 
     void Guida()
     {
@@ -928,7 +951,7 @@ public class MacchinaTrafficoInchiodata : MonoBehaviour
 
         }
 
-        controllaAccensioneLuceStop(targetSpeed);
+        controllaAccensioneLuceStop(targetSpeedIniziale);
 
 
 
