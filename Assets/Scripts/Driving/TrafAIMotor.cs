@@ -405,11 +405,12 @@ public class TrafAIMotor : MonoBehaviour
                 }
 
                 
-
-                nextEntry50 = system.GetEntry(fixedPath[currentFixedNode+1].id, fixedPath[currentFixedNode+1].subId);
-                /*nextEntry = system.GetEntry(newNode.id, newNode.subId);
-                nextTarget = nextEntry.waypoints[0];*/
-                hasNextEntry50 = true;           
+                if (newNode != null)
+                {
+                    nextEntry50 = system.GetEntry(newNode.id, newNode.subId);
+                    hasNextEntry50 = true;
+                }
+                        
             }
 
 
@@ -1251,7 +1252,7 @@ public class TrafAIMotor : MonoBehaviour
 
     }
 
-    public float maxThrottle = 0.8f;
+    public float maxThrottle = 0.7f; //era a 0.8
     public float steerSpeed = 4.0f;
     public float steerSpeedCurva = 10.0f;
     public float throttleSpeed = 3.0f;
@@ -1266,6 +1267,10 @@ public class TrafAIMotor : MonoBehaviour
     //METODO PER FAR MUOVERE LA MACCHINA USANDO IL VEHICLE CONTROLLER - ANTONELLO
     void MoveCarUtenteAccelerazione()
     {
+        if (evitare)
+        {
+            return;
+        }
 
         if (velocitaAttuale < 0.01f && currentThrottle == 0f)
         {
@@ -1375,6 +1380,7 @@ public class TrafAIMotor : MonoBehaviour
 
     DateTime inizioSostaDopoPericolo;
     bool inizioSosta = false;
+    float durataSosta;
 
     private void evita()
     {
@@ -1420,16 +1426,16 @@ public class TrafAIMotor : MonoBehaviour
             vehicleController.steerInput = sterzata / 45;
         }
 
-        if (velocitaAttuale < 2.5f && !inizioSosta)
+        /*if (velocitaAttuale < 2.5f && !inizioSosta)
         {
             inizioSostaDopoPericolo = DateTime.Now;
             inizioSosta = true;
-        }
+        }*/
         if (inizioSosta)
         {
             TimeSpan differenza = (DateTime.Now - inizioSostaDopoPericolo);
             float secondi = differenza.Seconds + differenza.Milliseconds / 1000;
-            if (secondi > 1.99f)
+            if (secondi > durataSosta)
             {              
                 inizioSosta = false;
                 evitare = false;
@@ -1598,9 +1604,28 @@ public class TrafAIMotor : MonoBehaviour
             {
                 return;
             }
-            if (!motor.inizioSosta || motor.velocitaAttuale > 2f)
+            if (!motor.inizioSosta) //|| motor.velocitaAttuale > 2f)
             {
-                motor.evitare = false;
+                //motor.evitare = false;
+                motor.inizioSostaDopoPericolo = DateTime.Now;
+                motor.inizioSosta = true;
+                if (other.gameObject.name.Equals("Body1"))
+                {
+                    //è una macchina del traffico
+                    if (other.gameObject.GetComponentInParent<AutoTrafficoNoRayCast>() == null)
+                    {
+                        //Caso auto davanti a noi che taglia la strada davanti -> non ho bisogno di fermarmi
+                        motor.durataSosta = 0f;
+                        return;
+                    }
+                }
+                if (motor.velocitaAttuale < 2f)
+                {
+                    motor.durataSosta = 4.99f;
+                } else
+                {
+                    motor.durataSosta = 2.99f;
+                }
             }
             
         }

@@ -1305,12 +1305,15 @@ public class ScenarioTestUrbano : MonoBehaviour
         //CreaMacchinaTraffico(17, 0, 0.5f, percorso18_0);
         macchinaAccodarmi = CreaMacchinaTraffico(17, 0, 0.99f, percorso18_1);
 
-        evento18a();
 
         TrafEntry entry = system.GetEntry(1049, 5);
         TrafficLightContainer container = entry.light;
         TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
         lights[0].StartCoroutine(attesa18());
+
+        evento18a();
+
+        
 
     }
 
@@ -4929,11 +4932,14 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     private void SetLayer(int newLayer, Transform trans)
     {
-        //cambia il layer di un gameObject e di tutti i suoi figli
+        //cambia il layer del gameobject e di tutti i suoi figli
         trans.gameObject.layer = newLayer;
         foreach (Transform child in trans)
         {
-            child.gameObject.layer = newLayer;
+            if (!child.gameObject.name.Equals("Cube") && !child.gameObject.name.Equals("TrafLineRenderer"))
+            {
+                child.gameObject.layer = newLayer;
+            }            
             if (child.childCount > 0)
             {
                 SetLayer(newLayer, child.transform);
