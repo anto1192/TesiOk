@@ -139,6 +139,8 @@ public class TrafAIMotor : MonoBehaviour
     private bool direzioneSpostamentoDestra;
     private float velocitaInizialeFrenata;
 
+    public float distanzaInizioValutazioneSemaforo = 40f;
+
 
 
     //ANTONELLO
@@ -469,7 +471,7 @@ public class TrafAIMotor : MonoBehaviour
             }
 
         }
-        if (hasNextEntry && !inizioValutazioneSemaforo && Vector3.Distance(nose.transform.position, nextTarget) <= 40f)
+        if (hasNextEntry && !inizioValutazioneSemaforo && Vector3.Distance(nose.transform.position, nextTarget) <= distanzaInizioValutazioneSemaforo)
         {
             inizioValutazioneSemaforo = true;
         }
@@ -489,10 +491,10 @@ public class TrafAIMotor : MonoBehaviour
             if (distanzaWaypointFramePrecedente != 0 && (distanzaWaypoint - distanzaWaypointFramePrecedente) > 0)
             {
                 contatore++;
-                if (contatore >= 10)
+                if (contatore >= 15)
                 {
                     //abbiamo saltato il waypoint
-                    if ((numeroWaypointSaltati++) >= 10)
+                    if ((numeroWaypointSaltati++) >= 15)
                     {
                         if (this.tag.Equals("Player"))
                         {
@@ -1604,6 +1606,12 @@ public class TrafAIMotor : MonoBehaviour
             {
                 return;
             }
+            if (motor.hasStopTarget)
+            {
+                //Sono gia fermo all'incrocio non devo sostare
+                motor.evitare = false;
+                return;
+            }
             if (!motor.inizioSosta) //|| motor.velocitaAttuale > 2f)
             {
                 //motor.evitare = false;
@@ -1619,6 +1627,7 @@ public class TrafAIMotor : MonoBehaviour
                         return;
                     }
                 }
+                
                 if (motor.velocitaAttuale < 2f)
                 {
                     motor.durataSosta = 4.99f;
