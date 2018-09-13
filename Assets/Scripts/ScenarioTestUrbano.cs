@@ -15,7 +15,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
 
     //private TrafAIMotor macchinaTraffico;
-    private MacchinaTrafficoInchiodata macchinaTraffico;
+    private TrafAIMotor macchinaTraffico;
     private AutoTrafficoNoRayCast macchinaTrafficoScorretta;
 
     private bool scenarioAvviato = false;
@@ -1610,6 +1610,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             evento159a();
             return;
         }
+        car.GetComponent<TrafAIMotor>().distanzaInizioValutazioneSemaforo = 32f;
         secondaVolta = true;
         semaforo159b();
         List<RoadGraphEdge> percorso159_0 = ottieniPercorso159_0();
@@ -1685,7 +1686,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public void evento22()
     {
-        car.GetComponent<TrafAIMotor>().distanzaInizioValutazioneSemaforo = 30f;
+        car.GetComponent<TrafAIMotor>().distanzaInizioValutazioneSemaforo = 32f;
         TrackController.Instance.LanciaOstacolo(10);
         //TrackController.Instance.TriggerObstacle2();
         List<RoadGraphEdge> percorso22_0 = ottieniPercorso22_0();
@@ -2734,13 +2735,13 @@ public class ScenarioTestUrbano : MonoBehaviour
         edge1.subId = 0;
 
         edge2.id = 14;
-        edge2.subId = 1;
+        edge2.subId = 0;
 
         edge3.id = 15;
-        edge3.subId = 1;
+        edge3.subId =0;
 
         edge4.id = 16;
-        edge4.subId = 1;
+        edge4.subId = 0;
 
         edge5.id = 18;
         edge5.subId = 0;
@@ -2926,10 +2927,10 @@ public class ScenarioTestUrbano : MonoBehaviour
         edge1.subId = 0;
 
         edge2.id = 15;
-        edge2.subId = 1;
+        edge2.subId = 0;
 
         edge3.id = 16;
-        edge3.subId = 1;
+        edge3.subId = 0;
 
         edge4.id = 18;
         edge4.subId = 0;
@@ -4856,7 +4857,7 @@ public class ScenarioTestUrbano : MonoBehaviour
     }
 
 
-    public MacchinaTrafficoInchiodata CreaMacchinaTrafficoInchiodata(int id, int subId, float distance, List<RoadGraphEdge> percorso)
+    public TrafAIMotor CreaMacchinaTrafficoInchiodata(int id, int subId, float distance, List<RoadGraphEdge> percorso)
     {
         //id e subId stabiliscono la entry
         //distance da che distanza dall'inizio della entry la macchina deve apparire
@@ -4871,10 +4872,11 @@ public class ScenarioTestUrbano : MonoBehaviour
         if (!Physics.CheckSphere(pos.position, checkRadius, 1 << LayerMask.NameToLayer("Traffic")))
         {
             GameObject go = GameObject.Instantiate(prefabs[UnityEngine.Random.Range(0, prefabs.Length)], pos.position, Quaternion.identity) as GameObject;
-            MacchinaTrafficoInchiodata motor = go.AddComponent<MacchinaTrafficoInchiodata>();
-            motor.nose = go.GetComponent<TrafAIMotor>().nose;
-            motor.raycastOrigin = go.GetComponent<TrafAIMotor>().raycastOrigin;
-
+            //MacchinaTrafficoInchiodata motor = go.AddComponent<MacchinaTrafficoInchiodata>();
+            //motor.nose = go.GetComponent<TrafAIMotor>().nose;
+            //motor.raycastOrigin = go.GetComponent<TrafAIMotor>().raycastOrigin;
+            TrafAIMotor motor = go.GetComponent<TrafAIMotor>();
+            motor.macchinaTrafficoInchiodata = true;
 
             motor.currentIndex = pos.targetIndex;
             motor.currentEntry = entry;

@@ -11,6 +11,8 @@ using UnityEngine;
 
 public class TrafAIMotor : MonoBehaviour
 {
+    public bool macchinaTrafficoInchiodata = false;
+
     //ANTONELLO mi serve per notificare il cambiamento di id e subid della entry corrente
     public delegate void Delegato(int idPrecedene, int idCorrente);
     public event Delegato ChangeProperty;
@@ -102,7 +104,7 @@ public class TrafAIMotor : MonoBehaviour
     public const float stopLength = 10f;
     private VehicleController vehicleController;
 
-    private bool inited = false;
+    public bool inited = false;
     public float intersectionCornerSpeed = 1f;
 
     private float nextRaycast = 0f;
@@ -160,7 +162,12 @@ public class TrafAIMotor : MonoBehaviour
 
     private float valoreOriginaleMaxSpeed = 0;
 
+    //Per macchinaTrafficoInchiodata
+    DateTime tempoInizio;
+    private bool velocitaVera = false;
     public bool luceStop = false;
+    private bool forzaLuceStop = false;
+    private bool autoPassata = false;
 
 
     //ANTONELLO
@@ -315,7 +322,7 @@ public class TrafAIMotor : MonoBehaviour
     private void controllaAccensioneLuceStop(float targetSpeed)
     {
         bool stiamoRallentando = (targetSpeedPrecedente - targetSpeed) >= 0.2f;
-        if (hasStopTarget || frenata || stiamoRallentando || (targetSpeed == targetSpeedPrecedente && targetSpeedRidotto && currentSpeed != targetSpeed))
+        if (hasStopTarget || frenata || stiamoRallentando || (targetSpeed == targetSpeedPrecedente && targetSpeedRidotto && currentSpeed != targetSpeed) || forzaLuceStop)
         {
             if (stiamoRallentando)
             {
@@ -351,6 +358,10 @@ public class TrafAIMotor : MonoBehaviour
     public bool hasNextEntry50 = false;
     public TrafEntry nextEntry50 = null;
 
+
+
+    
+
     void Guida()
     {
         if (!inited)
@@ -375,6 +386,25 @@ public class TrafAIMotor : MonoBehaviour
             return;
         }
 
+        if (macchinaTrafficoInchiodata)
+        {
+            if (autoPassata)
+            {
+                TimeSpan differenza = (DateTime.Now - tempoInizio);
+                if (differenza.Seconds >= 3)
+                {
+                    autoPassata = false;
+                    maxSpeed = 5f;
+                    velocitaVera = true;
+                    forzaLuceStop = false;
+                }
+                else
+                {
+                    forzaLuceStop = true;
+                    maxSpeed = 0;
+                }
+            }
+        }
         
 
 
@@ -647,6 +677,15 @@ public class TrafAIMotor : MonoBehaviour
         {
             if (hitInfo.rigidbody != null && (hitInfo.rigidbody.tag.Equals("TrafficCar") || hitInfo.rigidbody.tag.Equals("TrafficScooter") || hitInfo.rigidbody.tag.Equals("Player")))
             {
+                if (hitInfo.rigidbody.GetComponent<AutoTrafficoNoRayCast>() != null && macchinaTrafficoInchiodata)
+                {
+                    if (hitInfo.rigidbody.GetComponent<AutoTrafficoNoRayCast>().autoScorretta)
+                    {
+                        targetSpeed = 0;
+                        autoPassata = true;
+                        tempoInizio = DateTime.Now;
+                    }
+                }
                 Debug.DrawLine(this.transform.position, hitInfo.transform.position);
                 if (hitInfo.distance <= 35f)
                 {
@@ -1383,6 +1422,7 @@ public class TrafAIMotor : MonoBehaviour
     DateTime inizioSostaDopoPericolo;
     bool inizioSosta = false;
     float durataSosta;
+    bool situazionePalla = false;
 
     private void evita()
     {
@@ -1435,12 +1475,17 @@ public class TrafAIMotor : MonoBehaviour
         }*/
         if (inizioSosta)
         {
+            if (situazionePalla)
+            {
+                vehicleController.accellInput = -0.05f;
+            }            
             TimeSpan differenza = (DateTime.Now - inizioSostaDopoPericolo);
             float secondi = differenza.Seconds + differenza.Milliseconds / 1000;
             if (secondi > durataSosta)
             {              
                 inizioSosta = false;
                 evitare = false;
+                situazionePalla = false;
             }
         }
 
@@ -1617,6 +1662,10 @@ public class TrafAIMotor : MonoBehaviour
                 //motor.evitare = false;
                 motor.inizioSostaDopoPericolo = DateTime.Now;
                 motor.inizioSosta = true;
+                if (other.gameObject.GetComponentInParent<BallObstacle>())
+                {
+                    motor.situazionePalla = true;
+                }
                 if (other.gameObject.name.Equals("Body1"))
                 {
                     //è una macchina del traffico
