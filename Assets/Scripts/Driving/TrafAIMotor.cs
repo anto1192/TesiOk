@@ -166,7 +166,7 @@ public class TrafAIMotor : MonoBehaviour
     DateTime tempoInizio;
     private bool velocitaVera = false;
     public bool luceStop = false;
-    private bool forzaLuceStop = false;
+    public bool forzaLuceStop = false;
     private bool autoPassata = false;
 
 

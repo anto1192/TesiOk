@@ -609,10 +609,10 @@ public class ScenarioTestUrbano : MonoBehaviour
         car.GetComponent<TrafAIMotor>().maxSpeed = limiteVelocita;
         soloSemaforo16();
         evento16a();
-        if (macchinaTraffico != null)
-        {
-            macchinaTraffico.maxSpeed = limiteVelocita;
-        }
+        //if (macchinaTraffico != null)
+        //{
+        //    macchinaTraffico.maxSpeed = limiteVelocita;
+        //}
         
     }
 
@@ -1172,6 +1172,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         if (distanza < -30)
         {
             macchinaTagliaStrada.maxSpeed = Mathf.Clamp(macchinaTagliaStrada.maxSpeed -1, 3f, limiteVelocita);
+            macchinaTagliaStrada.forzaLuceStop = true;
             TrafEntry entry = system.GetEntry(1049, 5);
             TrafficLightContainer container = entry.light;
             TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
@@ -1184,6 +1185,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         {
             //macchinaTagliaStrada.maxSpeed = Mathf.Clamp(macchinaTagliaStrada.maxSpeed + 1, 3f, limiteVelocita);
             macchinaTagliaStrada.maxSpeed = limiteVelocita;
+            macchinaTagliaStrada.forzaLuceStop = false;
             TrafEntry entry = system.GetEntry(1049, 5);
             TrafficLightContainer container = entry.light;
             TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
@@ -1279,7 +1281,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         {
             if (macchinaTraffico.currentEntry.identifier == 18)
             {
-                macchinaTraffico.maxSpeed = 3f;
+                macchinaTraffico.maxSpeed = 2f;
             } else
             {
                 ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().maxSpeed = 2f;
@@ -1563,18 +1565,18 @@ public class ScenarioTestUrbano : MonoBehaviour
         List<RoadGraphEdge> percorso125_4 = ottieniPercorso125_4();
 
         //CreaMacchinaTraffico(160, 0, 0f, percorso125_0);
-        CreaMacchinaTraffico(160, 1, 0.15f, percorso125_1);
-        CreaMacchinaTraffico(160, 1, 0.3f, percorso125_2);
+        /*CreaMacchinaTraffico(160, 1, 0.15f, percorso125_1);
+        CreaMacchinaTraffico(160, 1, 0.3f, percorso125_2);*/
 
         CreaMacchinaTraffico(159, 3, 0f, percorso125_3);
         CreaMacchinaTraffico(159, 2, 0.15f, percorso125_4);
 
         // CreaMacchinaTraffico(160, 0, 0.45f, percorso125_0);
-        CreaMacchinaTraffico(160, 1, 0.6f, percorso125_1);
+        /*CreaMacchinaTraffico(160, 1, 0.6f, percorso125_1);
         CreaMacchinaTraffico(160, 1, 0.75f, percorso125_2);
 
         CreaMacchinaTraffico(159, 3, 0.45f, percorso125_3);
-        CreaMacchinaTraffico(159, 2, 0.6f, percorso125_4);
+        CreaMacchinaTraffico(159, 2, 0.6f, percorso125_4);*/
 
         scooterTagliaStrada.maxSpeed = 15f;
 
@@ -4920,6 +4922,14 @@ public class ScenarioTestUrbano : MonoBehaviour
         if (go == null)
         {
             go = GameObject.Find("TeslaModelS_2_RiggedLOD(Clone)");
+        }
+        if (go == null)
+        {
+            go = GameObject.Find("TeslaModelS_MOD");
+        }
+        if (go == null)
+        {
+            go = GameObject.Find("TeslaModelS_MOD(Clone)");
         }
         return go;
     }
