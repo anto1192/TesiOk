@@ -11,9 +11,11 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     public GameObject[] prefabs;
     private float checkRadius = 8f;
     public Transform posizionePartenza;
+    public Transform posizionePartenzaAlternativa;
+    public bool metaPercorso;
     private GameObject car;
     public bool scenarioAvviato = false;
-    public GameObject rocciaTest;
+    public GameObject situazioneRoccia;
     private bool fineTest = false;
 
 
@@ -71,15 +73,25 @@ public class ScenarioTestExtraurbano : MonoBehaviour
             car = ottieniRiferimentoPlayer();
         }
 
-        car.transform.position = posizionePartenza.transform.position;
-        car.transform.rotation = posizionePartenza.transform.rotation;
+        if (metaPercorso)
+        {
+            car.transform.position = posizionePartenzaAlternativa.transform.position;
+            car.transform.rotation = posizionePartenzaAlternativa.transform.rotation;
+            iniziaTest();
+        } else
+        {
+            car.transform.position = posizionePartenza.transform.position;
+            car.transform.rotation = posizionePartenza.transform.rotation;
+        }
         car.GetComponent<xSimScript>().enabled = true;
+
+
     }
 
     public void iniziaTest()
     {
 
-        rocciaTest.SetActive(true);
+        situazioneRoccia.SetActive(true);
         AvviaGuidaAutomatica();
         /*GameObject macchinaTraffico0 = CreaMacchinaTraffico(1570);
         macchinaTraffico0.GetComponent<TrafPCH>().maxSpeed = 10f;*/
@@ -110,12 +122,13 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     //LISTA EVENTI
 
     //SBACCHETTAMENTI
-    public void evento1590()
+    
+    public void evento1564()
     {
         guidaAutomatica.sbacchettamento = true;
     }
 
-    public void evento1600()
+   /* public void evento1600()
     {
         guidaAutomatica.sbacchettamento = false;
     }
@@ -123,14 +136,14 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     public void evento1635()
     {
         guidaAutomatica.sbacchettamento = true;
-    }
+    }*/
 
-    public void evento1650()
+    public void evento1694()
     {
         guidaAutomatica.sbacchettamento = false;
     }
 
-    public void evento1720()
+    public void evento1709()
     {
         guidaAutomatica.sbacchettamento = true;
     }
@@ -180,12 +193,13 @@ public class ScenarioTestExtraurbano : MonoBehaviour
         guidaAutomatica.sbacchettamento = false;
     }
 
-    public void evento2050()
+    public void evento2009()
     {
         guidaAutomatica.sbacchettamento = true;
     }
-
-
+    
+    
+    
 
     //EVENTI
 
@@ -210,12 +224,12 @@ public class ScenarioTestExtraurbano : MonoBehaviour
 
     public void evento1702()
     {
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 8f;
+        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 2f; //era a 8; mi fermo dopo il pericolo
     }
 
     public void evento1710()
     {
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 10f;
+      car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 5f;
     }
 
     public void evento1712()
@@ -286,11 +300,17 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     public void evento1980()
     {
         macchinaTraffico[9].GetComponent<TrafPCH>().maxSpeed = 3f;
+        macchinaTraffico[9].GetComponent<TrafPCH>().luceStop = true;
         car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 10f;
         car.GetComponent<CarExternalInputAutoPathAdvanced>().limiteVelocita = 45f;
     }
 
-    public void evento1990()
+    public void evento1989()
+    {
+        macchinaTraffico[9].GetComponent<TrafPCH>().luceStop = false;
+    }
+
+        public void evento1990()
     {        
         macchinaTraffico[9].GetComponent<TrafPCH>().maxSpeed = 8f;
     }
@@ -350,7 +370,12 @@ public class ScenarioTestExtraurbano : MonoBehaviour
 
     public void evento2065()
     {
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 10f;
+        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 2f;
+    }
+
+    public void evento2072()
+    {
+        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 8f;
     }
 
     public void evento2090()
@@ -450,11 +475,10 @@ public class ScenarioTestExtraurbano : MonoBehaviour
         }
         
         newAp.ChangeProperty += new CarExternalInputAutoPathAdvanced.Delegato(gestisciEvento);
-        newAp.waypointThreshold = 4f;
-        newAp.maxSpeed = 18f;
-        //newAp.maxSpeed = 11f;
+        newAp.waypointThreshold = 4f;               
         newAp.maxBrake = 1f;
         newAp.maxThrottle = 0.7f;
+        //newAp.steerSpeed = 10f;
         newAp.steerSpeed = 10f;
         newAp.throttleSpeed = 1f;
         newAp.brakeSpeed = 0.5f;
@@ -463,8 +487,15 @@ public class ScenarioTestExtraurbano : MonoBehaviour
         newAp.pathRadius = 0.35f;
 
         newAp.path = carAutoPath;
-        newAp.waypoint = 1559;
-        //newAp.waypoint = 1870;
+        if (metaPercorso)
+        {           
+            newAp.maxSpeed = 11f;
+            newAp.waypoint = 1870;
+        } else
+        {
+            newAp.maxSpeed = 18f;
+            newAp.waypoint = 1559;
+        }
         Transform posizioneRaycast = null;
         foreach (Transform go in car.GetComponentsInChildren<Transform>()) 
         {
@@ -484,7 +515,7 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     {
         Destroy(car.GetComponent<CarExternalInputAutoPathAdvanced>());
         car.GetComponent<VehicleInputController>().enabled = true;
-        rocciaTest.SetActive(false);
+        situazioneRoccia.SetActive(false);
         Destroy(car.GetComponent<GuidaManualePCH>());
 
         Destroy(macchinaTrafficoSorpasso);
