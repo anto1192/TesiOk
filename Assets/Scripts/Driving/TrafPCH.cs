@@ -62,6 +62,7 @@ public class TrafPCH: MonoBehaviour
     //ANTONELLO
     float velocitaPrecedente = 0;
     public float accelerazione = 0;
+    public bool luceStop = false;
 
     RaycastHit hitInfo;
 

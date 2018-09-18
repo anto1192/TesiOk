@@ -34,6 +34,9 @@ public class CarExternalInputAutoPathAdvanced : MonoBehaviour
     private float m_targetSteer = 0.0f;
     private float m_targetThrottle = 0.0f;
 
+    private float m_targetSteer_target = 0f;
+    private float m_targetSteer_precedente = 0.0f;
+
     private float targetSpeed = 0f;
     private float currentThrottle = 0f;
 
@@ -167,14 +170,24 @@ public class CarExternalInputAutoPathAdvanced : MonoBehaviour
         return desired * maxSpeed;
     }
 
+    private int contatoreSbacchettamenti = 0;
+
     private bool evitare = false;
     public bool inchiodare = false;
+    private int contatore = 0;
+    Vector3 predicted;
+    Vector3 normal;
+    Vector3 target = Vector3.zero;
     void FixedUpdate()
     {
-        
+        /*RoadPathNode prossimoNodo5 = path.pathNodes[currentWaypointIndex + 5];
+        target = prossimoNodo5.position;*/
+
         var predicted = GetPredictedPoint();
 
         var normal = GetNormalPoint(predicted, currentWaypoint, nextWaypoint);
+
+        
         if (evitare && hitInfo.collider != null && hitInfo.collider.gameObject.layer == 12)
         {
             evita();
@@ -189,15 +202,27 @@ public class CarExternalInputAutoPathAdvanced : MonoBehaviour
         //check if we are heading past the current waypoint
         if (Vector3.Dot(normal - nextWaypoint, nextWaypoint - currentWaypoint) >= 0)
         {
-            currentWaypoint = nextWaypoint;
-            currentNode = nextNode;
-            currentWaypointIndex = nextWaypointIndex;
+            contatore++;
+            
+                currentWaypoint = nextWaypoint;
+                currentNode = nextNode;
+                currentWaypointIndex = nextWaypointIndex;
 
-            UpdateNextWaypoint();
+                UpdateNextWaypoint();
+             /*
 
-            predicted = GetPredictedPoint();
-            normal = GetNormalPoint(predicted, currentWaypoint, nextWaypoint);
+                predicted = GetPredictedPoint();
+                normal = GetNormalPoint(predicted, currentWaypoint, nextWaypoint);*/
+            
         }
+       // Debug.Log("distanza dal target: " + Vector3.Distance(transform.position, new Vector3(target.x, transform.position.y, target.z)));
+        if (Vector3.Distance(transform.position, new Vector3(target.x, transform.position.y, target.z)) <= 10f || target == Vector3.zero)
+        {
+            RoadPathNode prossimoNodo5 = path.pathNodes[currentWaypointIndex + 2];
+            target = prossimoNodo5.position;
+            //Debug.DrawLine(transform.position, target);
+        }
+        
 
 
 
@@ -314,18 +339,25 @@ public class CarExternalInputAutoPathAdvanced : MonoBehaviour
         }
 
 
-            Debug.DrawLine(transform.position, normal);
+        //Debug.DrawLine(transform.position, normal);
 
+        Debug.DrawLine(transform.position, target);
         //STEER CAR
         Vector3 steerVector = new Vector3(normal.x, transform.position.y, normal.z) - transform.position;
-
+        //Vector3 steerVector = new Vector3(target.x, transform.position.y, target.z) - transform.position;
         /*float steer = Vector3.Angle(transform.forward, steerVector);
         float angolo = Vector3.SignedAngle(transform.forward, steerVector, Vector3.up);
         steer -= 3.5f;
         Vector3 heading = (new Vector3(normal.x, transform.position.y, normal.z) - transform.position).normalized;
         float cosine = Vector3.Dot(transform.TransformDirection(Vector3.forward), heading);
         float angolo1 = Mathf.Rad2Deg * Mathf.Acos(cosine);*/
+
+
         m_targetSteer = Vector3.SignedAngle(transform.forward, normal - transform.position, Vector3.up);
+        //m_targetSteer = Vector3.SignedAngle(transform.forward, new Vector3(normal.x, transform.position.y, normal.z) - transform.position, Vector3.up);
+        //m_targetSteer = Vector3.SignedAngle(transform.forward, new Vector3(target.x, transform.position.y, target.z) - transform.position, Vector3.up);
+
+
         /*Vector3 desired = seek(new Vector3(normal.x, transform.position.y, normal.z), transform.position);
         Vector3 steers = desired -  GetComponent<Rigidbody>().velocity;
         float steer2 = Vector3.Angle(transform.forward, steers);*/
@@ -334,18 +366,85 @@ public class CarExternalInputAutoPathAdvanced : MonoBehaviour
         //m_targetSteer = (Vector3.Cross(transform.forward, steerVector).y < 0 ? -steer : steer) / vehicleController.maxSteeringAngle;
         // m_targetSteer = Mathf.Clamp((Vector3.Cross(transform.forward, steerVector).y < 0 ? -steer : steer), -45, 45);
 
-        /*if (Vector3.Distance(predicted, normal) < pathRadius)
-            m_targetSteer = 0f;*/
+        //if (Vector3.Distance(predicted, normal) < pathRadius)
+        //    m_targetSteer = 0f;
+
+
+        
+
+        float differenza = Math.Abs(m_targetSteer) - Math.Abs(m_targetSteer_precedente);
+        float differenzaTarget = Math.Abs(m_targetSteer - m_targetSteer_target);
+        if (differenza <= 0.2f || (m_targetSteer_target != 0 && differenzaTarget > 0.2f))
+        {
+            if ((m_targetSteer_precedente < 0 && m_targetSteer > 0) || (m_targetSteer_precedente > 0 && m_targetSteer < 0) || m_targetSteer_target != 0)
+            {
+                if (m_targetSteer_target == 0)
+                {
+                    m_targetSteer_target = m_targetSteer;
+                    
+                } else
+                {
+                   
+                }
+                m_targetSteer = Mathf.Lerp(m_targetSteer_precedente, m_targetSteer_target, steerSpeed * Time.fixedDeltaTime);
+                m_targetSteer_precedente = m_targetSteer;
+            }
+            else
+            {
+                m_targetSteer = m_targetSteer_precedente;
+                m_targetSteer_precedente = m_targetSteer;
+            }
+            /*if (m_targetSteer_precedente > 0 && m_targetSteer < 0)
+            {
+                m_targetSteer = -m_targetSteer;
+            }*/
+        }
+    
+
+
+
+        /*
+        if (m_targetSteer_precedente < 0 && m_targetSteer >= 0 || m_targetSteer_precedente > 0 && m_targetSteer <= 0) // || (contatoreSbacchettamenti != 0 && contatoreSbacchettamenti <= 10))
+        {
+            Debug.Log("target steer azzerato: target_steer: " + m_targetSteer + "; precedente: " + m_targetSteer_precedente);
+            m_targetSteer_precedente = m_targetSteer;
+            m_targetSteer = -m_targetSteer;
+            contatoreSbacchettamenti++;
+        }
+        else
+        {
+            //Debug.Log("target_steer: " + m_targetSteer + "; precedente: " + m_targetSteer_precedente);
+            contatoreSbacchettamenti = 0;
+            m_targetSteer_precedente = m_targetSteer;
+
+        }
+        //m_targetSteer_precedente = m_targetSteer;
+        
+        if (Math.Abs(m_targetSteer) < pathRadius)
+        {
+            m_targetSteer = 0f;
+        }
+
+        */
+    
+        
 
         PIDControllerSterzata.pFactor = _pidPars.p_sterzataPCH;
         PIDControllerSterzata.iFactor = _pidPars.i_sterzataPCH;
+        PIDControllerSterzata.dFactor = _pidPars.d_sterzataPCH;
         if (sbacchettamento)
         {
-            PIDControllerSterzata.dFactor = 0;
+            //PIDControllerSterzata.dFactor = 0;
+            PIDControllerSterzata.dFactor = 0.5f;
         } else {
-            PIDControllerSterzata.dFactor = _pidPars.d_sterzataPCH;
+            //PIDControllerSterzata.dFactor = _pidPars.d_sterzataPCH;
+            //steerSpeed = 10f;
+            //PIDControllerSterzata.dFactor = 0;
+            //steerSpeed = 30f;
+            PIDControllerSterzata.dFactor = 0.3f;
+
         }
-        
+
 
 
 
@@ -361,11 +460,13 @@ public class CarExternalInputAutoPathAdvanced : MonoBehaviour
 
         float steeringAngle = PIDControllerSterzata.UpdatePars(m_targetSteer, turnPrecedente, Time.fixedDeltaTime);
         //float steeringAngle = m_targetSteer;
+        
+        
         //Limit the steering angle
         steeringAngle = Mathf.Clamp(steeringAngle, -45, 45);
 
         float differenzaTurn = Math.Abs(steeringAngle - turnPrecedente);
-
+        
 
         averageSteeringAngle = averageSteeringAngle + ((steeringAngle - averageSteeringAngle) / _pidPars.indiceSterzataCurva);
         if (Mathf.Abs(averageSteeringAngle - turnPrecedente) <= _pidPars.puntoMortoSterzata)
@@ -375,6 +476,33 @@ public class CarExternalInputAutoPathAdvanced : MonoBehaviour
 
         averageSteeringAngle = Mathf.Clamp(Mathf.Lerp(turnPrecedente, averageSteeringAngle, steerSpeed * Time.fixedDeltaTime), -45f, 45f);
         //steeringAngle = Mathf.Clamp(Mathf.Lerp(turnPrecedente, steeringAngle, steerSpeed * Time.fixedDeltaTime), -45f, 45f);
+
+        //averageSteeringAngle = Mathf.Clamp(Mathf.Lerp(turnPrecedente, m_targetSteer, steerSpeed * Time.fixedDeltaTime), -45f, 45f);
+
+
+
+
+
+
+
+        /*float differenza = Math.Abs(averageSteeringAngle) - Math.Abs(turnPrecedente);
+        if (differenza <= 0.1f)
+        {
+            if ((turnPrecedente < 0 && averageSteeringAngle > 0) || (turnPrecedente > 0 && averageSteeringAngle < 0))
+            {
+                averageSteeringAngle = -averageSteeringAngle;
+            }
+        }*/
+
+
+
+
+
+
+
+        //averageSteeringAngle = m_targetSteer;
+
+
         vehicleController.steerInput = averageSteeringAngle / 45f;
         //vehicleController.steerInput = steeringAngle / 45f;
         //FINE STEERCAR

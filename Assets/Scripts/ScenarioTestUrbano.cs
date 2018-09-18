@@ -1771,7 +1771,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         entry1.waypoints[numeroWaypoint - 1] = entry2.waypoints[numeroWaypoint - 1];
         entry1.waypoints[numeroWaypoint - 2] = entry2.waypoints[numeroWaypoint - 2];
         entry1.waypoints[numeroWaypoint - 3] = entry2.waypoints[numeroWaypoint - 3];
-        entry1.waypoints[numeroWaypoint - 3] = entry2.waypoints[numeroWaypoint - 3];
+        entry1.waypoints[numeroWaypoint - 4] = entry2.waypoints[numeroWaypoint - 4];
         ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().currentEntry = entry1;
     }
 
