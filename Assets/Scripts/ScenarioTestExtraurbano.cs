@@ -505,10 +505,10 @@ public class ScenarioTestExtraurbano : MonoBehaviour
         macchinaTraffico[9].GetComponent<TrafPCH>().maxSpeed = 25f;
     }
 
-    public void evento2055()
-    {
-        TrackController.Instance.TriggerObstacle1();
-    }
+    //public void evento2055()
+    //{
+    //    TrackController.Instance.TriggerObstacle1();
+    //}
 
     public void evento2065()
     {
