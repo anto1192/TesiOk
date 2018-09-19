@@ -817,9 +817,9 @@ public class ScenarioTestUrbano : MonoBehaviour
 
 
         List<RoadGraphEdge> percorso159_4 = ottieniPercorso159_4();
-        macchinaTrafficoScorrettaDavanti = CreaMacchinaTraffico(162, 3, 0.807f, percorso159_4);
-        macchinaTrafficoScorrettaDavanti.autoScorretta = true;
-        macchinaTrafficoScorrettaDavanti.maxSpeed = 5.2f;
+        //macchinaTrafficoScorrettaDavanti = CreaMacchinaTraffico(162, 3, 0.807f, percorso159_4);
+        //macchinaTrafficoScorrettaDavanti.autoScorretta = true;
+        //macchinaTrafficoScorrettaDavanti.maxSpeed = 5.2f;
 
         //ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().maxSpeed = 10f;
 
@@ -846,7 +846,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         lights[0].StartCoroutine(courutineSemaforoVerde(container1));
         lights[0].StartCoroutine(courutineSemaforoVerde(container2));
 
-        macchinaTrafficoScorrettaDavanti.autoScorretta = false;
+        //macchinaTrafficoScorrettaDavanti.autoScorretta = false;
         
     }
 
@@ -864,7 +864,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         lights[0].StartCoroutine(courutineSemaforoRosso(container1));
         lights[0].StartCoroutine(courutineSemaforoRosso(container2));
 
-        macchinaTrafficoScorrettaDavanti.autoScorretta = false;
+        //macchinaTrafficoScorrettaDavanti.autoScorretta = false;
     }
 
 
@@ -1603,7 +1603,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         
     }*/
 
-    TrafAIMotor macchinaTrafficoScorrettaDavanti = null;
+    //TrafAIMotor macchinaTrafficoScorrettaDavanti = null;
 
     public void evento159()
     {
@@ -1676,7 +1676,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
 
         ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().maxSpeed = limiteVelocita;
-        macchinaTrafficoScorrettaDavanti.maxSpeed = 8f;
+        //macchinaTrafficoScorrettaDavanti.maxSpeed = 8f;
 
 
         semaforo163a();
@@ -1710,7 +1710,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         //CreaMacchinaTraffico(30, 0, 0f, percorso22_7);
 
 
-        macchinaTrafficoScorrettaDavanti.autoScorretta = true;
+        //macchinaTrafficoScorrettaDavanti.autoScorretta = true;
     }
 
 

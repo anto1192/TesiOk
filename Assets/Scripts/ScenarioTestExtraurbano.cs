@@ -138,17 +138,17 @@ public class ScenarioTestExtraurbano : MonoBehaviour
         guidaAutomatica.sbacchettamento = true;
     }*/
 
-    public void evento1694()
+    public void evento1701()
     {
         guidaAutomatica.sbacchettamento = false;
     }
 
-    public void evento1709()
+    public void evento1708()
     {
         guidaAutomatica.sbacchettamento = true;
     }
 
-    public void evento1730()
+    public void evento1740()
     {
         guidaAutomatica.sbacchettamento = false;
     }
@@ -158,7 +158,7 @@ public class ScenarioTestExtraurbano : MonoBehaviour
         guidaAutomatica.sbacchettamento = true;
     }
 
-    public void evento1810()
+    public void evento1813()
     {
         guidaAutomatica.sbacchettamento = false;
     }
@@ -166,11 +166,14 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     public void evento1838()
     {
         guidaAutomatica.sbacchettamento = true;
+        guidaAutomatica.sbacchettamentoForte = true;
+
     }
 
     public void evento1859()
     {
         guidaAutomatica.sbacchettamento = false;
+        guidaAutomatica.sbacchettamentoForte = false;
     }
 
     public void evento1875()
@@ -188,7 +191,7 @@ public class ScenarioTestExtraurbano : MonoBehaviour
         guidaAutomatica.sbacchettamento = true;
     }
 
-    public void evento1912()
+    public void evento1920()
     {
         guidaAutomatica.sbacchettamento = false;
     }
@@ -197,9 +200,121 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     {
         guidaAutomatica.sbacchettamento = true;
     }
-    
-    
-    
+
+    public void evento2057()
+    {
+        guidaAutomatica.sbacchettamento = false;
+    }
+
+    public void evento2077()
+    {
+        guidaAutomatica.sbacchettamento = true;
+    }
+
+
+    //SBACCHETTAMENTI FORTI
+    public void evento1580()
+    {
+        guidaAutomatica.sbacchettamentoForte = true;
+    }
+
+    public void evento1600()
+    {
+        guidaAutomatica.sbacchettamentoForte = false;
+    }
+
+    public void evento1625()
+    {
+        guidaAutomatica.sbacchettamentoForte = true;
+    }
+
+    public void evento1666()
+    {
+        guidaAutomatica.sbacchettamentoForte = false;
+    }
+
+    public void evento1690()
+    {
+        guidaAutomatica.sbacchettamentoForte = true;
+    }
+
+    public void evento1700()
+    {
+        guidaAutomatica.sbacchettamentoForte = false;
+    }
+
+    public void evento1716()
+    {
+        guidaAutomatica.sbacchettamentoForte = true;
+    }
+
+    public void evento1739()
+    {
+        guidaAutomatica.sbacchettamentoForte = false;
+    }
+
+    public void evento1800()
+    {
+        guidaAutomatica.sbacchettamentoForte = true;
+    }
+
+    public void evento1812()
+    {
+        guidaAutomatica.sbacchettamentoForte = false;
+    }
+
+    //sbacchettamentoForte settato prima
+    //public void evento1838() 
+    //{
+    //    guidaAutomatica.sbacchettamentoForte = true;
+    //}
+
+    //public void evento1859()
+    //{
+    //    guidaAutomatica.sbacchettamentoForte = false;
+    //}
+
+    public void evento1910()
+    {
+        guidaAutomatica.sbacchettamentoForte = true;
+    }
+
+    public void evento1919()
+    {
+        guidaAutomatica.sbacchettamentoForte = false;
+    }
+
+    public void evento2040()
+    {
+        guidaAutomatica.sbacchettamentoForte = true;
+    }
+
+    public void evento2056()
+    {
+        guidaAutomatica.sbacchettamentoForte = false;
+    }
+
+    public void evento2078()
+    {
+        guidaAutomatica.sbacchettamentoForte = true;
+    }
+
+    public void evento2087()
+    {
+        guidaAutomatica.sbacchettamentoForte = false;
+    }
+
+    //1580 1600
+    //1625 1700
+    //1716 1740
+    //1800 1812
+    //1838 1860
+    //1910 1920
+    //2040 2055
+    //2078 2087
+
+
+
 
     //EVENTI
 
@@ -219,36 +334,55 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     public void evento1680()
     {
         macchinaTraffico[3] = CreaMacchinaTraffico(1075); //questa macchina la evito appena per colpa del sasso
+        clacson = macchinaTraffico[3].AddComponent<AudioSource>();
+        clacson.spatialBlend = 1f;
+        clacson.volume = 0.1f;
+        clacson.clip = Resources.Load("clacson") as AudioClip;
+    }
+
+    public void evento1705()
+    {
+        clacson.PlayOneShot(clacson.clip);
     }
 
 
     public void evento1702()
     {
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 2f; //era a 8; mi fermo dopo il pericolo
+        guidaAutomatica.maxSpeed = 2f; //era a 8; mi fermo dopo il pericolo
     }
 
-    public void evento1710()
+    public void evento1709()
     {
-      car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 5f;
+        guidaAutomatica.sbacchettamento = true;
+        guidaAutomatica.sosta = true;
+        guidaAutomatica.durataSosta = 4f;
+        guidaAutomatica.inizioSosta = DateTime.Now;
+        guidaAutomatica.maxSpeed = 5f;
     }
+
+    //public void evento1710()
+    //{
+    //  guidaAutomatica.maxSpeed = 5f;
+    //}
 
     public void evento1712()
     {
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 15f;
+        guidaAutomatica.maxSpeed = 15f;
     }
 
     public void evento1750()
     {
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 13f;
+        guidaAutomatica.maxSpeed = 13f;
     }
     public void evento1755()
     {
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 11f;
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().limiteVelocita = 45f;
+        guidaAutomatica.maxSpeed = 11f;
+        guidaAutomatica.limiteVelocita = 45f;
     }
 
     public void evento1820()
     {
+        guidaAutomatica.maxSpeed = 12f;
         macchinaTraffico[4] = CreaMacchinaTraffico(952);
     }
 
@@ -274,11 +408,12 @@ public class ScenarioTestExtraurbano : MonoBehaviour
 
     public void evento1891()
     {
+        //guidaAutomatica.maxSpeed = 11f;
         macchinaTraffico[8] = CreaMacchinaTraffico(865);
         macchinaTraffico[8].GetComponent<TrafPCH>().maxSpeed = 5f;
         clacson = macchinaTraffico[8].AddComponent<AudioSource>();
         clacson.spatialBlend = 1f;
-        clacson.volume = 0.3f;
+        clacson.volume = 0.1f;
         clacson.clip = Resources.Load("clacson") as AudioClip;
         macchinaTrafficoSorpasso = CreaMacchinaTrafficoSorpasso(822);
     }
@@ -286,19 +421,19 @@ public class ScenarioTestExtraurbano : MonoBehaviour
 
     public void evento1935()
     {
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 15f;
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().limiteVelocita = 60f;
+        guidaAutomatica.maxSpeed = 15f;
+        guidaAutomatica.limiteVelocita = 60f;
     }
 
     public void evento1923()
     {
         clacson.PlayOneShot(clacson.clip);
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 5f;
+        guidaAutomatica.maxSpeed = 5f;
     }
 
     public void evento1925()
     {
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 11f;
+        guidaAutomatica.maxSpeed = 11f;
         macchinaTraffico[9] = CreaMacchinaTraffico(1966);
         macchinaTraffico[9].tag = "DangerousCar";
         macchinaTraffico[9].GetComponent<TrafPCH>().maxSpeed = 5f;
@@ -308,8 +443,8 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     {
         macchinaTraffico[9].GetComponent<TrafPCH>().maxSpeed = 3f;
         macchinaTraffico[9].GetComponent<TrafPCH>().luceStop = true;
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 10f;
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().limiteVelocita = 45f;
+        guidaAutomatica.maxSpeed = 10f;
+        guidaAutomatica.limiteVelocita = 45f;
     }
 
     public void evento1989()
@@ -324,18 +459,18 @@ public class ScenarioTestExtraurbano : MonoBehaviour
 
     public void evento1995()
     {
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 10f;
+        guidaAutomatica.maxSpeed = 10f;
         macchinaTraffico[9].GetComponent<TrafPCH>().maxSpeed = 10f;
     }
 
     public void evento2005()
     {
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().limiteVelocita = 70f;
+        guidaAutomatica.limiteVelocita = 75f;
     }
 
     public void evento2010()
     {
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 20f;
+        guidaAutomatica.maxSpeed = 20f;
         macchinaTraffico[9].GetComponent<TrafPCH>().maxSpeed = 15f;
     }
 
@@ -377,12 +512,12 @@ public class ScenarioTestExtraurbano : MonoBehaviour
 
     public void evento2065()
     {
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 2f;
+        guidaAutomatica.maxSpeed = 2f;
     }
 
     public void evento2072()
     {
-        car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 8f;
+        guidaAutomatica.maxSpeed = 8f;
     }
 
     public void evento2090()

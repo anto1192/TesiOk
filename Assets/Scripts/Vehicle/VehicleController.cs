@@ -685,7 +685,14 @@ public class VehicleController : MonoBehaviour {
                 }*/
                 if (carExt.sbacchettamento)
                 {
-                    float sterzata = Mathf.Lerp(angle2VolantPrecedente, angle2Volant, 5f * Time.fixedDeltaTime);
+                    float sterzata;
+                    if (carExt.sbacchettamentoForte)
+                    {
+                        sterzata = Mathf.Lerp(angle2VolantPrecedente, angle2Volant, 2f * Time.fixedDeltaTime);
+                    } else
+                    {
+                        sterzata = Mathf.Lerp(angle2VolantPrecedente, angle2Volant, 5f * Time.fixedDeltaTime);
+                    }                   
                     volant.transform.localEulerAngles = new Vector3(volant.transform.localEulerAngles.x, volant.transform.localEulerAngles.y, volantStartRotation + (sterzata * 443.0f));
                     angle2VolantPrecedente = sterzata;
                     return;

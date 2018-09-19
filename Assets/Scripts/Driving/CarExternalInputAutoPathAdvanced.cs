@@ -57,6 +57,11 @@ public class CarExternalInputAutoPathAdvanced : MonoBehaviour
 
     private VehicleController vehicleController;
 
+    public DateTime inizioSosta;
+    public bool sosta = false;
+    public float durataSosta;
+
+
     //ANTONELLO
     PID PIDControllerSterzata;
     PID PIDControllerAccelerazione;
@@ -197,6 +202,12 @@ public class CarExternalInputAutoPathAdvanced : MonoBehaviour
         if (inchiodare && hitInfo.collider != null && hitInfo.collider.gameObject.layer == 12)
         {
             inchioda();
+            return;
+        }
+
+        if (sosta)
+        {
+            sostaDopoPericolo();
             return;
         }
 
@@ -443,7 +454,8 @@ public class CarExternalInputAutoPathAdvanced : MonoBehaviour
                 //PIDControllerSterzata.dFactor = 0;
                 PIDControllerSterzata.dFactor = 0.5f;
             }
-            
+            PIDControllerSterzata.dFactor = 0.5f;
+
         } else {
             //PIDControllerSterzata.dFactor = _pidPars.d_sterzataPCH;
             //steerSpeed = 10f;
@@ -584,6 +596,23 @@ public class CarExternalInputAutoPathAdvanced : MonoBehaviour
             vehicleController.steerInput = sterzata / 45;
         }
 
+    }
+
+    private void sostaDopoPericolo()
+    {
+        if (vehicleController.accellInput <= 0)
+        {
+            //sto gia frenando
+        } else
+        {
+            vehicleController.accellInput = -0.2f;
+        }
+        
+        TimeSpan differenza = DateTime.Now - inizioSosta;
+        if ((differenza.Seconds*1000 + differenza.Milliseconds) > (durataSosta*1000))
+        {
+            sosta = false;
+        }
     }
 
 

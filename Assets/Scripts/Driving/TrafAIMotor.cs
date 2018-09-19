@@ -1477,10 +1477,16 @@ public class TrafAIMotor : MonoBehaviour
         {
             if (situazionePalla)
             {
-                vehicleController.accellInput = -0.05f;
+                //vehicleController.accellInput = -0.05f;
+                vehicleController.accellInput = 0f;
+                
             }            
             TimeSpan differenza = (DateTime.Now - inizioSostaDopoPericolo);
             float secondi = differenza.Seconds + differenza.Milliseconds / 1000;
+            if (secondi > 2f)
+            {
+                vehicleController.accellInput = -0.05f;
+            }
             if (secondi > durataSosta)
             {              
                 inizioSosta = false;
@@ -1665,6 +1671,8 @@ public class TrafAIMotor : MonoBehaviour
                 if (other.gameObject.GetComponentInParent<BallObstacle>())
                 {
                     motor.situazionePalla = true;
+                    motor.durataSosta = 4.99f;
+                    return;
                 }
                 if (other.gameObject.name.Equals("Body1"))
                 {
