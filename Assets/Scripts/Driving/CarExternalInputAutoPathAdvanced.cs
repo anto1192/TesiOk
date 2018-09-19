@@ -73,6 +73,7 @@ public class CarExternalInputAutoPathAdvanced : MonoBehaviour
     private GameObject raggioSinistra;
     private GameObject raggioDestra;
     public bool sbacchettamento = false;
+    public bool sbacchettamentoForte = false;
     public float limiteVelocita;
 
     public delegate void Delegato(int idPrecedene, int idCorrente);
@@ -246,7 +247,7 @@ public class CarExternalInputAutoPathAdvanced : MonoBehaviour
                 }
                 return;
             }
-            if (hitInfo.rigidbody != null && ((hitInfo.rigidbody.tag.Equals("TrafficCar")) || hitInfo.rigidbody.gameObject.layer.Equals(12)))
+            if (hitInfo.rigidbody != null && ((hitInfo.rigidbody.tag.Equals("TrafficCar")) || hitInfo.rigidbody.tag.Equals("DangerousCar") || hitInfo.rigidbody.gameObject.layer.Equals(12)))
             {
                 if (hitInfo.rigidbody.tag.Equals("TrafficCar") || hitInfo.rigidbody.tag.Equals("DangerousCar"))
                 {
@@ -434,8 +435,15 @@ public class CarExternalInputAutoPathAdvanced : MonoBehaviour
         PIDControllerSterzata.dFactor = _pidPars.d_sterzataPCH;
         if (sbacchettamento)
         {
-            //PIDControllerSterzata.dFactor = 0;
-            PIDControllerSterzata.dFactor = 0.5f;
+            if (sbacchettamentoForte)
+            {
+                PIDControllerSterzata.dFactor = 0.7f;
+            } else
+            {
+                //PIDControllerSterzata.dFactor = 0;
+                PIDControllerSterzata.dFactor = 0.5f;
+            }
+            
         } else {
             //PIDControllerSterzata.dFactor = _pidPars.d_sterzataPCH;
             //steerSpeed = 10f;
