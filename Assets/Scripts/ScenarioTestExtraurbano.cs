@@ -270,11 +270,16 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     }
 
     GameObject macchinaTrafficoSorpasso;
+    AudioSource clacson;
 
     public void evento1891()
     {
         macchinaTraffico[8] = CreaMacchinaTraffico(865);
         macchinaTraffico[8].GetComponent<TrafPCH>().maxSpeed = 5f;
+        clacson = macchinaTraffico[8].AddComponent<AudioSource>();
+        clacson.spatialBlend = 1f;
+        clacson.volume = 0.3f;
+        clacson.clip = Resources.Load("clacson") as AudioClip;
         macchinaTrafficoSorpasso = CreaMacchinaTrafficoSorpasso(822);
     }
 
@@ -287,6 +292,7 @@ public class ScenarioTestExtraurbano : MonoBehaviour
 
     public void evento1923()
     {
+        clacson.PlayOneShot(clacson.clip);
         car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 5f;
     }
 
@@ -294,6 +300,7 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     {
         car.GetComponent<CarExternalInputAutoPathAdvanced>().maxSpeed = 11f;
         macchinaTraffico[9] = CreaMacchinaTraffico(1966);
+        macchinaTraffico[9].tag = "DangerousCar";
         macchinaTraffico[9].GetComponent<TrafPCH>().maxSpeed = 5f;
     }
 
@@ -462,6 +469,7 @@ public class ScenarioTestExtraurbano : MonoBehaviour
             motor.path = carAutoPath;
             go.transform.LookAt(currentNode.position);
             motor.Init();
+            go.tag = "DangerousCar";
             return go;
         }       
         return null;

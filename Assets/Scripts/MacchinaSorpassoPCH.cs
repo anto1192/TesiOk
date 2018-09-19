@@ -304,7 +304,7 @@ public class MacchinaSorpassoPCH : MonoBehaviour
 
         //GetComponent<Rigidbody>().MoveRotation(Quaternion.FromToRotation(Vector3.up, hit.normal) * Quaternion.LookRotation(tangent));
         //transform.Rotate(Vector3.up * m_targetSteer  * Time.fixedDeltaTime);
-        transform.LookAt(nextWaypoint);
+        transform.LookAt(new Vector3(nextWaypoint.x, transform.position.y, nextWaypoint.z));
         GetComponent<Rigidbody>().MovePosition(hTarget);
         
         //transform.Translate(Vector3.forward * currentSpeed * Time.deltaTime);

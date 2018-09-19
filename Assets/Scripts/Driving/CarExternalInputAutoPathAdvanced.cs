@@ -248,7 +248,7 @@ public class CarExternalInputAutoPathAdvanced : MonoBehaviour
             }
             if (hitInfo.rigidbody != null && ((hitInfo.rigidbody.tag.Equals("TrafficCar")) || hitInfo.rigidbody.gameObject.layer.Equals(12)))
             {
-                if (hitInfo.rigidbody.tag.Equals("TrafficCar"))
+                if (hitInfo.rigidbody.tag.Equals("TrafficCar") || hitInfo.rigidbody.tag.Equals("DangerousCar"))
                 {
                     Debug.DrawLine(this.transform.position, hitInfo.transform.position);
                     if (hitInfo.distance <= 35f)
