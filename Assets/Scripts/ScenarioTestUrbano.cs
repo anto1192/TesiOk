@@ -1384,7 +1384,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(2, 0, 0f, percorso5_0);
         CreaMacchinaTraffico(2, 0, 0.2f, percorso5_1);
         CreaMacchinaTraffico(2, 1, 0.3f, percorso5_2);
-        CreaMacchinaTraffico(2, 2, 0.15f, percorso5_3);
+        macchinaTraffico = CreaMacchinaTraffico(2, 2, 0.15f, percorso5_3);
         //CreaMacchinaTraffico(2, 3, 0.5f, percorso5_4);
         CreaMacchinaTraffico(2, 3, 0.35f, percorso5_5);
         CreaMacchinaTraffico(2, 3, 0f, percorso5_6);
@@ -1555,6 +1555,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public void evento125()
     {
+        macchinaTraffico.autoScorretta = true;
         scooterTagliaStrada.GetComponent<AudioSource>().volume = 0.1f;
         semaforo4b();
         semaforo125a();

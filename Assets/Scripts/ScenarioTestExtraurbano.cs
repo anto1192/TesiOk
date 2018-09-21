@@ -334,9 +334,11 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     public void evento1680()
     {
         macchinaTraffico[3] = CreaMacchinaTraffico(1075); //questa macchina la evito appena per colpa del sasso
+        macchinaTraffico[3].tag = "DangerousCar";
         clacson = macchinaTraffico[3].AddComponent<AudioSource>();
         clacson.spatialBlend = 1f;
         clacson.volume = 0.1f;
+        clacson.playOnAwake = false;
         clacson.clip = Resources.Load("clacson") as AudioClip;
     }
 
@@ -413,7 +415,8 @@ public class ScenarioTestExtraurbano : MonoBehaviour
         macchinaTraffico[8].GetComponent<TrafPCH>().maxSpeed = 5f;
         clacson = macchinaTraffico[8].AddComponent<AudioSource>();
         clacson.spatialBlend = 1f;
-        clacson.volume = 0.1f;
+        clacson.volume = 0.3f;
+        clacson.playOnAwake = false;
         clacson.clip = Resources.Load("clacson") as AudioClip;
         macchinaTrafficoSorpasso = CreaMacchinaTrafficoSorpasso(822);
     }
@@ -657,7 +660,7 @@ public class ScenarioTestExtraurbano : MonoBehaviour
             }
         }
         newAp.raycastOrigin = posizioneRaycast;
-        newAp.limiteVelocita = 70f;
+        newAp.limiteVelocita = 75f;
         newAp.Init();
         guidaAutomatica = newAp;
     }

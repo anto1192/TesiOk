@@ -1183,6 +1183,7 @@ public class TrackController : UnitySingleton<TrackController> {
             BaseObstacle ob = obs.GetComponent<BaseObstacle>();
             obs.transform.position = spot[0];
             obs.transform.LookAt(spot[1]);
+            obs.tag = "Obstacle";
 
             
             if (id == 10)
