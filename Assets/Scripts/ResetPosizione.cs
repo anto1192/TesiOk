@@ -40,18 +40,21 @@ public class ResetPosizione : MonoBehaviour {
             if (posizioneAnterioreSinistra != null)
             {
                 Transform t = leggiFileDisco();
-                if (t != null)
+                if (t != null && Vector3.Distance(transform.position, t.position) < 10f)
                 {
+                    //Vector3.Distance(transform.position, t.position) < 10f controlla che la posizione salvata non sia troppo distante da quella attuale, in tal caso significa che è una posizione memorizzata ma non corretta
                     transform.position = t.position;
                     transform.rotation = t.rotation;
                     ultimaPosizione = t.position;
                     ultimaRotazione = t.eulerAngles;
+                    Debug.Log("Ripristinata ultima posizione salvata");
                     return;
                 }
                 ResetPosizioneVisore(CenterEyeAnchor, posizioneAnterioreSinistra);
                 ultimaPosizione = transform.position;
                 ultimaRotazione = transform.eulerAngles;
                 interventoAllaGuidaConsentito = true;
+                Debug.Log("Reset posizione tramite posizione visore");
             }
             else
             {
@@ -144,6 +147,7 @@ public class ResetPosizione : MonoBehaviour {
             //le mani o il volante non sono stati settati oppure le mani non sono visualizzate nell'ambiente virtuale
             //eseguo il reset normale
             ResetPosizioneVisore(CenterEyeAnchor, posizioneAnterioreSinistra);
+            Debug.Log("Reset posizione tramite posizione visore");
             return;
         }
 
@@ -159,6 +163,8 @@ public class ResetPosizione : MonoBehaviour {
         //Debug.DrawLine(puntoEquidistanteMani.transform.position, puntoEquidistanteVolante.transform.position);
 
         ResetPosizioneVisore(puntoEquidistanteMani.transform, puntoEquidistanteVolante.transform);
+
+        Debug.Log("Reset posizione tramite posizione mani leap motion");
 
         Destroy(puntoEquidistanteMani);
         Destroy(puntoEquidistanteVolante);
