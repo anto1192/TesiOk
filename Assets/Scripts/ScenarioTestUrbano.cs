@@ -4984,7 +4984,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             }            
             if (child.gameObject.name.Equals("Body1"))
             {
-                gameObject.tag = "Obstacle";
+                child.gameObject.tag = "Obstacle";
             }
             if (child.childCount > 0)
             {
