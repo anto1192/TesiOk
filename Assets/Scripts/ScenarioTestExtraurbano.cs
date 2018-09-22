@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections;
 using System.Reflection;
 using UnityEngine;
 
@@ -30,12 +31,42 @@ public class ScenarioTestExtraurbano : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            if (!scenarioAvviato)
+            {
+                avviaScenarioTest();
+                scenarioAvviato = true;
+                fineTest = false;
+            }
+            else
+            {
+                //scenarioAvviato = false;
+                fineTest = true;
+                //interrompiScenario();
+
+            }
+
+        }
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            if (car.GetComponent<xSimScript>().enabled)
+            {
+                car.GetComponent<xSimScript>().enabled = false;
+            }
+            else
+            {
+                car.GetComponent<xSimScript>().enabled = true;
+            }
+        }
         if (!scenarioAvviato)
         {
             return;
-        }
+        }        
         if (fineTest)
         {
+            //fermo la piattaforma
+            car.GetComponent<xSimScript>().enabled = false;
             //FERMO LA MACCHINA
             car.GetComponent<VehicleController>().accellInput = -0.5f;
         }
@@ -47,24 +78,25 @@ public class ScenarioTestExtraurbano : MonoBehaviour
         }
     }
 
-    void OnGUI()
-    {
-        if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.S)
-        {
-            if (!scenarioAvviato)
-            {
-                avviaScenarioTest();
-                scenarioAvviato = true;
-                fineTest = false;
-            } else
-            {
-                scenarioAvviato = false;
-                interrompiScenario();
+    //void OnGUI()
+    //{
+    //    if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.S)
+    //    {
+    //        if (!scenarioAvviato)
+    //        {
+    //            avviaScenarioTest();
+    //            scenarioAvviato = true;
+    //            fineTest = false;
+    //        } else
+    //        {
+    //            scenarioAvviato = false;
+    //            fineTest = true;
+    //            //interrompiScenario();
 
-            }
+    //        }
 
-        }
-    }
+    //    }
+    //}
 
     private void avviaScenarioTest()
     {
@@ -83,9 +115,16 @@ public class ScenarioTestExtraurbano : MonoBehaviour
             car.transform.position = posizionePartenza.transform.position;
             car.transform.rotation = posizionePartenza.transform.rotation;
         }
+        
+        StartCoroutine(Attesa2Secondi());
+        
+
+    }
+
+    IEnumerator Attesa2Secondi()
+    {
+        yield return new WaitForSeconds(1f);
         car.GetComponent<xSimScript>().enabled = true;
-
-
     }
 
     public void iniziaTest()
@@ -526,7 +565,7 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     public void evento2090()
     {
         Debug.Log("Fine test");
-        car.GetComponent<xSimScript>().enabled = false;
+        
         fineTest = true;      
 
     }

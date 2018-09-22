@@ -43,7 +43,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         attivaGuidaAutomatica(car, percorsoPlayer, percorsoPlayer[0].id, percorsoPlayer[0].subId); //-> facciamo apparire la macchina utente nella posizione con id e subId specificati, che rappresenta il punto di partenza
                                                                                                    //la macchina seguirà il percorso definito in percorsoPlayer
 
-        car.GetComponent<xSimScript>().enabled = true;
+        //car.GetComponent<xSimScript>().enabled = true;
 
         TrafAIMotor motor = car.GetComponent<TrafAIMotor>();
         motor.ChangeProperty += new TrafAIMotor.Delegato(gestisciEvento);
@@ -137,8 +137,20 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            if (car.GetComponent<xSimScript>().enabled)
+            {
+                car.GetComponent<xSimScript>().enabled = false;
+            } else
+            {
+                car.GetComponent<xSimScript>().enabled = true;
+            }           
+        }
         if (fineTest)
         {
+            //disattivo la piattaforma
+            car.GetComponent<xSimScript>().enabled = false;
             //FERMO LA MACCHINA
             car.GetComponent<VehicleController>().accellInput = -0.5f;
         }
@@ -4598,7 +4610,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
         secondaVolta = false;
         secondaVolta1011 = false;
-        car.GetComponent<xSimScript>().enabled = false;
+        
     }
 
     private void attivaGuidaAutomatica(GameObject go, List<RoadGraphEdge> percorso, int id, int subId)
@@ -4622,6 +4634,8 @@ public class ScenarioTestUrbano : MonoBehaviour
         }
 
         InterpolatedPosition pos = entry.GetInterpolatedPosition(distance);
+
+        
 
         if (!Physics.CheckSphere(pos.position, checkRadius, 1 << LayerMask.NameToLayer("Traffic")))
         {
@@ -4688,7 +4702,10 @@ public class ScenarioTestUrbano : MonoBehaviour
             motor.fixedRoute = true;
             motor.fixedPath = percorsoPlayer;
 
-            motor.Init();
+            //aspettiamo due secondi prima di avviare la macchina e avviare la piattaforma
+            StartCoroutine(Attesa2Secondi(motor));
+
+            //motor.Init();
 
 
         }
@@ -4698,6 +4715,13 @@ public class ScenarioTestUrbano : MonoBehaviour
         }
 
 
+    }
+
+    IEnumerator Attesa2Secondi(TrafAIMotor motor)
+    {
+        yield return new WaitForSeconds(1f);
+        motor.Init();
+        car.GetComponent<xSimScript>().enabled = true;
     }
 
     //ANTONELLO
@@ -4958,6 +4982,10 @@ public class ScenarioTestUrbano : MonoBehaviour
             {
                 child.gameObject.layer = newLayer;
             }            
+            if (child.gameObject.name.Equals("Body1"))
+            {
+                gameObject.tag = "Obstacle";
+            }
             if (child.childCount > 0)
             {
                 SetLayer(newLayer, child.transform);

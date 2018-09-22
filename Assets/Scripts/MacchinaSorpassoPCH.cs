@@ -61,49 +61,63 @@ public class MacchinaSorpassoPCH : MonoBehaviour
 
     RaycastHit hitInfo;
 
+    Vector3 wp0;
+    Vector3 wp1;
+    Vector3 wp2;
+    Vector3 wp3;
+    Vector3 wp4;
+    Vector3 wp5;
+    Vector3 wp6;
+    Vector3 wp7;
+    Vector3 wp8;
+    Vector3 wp9;
+
     void Start()
     {
         hitInfo = new RaycastHit();
+        
     }
 
     public void Init()
     {
-        //Vector3 wp1 = GameObject.Find("wp1").transform.position;
-        /*Vector3 wp2 = GameObject.Find("wp2").transform.position;
-        Vector3 wp3 = GameObject.Find("wp3").transform.position;
-        Vector3 wp4 = GameObject.Find("wp4").transform.position;*/
-        //Vector3 wp5 = GameObject.Find("wp5").transform.position;
-        /*Vector3 wp6 = GameObject.Find("wp6").transform.position;
-        Vector3 wp7 = GameObject.Find("wp7").transform.position;*/
-        //Vector3 wp8 = GameObject.Find("wp8").transform.position;
-        /*Vector3 wp9 = GameObject.Find("wp9").transform.position;
-        Vector3 wp10 = GameObject.Find("wp10").transform.position;
-        Vector3 wp11 = GameObject.Find("wp11").transform.position;
-        Vector3 wp12 = GameObject.Find("wp12").transform.position;*/
-        //Vector3 wp13 = GameObject.Find("wp13").transform.position;
-        /*Vector3 wp14 = GameObject.Find("wp14").transform.position;
-        Vector3 wp15 = GameObject.Find("wp15").transform.position;
-        Vector3 wp16 = GameObject.Find("wp16").transform.position;
-        Vector3 wp17 = GameObject.Find("wp17").transform.position;
-        Vector3 wp18 = GameObject.Find("wp18").transform.position;
-        Vector3 w19 = GameObject.Find("wp19").transform.position;*/
-        //Vector3 wp20 = GameObject.Find("wp20").transform.position;
-        /*Vector3 wp21 = GameObject.Find("wp21").transform.position;
-        Vector3 wp22 = GameObject.Find("wp22").transform.position;*/
+
+        /*wp0 = GameObject.Find("wp0").transform.position;
+        wp1 = GameObject.Find("wp1").transform.position;
+        wp2 = GameObject.Find("wp2").transform.position;
+        wp3 = GameObject.Find("wp3").transform.position;
+        wp4 = GameObject.Find("wp4").transform.position;
+        wp5 = GameObject.Find("wp5").transform.position;
+        wp6 = GameObject.Find("wp6").transform.position;
+        wp7 = GameObject.Find("wp7").transform.position;
+        wp8 = GameObject.Find("wp8").transform.position;
+        wp9 = GameObject.Find("wp9").transform.position;*/
+
+        wp0 = new Vector3(-1283.71f, 142.58f, 1387.47f);
+        wp1 = new Vector3(-1285.2f, 142.58f, 1388.12f);       
+        wp2 = new Vector3(-1293.8f, 142.7f, 1391.3f);
+        wp3 = new Vector3(-1302.41f, 142.535f, 1392.83f);
+        wp4 = new Vector3(-1310.52f, 142.535f, 1395.57f);
+        wp5 = new Vector3(-1318.09f, 142.535f, 1398.64f);
+        wp6 = new Vector3(-1325.74f, 142.82f, 1402.11f);
+        wp7 = new Vector3(-1331.6f, 142.92f, 1406.4f);
+        wp8 = new Vector3(-1336.1f, 142.85f, 1411.1f);
+        wp9 = new Vector3(-1341.94f, 143.16f, 1415.09f);
+
 
         GetComponent<TrafPCH>().enabled = false;
-        Vector3[] lisWayp = new Vector3[5];
-        lisWayp[0] = wp1;
-        lisWayp[1] = wp2;
-        lisWayp[2] = wp3;
-        lisWayp[3] = wp4;
-        lisWayp[4] = wp5;
-        /*listaWaypoint.Add(wp1);
-        listaWaypoint.Add(wp2);
-        listaWaypoint.Add(wp3);
-        listaWaypoint.Add(wp4);
-        listaWaypoint.Add(wp5);*/
-        listaWaypoint = ChaikinCurve(lisWayp, 2);
+        Vector3[] lisWayp = new Vector3[10];
+
+        lisWayp[0] = wp0;
+        lisWayp[1] = wp1;
+        lisWayp[2] = wp2;
+        lisWayp[3] = wp3;
+        lisWayp[4] = wp4;
+        lisWayp[5] = wp5;
+        lisWayp[6] = wp6;
+        lisWayp[7] = wp7;
+        lisWayp[8] = wp8;
+        lisWayp[9] = wp9;
+        listaWaypoint = ChaikinCurve(lisWayp, 3);
         int index = 0;
         foreach (Vector3 punto in listaWaypoint)
         {
@@ -115,6 +129,7 @@ public class MacchinaSorpassoPCH : MonoBehaviour
             cubo.transform.position = new Vector3(punto.x, hit.point.y, punto.z);
             cubo.SetActive(false);
             listaWaypoint[index] = cubo.transform.position;
+            Destroy(cubo);
             index++;
         }
         currentWaypoint = currentNode.position;
@@ -156,22 +171,23 @@ public class MacchinaSorpassoPCH : MonoBehaviour
 
 
     int contatore = 0;
-    Vector3 wp1 = new Vector3(-1325.5f, 142.535f, 1400.9f);
-    Vector3 wp2 = new Vector3(-1329.3f, 142.82f, 1403.5f);
-    Vector3 wp3 = new Vector3(-1332.5f, 142.92f, 1406.9f);
-    Vector3 wp4 = new Vector3(-1335.1f, 143.11f, 1410.61f);
-    Vector3 wp5 = new Vector3(-1341.94f, 143.16f, 1415.09f);
+    
     List<Vector3> listaWaypoint = new List<Vector3>();
 
 
 
     private void UpdateNextWaypoint()
     {
-        nextWaypointIndex = currentWaypointIndex + 1;
-        if (nextWaypointIndex >= path.pathNodes.Count)
-            nextWaypointIndex = 0;
+        if (!(contatore != 0 && contatore < listaWaypoint.Count))
+        {
+            nextWaypointIndex = currentWaypointIndex + 1;
+            if (nextWaypointIndex >= path.pathNodes.Count)
+                nextWaypointIndex = 0;
+        } 
+        
+        
 
-        if (nextWaypointIndex > 870 && nextWaypointIndex < 884 && contatore < listaWaypoint.Count) //877
+        if (nextWaypointIndex > 872 && nextWaypointIndex < 885 && contatore < listaWaypoint.Count) //877
         {
             nextNode = path.pathNodes[nextWaypointIndex];
             nextWaypoint = listaWaypoint[contatore];
