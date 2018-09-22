@@ -10,11 +10,15 @@ public class EnvironmentSensingAltController : MonoBehaviour
     private EnvironmentSensingAltTrigger envSensing;
     private EnvironmentSensingAltUrbanTrigger envSensingUrban;
 
-    public GameObject speedPanel; //this is used to semplify the search into the car hierarchy which is very deep
+    private float radius = 150;
+
     public DriverCamera driverCam;
+    public ResourceHandler resourceHandler;
+    public GameObject leapCam;
 
     void OnEnable()
     {
+        CreateResourceHandler();
         MasterSelectController.OnCreateScene += HandleOnCreateScene;
     }
 
@@ -31,7 +35,7 @@ public class EnvironmentSensingAltController : MonoBehaviour
         ColliderEnv.transform.localRotation = Quaternion.identity;
 
         SphereCollider sphereCol = ColliderEnv.AddComponent<SphereCollider>();
-        sphereCol.radius = 150;
+        sphereCol.radius = radius;
         sphereCol.isTrigger = true;
         sphereCol.gameObject.layer = LayerMask.NameToLayer("PlayerCar");
 
@@ -42,7 +46,7 @@ public class EnvironmentSensingAltController : MonoBehaviour
 
             envSensing = ColliderEnv.transform.gameObject.AddComponent<EnvironmentSensingAltTrigger>();
             envSensing.DriverCam = driverCam;
-            envSensing.SpeedPanel = speedPanel;
+            envSensing.LeapCam = leapCam;
             envSensing.enabled = true;
 
         } else if(selectedEnv.Equals(Environment.URBAN)) {
@@ -51,10 +55,19 @@ public class EnvironmentSensingAltController : MonoBehaviour
 
             envSensingUrban = ColliderEnv.transform.gameObject.AddComponent<EnvironmentSensingAltUrbanTrigger>();
             envSensingUrban.DriverCam = driverCam;
-            envSensingUrban.SpeedPanel = speedPanel;
+            envSensingUrban.LeapCam = leapCam;
             envSensingUrban.enabled = true;
         }
 
+        Time.timeScale = 1.0f;
+        transform.Find("InteriorLight").gameObject.SetActive(true);
+
         Destroy(this);
+    }
+
+    void CreateResourceHandler()
+    {
+        if (ResourceHandler.instance == null)
+            Instantiate(resourceHandler);
     }
 }
