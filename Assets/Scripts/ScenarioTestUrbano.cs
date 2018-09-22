@@ -1766,12 +1766,15 @@ public class ScenarioTestUrbano : MonoBehaviour
         List<Vector3> listaWaypoint = traf.currentEntry.waypoints;
         listaWaypoint.RemoveAt(0);
         traf.currentEntry.waypoints = listaWaypoint;*/
+
+
+        TrackController.Instance.LanciaOstacolo(12);
     }
 
     public void evento159a()
     {
         semaforo159_2();
-        TrackController.Instance.LanciaOstacolo(12);
+        //TrackController.Instance.LanciaOstacolo(12);
         ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().sterzataMassima = true;
     }
 
