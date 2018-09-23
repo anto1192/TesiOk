@@ -46,11 +46,11 @@ public class RiskAssessment
 
         if (dstToTarget <= 8f)
             viewAngle = 25f;
-        
-        if (Vector3.Angle(rayCastPos.TransformDirection(Vector3.forward), dirToTarget) < viewAngle / 2 )
+
+        if (Vector3.Angle(rayCastPos.TransformDirection(Vector3.forward), dirToTarget) < viewAngle / 2)
         {
             Debug.DrawLine(rayCastPos.position, targetPoint, Color.red);
-            
+
             if (Physics.Raycast(rayCastPos.position, dirToTarget, dstToTarget, mask))
             {
                 float distToWarn = RiskAssessmentFormulaD(rigidbody.velocity.magnitude, 0, 0, dstToTarget, ResourceHandler.instance.visualisationVars.systemAccStaticSF); //velocity component of obstacles is null since they are orthogonal to the playerCar
@@ -84,8 +84,8 @@ public class RiskAssessment
 
                     animTag.SetBool("BlinkLoop", false);
 
-                    audio.Stop();
-                    
+                    StopAudio(audio);
+
                 }
             }
             else
@@ -95,8 +95,8 @@ public class RiskAssessment
 
                 animTag.SetBool("BlinkLoop", false);
 
-                audio.Stop();
-                
+                StopAudio(audio);
+
             }
         }
         else
@@ -106,7 +106,7 @@ public class RiskAssessment
 
             animTag.SetBool("BlinkLoop", false);
 
-            audio.Stop();
+            StopAudio(audio);
 
         }
 
@@ -145,7 +145,7 @@ public class RiskAssessment
 
                 anim.SetBool("BlinkLoop", false);
 
-                audio.Stop();
+                StopAudio(audio);
 
                 cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
 
@@ -169,7 +169,7 @@ public class RiskAssessment
                     bottomColor.a = 0x51;
                     cubeRend.material.SetColor("_Color1", topColor);
                     cubeRend.material.SetColor("_Color2", bottomColor);
-                    
+
                     anim.SetFloat("Multiplier", 3.0f);
                     anim.SetBool("BlinkLoop", blink);
 
@@ -184,7 +184,7 @@ public class RiskAssessment
 
                     anim.SetBool("BlinkLoop", false);
 
-                    audio.Stop();
+                    StopAudio(audio);
 
                     cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
                 }
@@ -196,7 +196,7 @@ public class RiskAssessment
 
                 anim.SetBool("BlinkLoop", false);
 
-                audio.Stop();
+                StopAudio(audio);
 
                 cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
             }
@@ -208,7 +208,7 @@ public class RiskAssessment
 
             anim.SetBool("BlinkLoop", false);
 
-            audio.Stop();
+            StopAudio(audio);
 
             cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
         }
@@ -274,11 +274,11 @@ public class RiskAssessment
                 }
                 else
                     value = 1;
-                
+
                 Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
                 Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
                 Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
-                
+
                 topColor.a = 0;
                 bottomColor.a = 0x51;
                 cubeRend.material.SetColor("_Color1", topColor);
@@ -286,7 +286,7 @@ public class RiskAssessment
 
                 anim.SetBool("BlinkLoop", false);
 
-                audio.Stop();
+                StopAudio(audio);
 
                 cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
 
@@ -309,7 +309,7 @@ public class RiskAssessment
             Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
             Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
             Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
-            
+
             topColor.a = 0;
             bottomColor.a = 0x51;
             cubeRend.material.SetColor("_Color1", topColor);
@@ -317,7 +317,7 @@ public class RiskAssessment
 
             anim.SetBool("BlinkLoop", false);
 
-            audio.Stop();
+            StopAudio(audio);
 
             cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
 
@@ -380,7 +380,7 @@ public class RiskAssessment
 
                         anim.SetBool("BlinkLoop", false);
 
-                        audio.Stop();
+                        StopAudio(audio);
 
                         cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
                     }
@@ -392,7 +392,7 @@ public class RiskAssessment
 
                     anim.SetBool("BlinkLoop", false);
 
-                    audio.Stop();
+                    StopAudio(audio);
 
                     cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
                 }
@@ -400,22 +400,36 @@ public class RiskAssessment
             return;
         }
 
-        if (dstToTarget <= ResourceHandler.instance.visualisationVars.obstacleDistToWarn && vehicleController.CurrentSpeed >= 0.1f)
+        if (Vector3.Angle(rayCastPos.TransformDirection(Vector3.forward), dirToTarget) < 75f) //the car is in front of me
         {
-            bool blink = false;
-            Color32 topColor = linesUtils.ChangeMatByDistance(dstToTarget / Mathf.Abs(ResourceHandler.instance.visualisationVars.obstacleDistToWarn), ref blink, ref cubesAndTags);
-            topColor.a = 0;
-            Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTarget / Mathf.Abs(ResourceHandler.instance.visualisationVars.obstacleDistToWarn), ref blink, ref cubesAndTags);
-            bottomColor.a = 0x51;
-            cubeRend.material.SetColor("_Color1", topColor);
-            cubeRend.material.SetColor("_Color2", bottomColor);
+            if (dstToTarget <= ResourceHandler.instance.visualisationVars.obstacleDistToWarn && vehicleController.CurrentSpeed >= 0.1f)
+            {
+                bool blink = false;
+                Color32 topColor = linesUtils.ChangeMatByDistance(dstToTarget / Mathf.Abs(ResourceHandler.instance.visualisationVars.obstacleDistToWarn), ref blink, ref cubesAndTags);
+                topColor.a = 0;
+                Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTarget / Mathf.Abs(ResourceHandler.instance.visualisationVars.obstacleDistToWarn), ref blink, ref cubesAndTags);
+                bottomColor.a = 0x51;
+                cubeRend.material.SetColor("_Color1", topColor);
+                cubeRend.material.SetColor("_Color2", bottomColor);
 
-            anim.SetFloat("Multiplier", 3.0f);
-            anim.SetBool("BlinkLoop", blink);
+                anim.SetFloat("Multiplier", 3.0f);
+                anim.SetBool("BlinkLoop", blink);
 
-            PlayAudio(audio, dstToTarget / ResourceHandler.instance.visualisationVars.obstacleDistToWarn, cubesAndTags);
+                PlayAudio(audio, dstToTarget / ResourceHandler.instance.visualisationVars.obstacleDistToWarn, cubesAndTags);
 
-            SetDashBoardColor(dstToTarget / ResourceHandler.instance.visualisationVars.obstacleDistToWarn, cubesAndTags);
+                SetDashBoardColor(dstToTarget / ResourceHandler.instance.visualisationVars.obstacleDistToWarn, cubesAndTags);
+            }
+            else
+            {
+                cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
+                cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
+
+                anim.SetBool("BlinkLoop", false);
+
+                StopAudio(audio);
+
+                cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
+            }
         }
         else
         {
@@ -424,10 +438,10 @@ public class RiskAssessment
 
             anim.SetBool("BlinkLoop", false);
 
-            audio.Stop();
+            StopAudio(audio);
 
             cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
-        }  
+        }
     } //this is for dynamic objects (scooter)
 
 
@@ -481,7 +495,7 @@ public class RiskAssessment
 
     //                anim.SetBool("BlinkLoop", false);
 
-    //                audio.Stop();
+    //                StopAudio(audio);
     //            }
     //            else
     //            {
@@ -507,7 +521,7 @@ public class RiskAssessment
 
     //            anim.SetBool("BlinkLoop", false);
 
-    //            audio.Stop();
+    //            StopAudio(audio);
     //        }
     //    }
     //    UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
@@ -570,7 +584,7 @@ public class RiskAssessment
 
     //            anim.SetBool("BlinkLoop", false);
 
-    //            audio.Stop();
+    //            StopAudio(audio);
     //        }
     //    }
     //    else
@@ -580,12 +594,12 @@ public class RiskAssessment
 
     //        anim.SetBool("BlinkLoop", false);
 
-    //        audio.Stop();
+    //        StopAudio(audio);
     //    }
     //    UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
     //} //this is for dynamic objects
 
-    
+
 
 
 
@@ -643,7 +657,7 @@ public class RiskAssessment
 
                     animTag.SetBool("BlinkLoop", false);
 
-                    audio.Stop();
+                    StopAudio(audio);
                 }
             }
             else
@@ -653,7 +667,7 @@ public class RiskAssessment
 
                 animTag.SetBool("BlinkLoop", false);
 
-                audio.Stop();
+                StopAudio(audio);
             }
         }
         else
@@ -663,7 +677,7 @@ public class RiskAssessment
 
             animTag.SetBool("BlinkLoop", false);
 
-            audio.Stop();
+            StopAudio(audio);
         }
     } //this is for static objects. OK!
 
@@ -723,7 +737,7 @@ public class RiskAssessment
 
                     anim.SetBool("BlinkLoop", false);
 
-                    audio.Stop();
+                    StopAudio(audio);
 
                     cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
                 }
@@ -735,7 +749,7 @@ public class RiskAssessment
 
                 anim.SetBool("BlinkLoop", false);
 
-                audio.Stop();
+                StopAudio(audio);
 
                 cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
             }
@@ -747,7 +761,7 @@ public class RiskAssessment
 
             anim.SetBool("BlinkLoop", false);
 
-            audio.Stop();
+            StopAudio(audio);
 
             cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
         }
@@ -778,12 +792,13 @@ public class RiskAssessment
         Vector3 obstacleHeading = endPoint - targetPoint; //this is to understand if the obstacle has passed the endPoint
         if (Vector3.Dot(obstacleHeading, cubesAndTags.other.transform.forward) > 0) //endPoint is in front of me
         {
+            float distToWarn = rigidbody.velocity.magnitude * ResourceHandler.instance.visualisationVars.freeRunningTime + 0.5f * (Mathf.Pow(rigidbody.velocity.magnitude, 2) / ResourceHandler.instance.visualisationVars.systemAccPCH); //DARIO
             if (dstToTarget <= ResourceHandler.instance.visualisationVars.obstacleDistToWarn)
             {
                 bool blink = false;
-                Color32 topColor = linesUtils.ChangeMatByDistance(dstToTarget / Mathf.Abs(ResourceHandler.instance.visualisationVars.obstacleDistToWarn), ref blink, ref cubesAndTags);
+                Color32 topColor = linesUtils.ChangeMatByDistance(dstToTarget / distToWarn/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/, ref blink, ref cubesAndTags);
                 topColor.a = 0;
-                Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTarget / Mathf.Abs(ResourceHandler.instance.visualisationVars.obstacleDistToWarn), ref blink, ref cubesAndTags);
+                Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTarget / distToWarn/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/, ref blink, ref cubesAndTags);
                 bottomColor.a = 0x51;
                 cubeRend.material.SetColor("_Color1", topColor);
                 cubeRend.material.SetColor("_Color2", bottomColor);
@@ -791,11 +806,11 @@ public class RiskAssessment
                 anim.SetFloat("Multiplier", 3.0f);
                 anim.SetBool("BlinkLoop", blink);
 
-                PlayAudio(audio, dstToTarget / ResourceHandler.instance.visualisationVars.obstacleDistToWarn, cubesAndTags);
+                PlayAudio(audio, dstToTarget / distToWarn/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/, cubesAndTags);
 
-                SetDashBoardColor(dstToTarget / ResourceHandler.instance.visualisationVars.obstacleDistToWarn, cubesAndTags);
+                SetDashBoardColor(dstToTarget / distToWarn/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/, cubesAndTags);
 
-                cubesAndTags.prevState = dstToTarget / ResourceHandler.instance.visualisationVars.obstacleDistToWarn;
+                cubesAndTags.prevState = dstToTarget / distToWarn/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/;
 
                 cubesAndTags.gradient = CubesAndTags.Gradient.ON;
             }
@@ -822,7 +837,7 @@ public class RiskAssessment
 
                 anim.SetBool("BlinkLoop", false);
 
-                audio.Stop();
+                StopAudio(audio);
 
                 cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
 
@@ -853,13 +868,13 @@ public class RiskAssessment
 
             anim.SetBool("BlinkLoop", false);
 
-            audio.Stop();
+            StopAudio(audio);
 
             cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
 
             if (value == 1)
                 cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
-        } 
+        }
     } //this is for dynamic objects
 
     public void BoundingCubeLerperDangerousCarPCH(CubesAndTags cubesAndTags, Bounds bounds, float obstacleSpeed, float distToWarn, float viewAngle, Sprite sprite, Vector3 trasl, int i)
@@ -924,14 +939,15 @@ public class RiskAssessment
 
                 anim.SetBool("BlinkLoop", false);
 
-                audio.Stop();
+                StopAudio(audio);
 
                 cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
 
                 if (value == 1)
                     cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
             }
-        } else
+        }
+        else
         {
             bool blink = false;
             float value = 0f;
@@ -954,7 +970,7 @@ public class RiskAssessment
 
             anim.SetBool("BlinkLoop", false);
 
-            audio.Stop();
+            StopAudio(audio);
 
             cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
 
@@ -1025,7 +1041,7 @@ public class RiskAssessment
 
     //                anim.SetBool("BlinkLoop", false);
 
-    //                audio.Stop();
+    //                StopAudio(audio);
     //            }
     //        }
     //        else
@@ -1035,7 +1051,7 @@ public class RiskAssessment
 
     //            anim.SetBool("BlinkLoop", false);
 
-    //            audio.Stop();
+    //            StopAudio(audio);
     //        }
     //    }
     //    else
@@ -1045,7 +1061,7 @@ public class RiskAssessment
 
     //        anim.SetBool("BlinkLoop", false);
 
-    //        audio.Stop();
+    //        StopAudio(audio);
     //    }
     //} //this is for static objects
 
@@ -1104,7 +1120,7 @@ public class RiskAssessment
 
     //                anim.SetBool("BlinkLoop", false);
 
-    //                audio.Stop();
+    //                StopAudio(audio);
     //            }
     //        }
     //        else
@@ -1113,7 +1129,7 @@ public class RiskAssessment
 
     //            anim.SetBool("BlinkLoop", false);
 
-    //            audio.Stop();
+    //            StopAudio(audio);
     //        }
     //    }
     //    else
@@ -1122,7 +1138,7 @@ public class RiskAssessment
 
     //        anim.SetBool("BlinkLoop", false);
 
-    //        audio.Stop();
+    //        StopAudio(audio);
     //    }
     //    UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
     //} //this is for dynamic objects
@@ -1171,7 +1187,7 @@ public class RiskAssessment
 
     //                anim.SetBool("BlinkLoop", false);
 
-    //                audio.Stop();
+    //                StopAudio(audio);
     //            }
     //            else
     //            {
@@ -1206,7 +1222,7 @@ public class RiskAssessment
 
     //            anim.SetBool("BlinkLoop", false);
 
-    //            audio.Stop();
+    //            StopAudio(audio);
     //        }
     //    }
     //    UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
@@ -1308,11 +1324,10 @@ public class RiskAssessment
             {
                 audio.clip = ResourceHandler.instance.audioClips[1];
                 audio.Play();
-                Debug.Log(cubesAndTags.other.transform.root.name);
             }
             else if (audio.isPlaying && audio.clip == ResourceHandler.instance.audioClips[2]/*cubesAndTags.prevState > 0.2f*/)
             {
-                audio.Stop();
+                StopAudio(audio);
             }
 
         }
@@ -1322,15 +1337,14 @@ public class RiskAssessment
             {
                 audio.clip = ResourceHandler.instance.audioClips[2];
                 audio.Play();
-                Debug.Log(cubesAndTags.other.transform.root.name);
             }
             else if (audio.isPlaying && audio.clip == ResourceHandler.instance.audioClips[1]/*cubesAndTags.prevState <= 0.2f*/)
             {
-                audio.Stop();
+                StopAudio(audio);
             }
         }
-        else 
-            audio.Stop();
+        else
+            StopAudio(audio);
     }
 
     void SetDashBoardColor(float normDist, CubesAndTags cubesAndTags)
@@ -1342,5 +1356,18 @@ public class RiskAssessment
         else
             cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
 
+    }
+
+    void StopAudio(AudioSource audio)
+    {
+        //if (audio.isPlaying)
+        //    monoBehaviour.StartCoroutine(AudioStop(audio, audio.clip.length - audio.time));
+        audio.Stop();
+    }
+
+    IEnumerator AudioStop(AudioSource audio, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        StopAudio(audio);
     }
 }
