@@ -411,7 +411,7 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
 
         float speedToShow = Mathf.RoundToInt(rb.velocity.magnitude * 3.6f);
         TextMeshProUGUI textMeshProUGUI = speed.GetComponent<TextMeshProUGUI>();
-        if ((speedToShow > speedLimit && vehicleController.accellInput != 0))
+        if (speedToShow > speedLimit)
             textMeshProUGUI.color = Color.red;
         else
             textMeshProUGUI.color = Color.white;
