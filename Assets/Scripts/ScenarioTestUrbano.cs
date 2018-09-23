@@ -1172,6 +1172,7 @@ public class ScenarioTestUrbano : MonoBehaviour
                 //TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
                 //lights[0].StartCoroutine(attesa15_2());
                 SetLayer(12, macchinaTagliaStrada.transform);
+                StartCoroutine(CourutineCambioLayer());
                 return;
             }
             macchinaTagliaStrada.maxSpeed = 0f; //non puo tagliarmi la strada; si ferma
@@ -1215,6 +1216,28 @@ public class ScenarioTestUrbano : MonoBehaviour
         TrafficLightContainer container1 = entry1.light;
         TrafficLight[] lights1 = container1.gameObject.GetComponentsInParent<TrafficLight>();
         lights1[0].StartCoroutine(attesa15());
+    }
+
+    public IEnumerator CourutineCambioLayer()
+    {
+        //if (Vector3.Distance(car.transform.position, car.GetComponent<TrafAIMotor>().target) > 15)
+        if (macchinaTagliaStrada.GetComponent<TrafAIMotor>().currentEntry.identifier != 1031)
+        {
+            yield return new WaitForSeconds(0.5f);
+            StartCoroutine(CourutineCambioLayer());
+        } else
+        {
+            if (car.GetComponent<TrafAIMotor>().evitare == false)
+            {
+                //se non è false la macchina rimarrebbe piantata perchè la macchina del traffico non uscirebbe mai dalla collisione
+                SetLayer(8, macchinaTagliaStrada.transform);
+            }
+            
+        }
+        
+
+
+
     }
 
     public IEnumerator attesa15()
@@ -4722,7 +4745,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     IEnumerator Attesa2Secondi(TrafAIMotor motor)
     {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(2f);
         motor.Init();
         car.GetComponent<xSimScript>().enabled = true;
     }
@@ -4985,7 +5008,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             {
                 child.gameObject.layer = newLayer;
             }            
-            if (child.gameObject.name.Equals("Body1"))
+            if (child.gameObject.name.Equals("Body1") && newLayer == 12)
             {
                 child.gameObject.tag = "Obstacle";
             }

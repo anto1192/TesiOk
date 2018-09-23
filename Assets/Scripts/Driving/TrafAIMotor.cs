@@ -137,7 +137,7 @@ public class TrafAIMotor : MonoBehaviour
     private float distanzaInizialeInchiodata;
     public Vector3 frenataTarget;
     public bool autoScorretta = false;
-    private bool evitare;
+    public bool evitare;
     private bool direzioneSpostamentoDestra;
     private float velocitaInizialeFrenata;
 
