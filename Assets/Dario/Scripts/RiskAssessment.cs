@@ -138,7 +138,7 @@ public class RiskAssessment
             float dist = Vector3.Distance(rayCastPos.position, trafAIMotor.currentEntry.waypoints[trafAIMotor.currentEntry.waypoints.Count - 1]);
             //Debug.Log(dist);
 
-            if (dist <= 5.5f) //and I am located near the line that defines the intersection. This second condition is necessary since hasNextEntry is set earlier, not in correspondence with the line of the crossing.
+            if (dist <= 6.0f) //and I am located near the line that defines the intersection. This second condition is necessary since hasNextEntry is set earlier, not in correspondence with the line of the crossing.
             {
                 cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
                 cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
@@ -242,10 +242,12 @@ public class RiskAssessment
 
             if (dstToTarget <= /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarn)
             {
+                float distToWarnEncoded = Mathf.Pow(distToWarn, 2.5f);
+                float dstToTargetEncoded = Mathf.Pow(dstToTarget, 2.5f);
                 bool blink = false;
-                Color32 topColor = linesUtils.ChangeMatByDistance(dstToTarget / Mathf.Abs(/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarn), ref blink, ref cubesAndTags);
+                Color32 topColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarnEncoded), ref blink, ref cubesAndTags);
                 topColor.a = 0;
-                Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTarget / Mathf.Abs(/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarn), ref blink, ref cubesAndTags);
+                Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarnEncoded), ref blink, ref cubesAndTags);
                 bottomColor.a = 0x51;
                 cubeRend.material.SetColor("_Color1", topColor);
                 cubeRend.material.SetColor("_Color2", bottomColor);
@@ -253,13 +255,13 @@ public class RiskAssessment
                 anim.SetFloat("Multiplier", 3.0f);
                 anim.SetBool("BlinkLoop", blink);
 
-                Debug.Log("obstacle is: " + cubesAndTags.other.name + dstToTarget / /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarn);
+                Debug.Log("obstacle is: " + cubesAndTags.other.name + dstToTargetEncoded / /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarnEncoded);
 
-                PlayAudio(audio, dstToTarget / /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarn, cubesAndTags);
+                PlayAudio(audio, dstToTargetEncoded / /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarnEncoded, cubesAndTags);
 
-                SetDashBoardColor(dstToTarget / /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarn, cubesAndTags);
+                SetDashBoardColor(dstToTargetEncoded / /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarnEncoded, cubesAndTags);
 
-                cubesAndTags.prevState = dstToTarget / /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarn;
+                cubesAndTags.prevState = dstToTargetEncoded / /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarnEncoded;
 
                 cubesAndTags.gradient = CubesAndTags.Gradient.ON;
             }
@@ -897,10 +899,12 @@ public class RiskAssessment
         {
             if (dstToTarget <= distToWarn)
             {
+                float distToWarnEncoded = Mathf.Pow(distToWarn, 2.5f);
+                float dstToTargetEncoded = Mathf.Pow(dstToTarget, 2.5f);
                 bool blink = false;
-                Color32 topColor = linesUtils.ChangeMatByDistance(dstToTarget / distToWarn, ref blink, ref cubesAndTags);
+                Color32 topColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), ref blink, ref cubesAndTags);
                 topColor.a = 0;
-                Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTarget / distToWarn, ref blink, ref cubesAndTags);
+                Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), ref blink, ref cubesAndTags);
                 bottomColor.a = 0x51;
                 cubeRend.material.SetColor("_Color1", topColor);
                 cubeRend.material.SetColor("_Color2", bottomColor);
@@ -908,11 +912,11 @@ public class RiskAssessment
                 anim.SetFloat("Multiplier", 3.0f);
                 anim.SetBool("BlinkLoop", blink);
 
-                PlayAudio(audio, dstToTarget / distToWarn, cubesAndTags);
+                PlayAudio(audio, dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), cubesAndTags);
 
-                SetDashBoardColor(dstToTarget / distToWarn, cubesAndTags);
+                SetDashBoardColor(dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), cubesAndTags);
 
-                cubesAndTags.prevState = dstToTarget / distToWarn;
+                cubesAndTags.prevState = dstToTargetEncoded / Mathf.Abs(distToWarnEncoded);
 
                 cubesAndTags.gradient = CubesAndTags.Gradient.ON;
             }

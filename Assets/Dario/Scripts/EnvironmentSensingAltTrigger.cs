@@ -35,7 +35,7 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
     private LayerMask mask;
 
     private Transform rayCastPos;
-    //private RectTransform speed;
+    private Transform speed;
     //private RectTransform needle;
     private Rigidbody rb;
     private VehicleController vehicleController;
@@ -275,23 +275,20 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
 
     void LoadCarHierarchy()
     {
-        //Dictionary<string, RectTransform> speedPanelChildren = new Dictionary<string, RectTransform>();
-        //foreach (RectTransform rt in speedPanel.transform)
-        //    if (rt.name.Equals("Speed") || rt.name.Equals("Needle"))
-        //        speedPanelChildren.Add(rt.name, rt);
+        Transform InstrumentCluster = null;
 
-        //speed = speedPanelChildren["Speed"];
-        //needle = speedPanelChildren["Needle"];
-
+        Dictionary<string, Transform> speedPanelChildren = new Dictionary<string, Transform>();
         foreach (Transform t in transform.parent)
-            if (t.name.Equals("rayCastPos"))
-            {
-                rayCastPos = t;
-                break;
-            }
+            if (t.name.Equals("rayCastPos") || t.name.Equals("InstrumentCluster"))
+                speedPanelChildren.Add(t.name, t);
 
+        rayCastPos = speedPanelChildren["rayCastPos"];
+        InstrumentCluster = speedPanelChildren["InstrumentCluster"];
+
+        speed = InstrumentCluster.transform.GetChild(0).GetChild(0).GetChild(0);
         rb = transform.parent.gameObject.GetComponent<Rigidbody>();
         vehicleController = transform.parent.gameObject.GetComponent<VehicleController>();
+
 
         //rot0 = speed.localRotation; //init rotation of speed needle
     }
@@ -404,10 +401,21 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
 
     void SetSpeed()
     {
-        //float targetAngle;
-        //speed.GetComponent<Text>().text = Mathf.RoundToInt(rb.velocity.magnitude * 3.6f).ToString(); //speed in kph
-        //if (CSVDictionary.TryGetValue(Mathf.RoundToInt(rb.velocity.magnitude * 3.6f), out targetAngle))
-        //    needle.localRotation = Quaternion.Euler(0, 0, targetAngle) * rot0;
+        CarExternalInputAutoPathAdvanced autoPath = transform.parent.gameObject.GetComponent<CarExternalInputAutoPathAdvanced>();
+        float speedLimit = 0f;
+
+        if (autoPath != null)
+            speedLimit = autoPath.limiteVelocita;
+        else
+            speedLimit = 75f;
+
+        float speedToShow = Mathf.RoundToInt(rb.velocity.magnitude * 3.6f);
+        TextMeshProUGUI textMeshProUGUI = speed.GetComponent<TextMeshProUGUI>();
+        if ((speedToShow > speedLimit && vehicleController.accellInput != 0))
+            textMeshProUGUI.color = Color.red;
+        else
+            textMeshProUGUI.color = Color.white;
+        speed.GetComponent<TextMeshProUGUI>().text = speedToShow.ToString(); //speed in kph
     }
 
     void ReadCSVFile(string path, bool dic)
@@ -488,7 +496,11 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
         else
             instrumentCluster.GetComponent<DashBoardController>().enabled = false;
 
-        driverCam.transform.GetChild(1).GetComponent<Camera>().cullingMask ^= 1 << LayerMask.NameToLayer("Graphics"); //use leapCam in VR
+        Camera camActive = driverCam.transform.GetChild(1).GetComponent<Camera>();
+        if (camActive.enabled)
+            camActive.cullingMask ^= 1 << LayerMask.NameToLayer("Graphics"); //use leapCam in VR
+        else
+            leapCam.GetComponent<Camera>().cullingMask ^= 1 << LayerMask.NameToLayer("Graphics"); //use leapCam in VR
         dashORHud = !dashORHud;
     }
 
@@ -585,8 +597,8 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
     {
         if (blink == true)
             audio.Play();
-        else
-            audio.Stop();
+        //else
+            //StopAudio(audio);
     }
 
     void EnvironmentDetect()
@@ -647,7 +659,7 @@ public class EnvironmentSensingAltTrigger : MonoBehaviour
                             if (/*BOUNDINGCUBE*/!objectsList[i].other.CompareTag("Rock"))
                                 riskAssessment.BoundingCubeLerperObstaclePCH(objectsList[i], bounds, CalculateObstacleSpeed(objectsList[i].other.transform), 0, sprite, Vector3.zero, 0);
                             else
-                                riskAssessment.BoundingCubeLerperDangerousCarPCH(objectsList[i], bounds, 0, ResourceHandler.instance.visualisationVars.obstacleDistToWarn, 25f, sprite, Vector3.zero, 0);
+                                riskAssessment.BoundingCubeLerperDangerousCarPCH(objectsList[i], bounds, 0, ResourceHandler.instance.visualisationVars.obstacleDistToWarn, 25f, sprite, Vector3.zero, 0); //Rock uses pure distance evaluation for danger
                         }
                         break;
                     case 8:
