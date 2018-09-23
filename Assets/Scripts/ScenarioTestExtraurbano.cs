@@ -216,17 +216,20 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     public void evento1795()
     {
         guidaAutomatica.sbacchettamento = true;
+        guidaAutomatica.sbacchettamentoEvitabile = true;
     }
 
     public void evento1813()
     {
         guidaAutomatica.sbacchettamento = false;
+        guidaAutomatica.sbacchettamentoEvitabile = false;
     }
 
     public void evento1838()
     {
         guidaAutomatica.sbacchettamento = true;
         guidaAutomatica.sbacchettamentoForte = true;
+        guidaAutomatica.sbacchettamentoEvitabile = true;
 
     }
 
@@ -234,16 +237,19 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     {
         guidaAutomatica.sbacchettamento = false;
         guidaAutomatica.sbacchettamentoForte = false;
+        guidaAutomatica.sbacchettamentoEvitabile = false;
     }
 
     public void evento1875()
     {
         guidaAutomatica.sbacchettamento = true;
+        guidaAutomatica.sbacchettamentoEvitabile = true;
     }
 
     public void evento1880()
     {
         guidaAutomatica.sbacchettamento = false;
+        guidaAutomatica.sbacchettamentoEvitabile = false;
     }
 
     public void evento1907()
