@@ -31,23 +31,23 @@ public class ScenarioTestExtraurbano : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            if (!scenarioAvviato)
-            {
-                avviaScenarioTest();
-                scenarioAvviato = true;
-                fineTest = false;
-            }
-            else
-            {
-                //scenarioAvviato = false;
-                fineTest = true;
-                //interrompiScenario();
+        //if (Input.GetKeyDown(KeyCode.S))
+        //{
+        //    if (!scenarioAvviato)
+        //    {
+        //        avviaScenarioTest();
+        //        scenarioAvviato = true;
+        //        fineTest = false;
+        //    }
+        //    else
+        //    {
+        //        //scenarioAvviato = false;
+        //        fineTest = true;
+        //        //interrompiScenario();
 
-            }
+        //    }
 
-        }
+        //}
         if (Input.GetKeyDown(KeyCode.P))
         {
             if (car.GetComponent<xSimScript>().enabled)
@@ -97,6 +97,27 @@ public class ScenarioTestExtraurbano : MonoBehaviour
 
     //    }
     //}
+
+    private void OnGUI()
+    {
+        if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.S)
+        {
+            if (!scenarioAvviato)
+            {
+                avviaScenarioTest();
+                scenarioAvviato = true;
+                fineTest = false;
+            }
+            else
+            {
+                //scenarioAvviato = false;
+                fineTest = true;
+                //interrompiScenario();
+
+            }
+
+        }
+    }
 
     private void avviaScenarioTest()
     {

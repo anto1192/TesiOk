@@ -128,6 +128,11 @@ public class ScenarioTestUrbano : MonoBehaviour
             co.isTrigger = true;
             Debug.Log("wp: " + wp.x + "; " + wp.y + "; " + wp.z);
         }*/
+
+        //modifico i waypoint all'incrocio 1003
+        //List<Vector3> listaWaypIncrocio1003 = system.GetEntry(1003, 7).waypoints;
+        system.GetEntry(3, 3).waypoints[0] = new Vector3(1139.82f, 10.70071f, 384.4272f);
+
     }
 
     void Start()
@@ -814,7 +819,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         List<RoadGraphEdge> percorso159_5 = ottieniPercorso159_5();
         List<RoadGraphEdge> percorso159_0 = ottieniPercorso159_0();
 
-        CreaMacchinaTraffico(158, 2, 0f, percorso159_0);
+        //CreaMacchinaTraffico(158, 2, 0f, percorso159_0);
 
         //AutoTrafficoNoRayCast macchinaTrafficoScorretta = CreaMacchinaTrafficoNoRaycast(162, 0, 0.97f, percorso159_5); //macchinaTraffico che non rispetta il semaforo e va piu veloce
         //macchinaTrafficoScorretta.maxSpeed = 15f;
@@ -1655,6 +1660,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         List<RoadGraphEdge> percorso159_1 = ottieniPercorso159_1();
         List<RoadGraphEdge> percorso159_2 = ottieniPercorso159_2();
         List<RoadGraphEdge> percorso159_3 = ottieniPercorso159_3();
+        List<RoadGraphEdge> percorso159_7 = ottieniPercorso159_7();
         //List<RoadGraphEdge> percorso159_4 = ottieniPercorso159_4();
         //macchinaTrafficoScorrettaDavanti = CreaMacchinaTraffico(162, 3, 0f, percorso159_4);
         //macchinaTrafficoScorrettaDavanti.autoScorretta = true;
@@ -1668,7 +1674,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         //CreaMacchinaTraffico(158, 2, 0.1f, percorso159_1);
         //CreaMacchinaTraffico(158, 2, 0.7f, percorso159_2);
         CreaMacchinaTraffico(158, 3, 0.9f, percorso159_3);
-
+        CreaMacchinaTraffico(1052, 9, 0f, percorso159_7);
 
 
         //CreaMacchinaTraffico(162, 1, 0.3f, percorso159_6);
@@ -4061,6 +4067,35 @@ public class ScenarioTestUrbano : MonoBehaviour
         percorso.Add(edge1);
         percorso.Add(edge2);
 
+
+        return percorso;
+    }
+
+    private List<RoadGraphEdge> ottieniPercorso159_7()
+    {
+        RoadGraphEdge edge0 = new RoadGraphEdge();
+        RoadGraphEdge edge1 = new RoadGraphEdge();
+        RoadGraphEdge edge2 = new RoadGraphEdge();
+        RoadGraphEdge edge3 = new RoadGraphEdge();
+
+        edge0.id = 158;
+        edge0.subId = 2;
+
+        //edge1.id = 1011;
+        //edge1.subId = 0;
+
+        edge2.id = 163;
+        edge2.subId = 1;
+
+        edge3.id = 20;
+        edge3.subId = 2;
+
+
+        List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
+        percorso.Add(edge1);
+        //percorso.Add(edge1);
+        percorso.Add(edge2);
+        percorso.Add(edge3);
 
         return percorso;
     }

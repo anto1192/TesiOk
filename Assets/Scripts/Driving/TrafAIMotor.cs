@@ -1433,7 +1433,7 @@ public class TrafAIMotor : MonoBehaviour
             //mi fermerò comunque però freno leggermente di piu
             if (primaVoltaEvita)
             {
-                currentThrottle = Mathf.Clamp(currentThrottle - 0.2f, -1f, -0.2f);
+                currentThrottle = Mathf.Clamp(currentThrottle - 0.3f, -1f, -0.2f);
                 throttleOk = currentThrottle;
                 vehicleController.accellInput = currentThrottle;
                 primaVoltaEvita = false;
