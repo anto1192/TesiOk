@@ -123,7 +123,7 @@ public class ScenarioTestExtraurbano : MonoBehaviour
 
     IEnumerator Attesa2Secondi()
     {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(2f);
         car.GetComponent<xSimScript>().enabled = true;
     }
 

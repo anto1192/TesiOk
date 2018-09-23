@@ -4745,7 +4745,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     IEnumerator Attesa2Secondi(TrafAIMotor motor)
     {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(2f);
         motor.Init();
         car.GetComponent<xSimScript>().enabled = true;
     }
