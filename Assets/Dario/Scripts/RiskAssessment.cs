@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-//using TMPro;
+using TMPro;
 
 public class RiskAssessment
 {
-    /*private LinesUtils linesUtils;
+    private LinesUtils linesUtils;
     private Transform rayCastPos;
     private GameObject gameObject;
     private Rigidbody rigidbody;
@@ -234,18 +234,18 @@ public class RiskAssessment
         Vector3 myDst = rayCastPos.position + rayCastPos.transform.TransformDirection(0, 0, Vector3.forward.z * 150f);
 
         Vector2 intersection = Vector2.zero;
-        if (LineSegmentsIntersection(new Vector2(targetPoint.x, targetPoint.z), new Vector2(targetDst.x, targetDst.z), new Vector2(rayCastPos.position.x, rayCastPos.position.z), new Vector2(myDst.x, myDst.z), out intersection) && (obstacleSpeed >= 0.1f && rigidbody.velocity.magnitude >= 0.1f))
+        if (LineSegmentsIntersection(new Vector2(targetPoint.x, targetPoint.z), new Vector2(targetDst.x, targetDst.z), new Vector2(rayCastPos.position.x, rayCastPos.position.z), new Vector2(myDst.x, myDst.z), out intersection) && (obstacleSpeed >= 0.1f && rigidbody.velocity.magnitude >= 0.1f) /*&& Mathf.Abs(vehicleController.steerInput) <= 0.4f*/)
         {
             Vector3 intersection3D = new Vector3(intersection.x, rayCastPos.position.y, intersection.y);
             Debug.DrawLine(rayCastPos.position, intersection3D, Color.black);
             float distToWarn = rigidbody.velocity.magnitude * ResourceHandler.instance.visualisationVars.freeRunningTime + 0.5f * (Mathf.Pow(rigidbody.velocity.magnitude, 2) / ResourceHandler.instance.visualisationVars.systemAccSF); //DARIO
 
-            if (dstToTarget <= distToWarn)
+            if (dstToTarget <= /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarn)
             {
                 bool blink = false;
-                Color32 topColor = linesUtils.ChangeMatByDistance(dstToTarget / Mathf.Abs(distToWarn), ref blink, ref cubesAndTags);
+                Color32 topColor = linesUtils.ChangeMatByDistance(dstToTarget / Mathf.Abs(/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarn), ref blink, ref cubesAndTags);
                 topColor.a = 0;
-                Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTarget / Mathf.Abs(distToWarn), ref blink, ref cubesAndTags);
+                Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTarget / Mathf.Abs(/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarn), ref blink, ref cubesAndTags);
                 bottomColor.a = 0x51;
                 cubeRend.material.SetColor("_Color1", topColor);
                 cubeRend.material.SetColor("_Color2", bottomColor);
@@ -253,13 +253,13 @@ public class RiskAssessment
                 anim.SetFloat("Multiplier", 3.0f);
                 anim.SetBool("BlinkLoop", blink);
 
-                Debug.Log("obstacle is: " + cubesAndTags.other.name + dstToTarget / distToWarn);
+                Debug.Log("obstacle is: " + cubesAndTags.other.name + dstToTarget / /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarn);
 
-                PlayAudio(audio, dstToTarget / distToWarn, cubesAndTags);
+                PlayAudio(audio, dstToTarget / /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarn, cubesAndTags);
 
-                SetDashBoardColor(dstToTarget / distToWarn, cubesAndTags);
+                SetDashBoardColor(dstToTarget / /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarn, cubesAndTags);
 
-                cubesAndTags.prevState = dstToTarget / distToWarn;
+                cubesAndTags.prevState = dstToTarget / /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarn;
 
                 cubesAndTags.gradient = CubesAndTags.Gradient.ON;
             }
@@ -515,7 +515,7 @@ public class RiskAssessment
 
     //public void BoundingCubeLerperObstacle4(CubesAndTags cubesAndTags, Bounds bounds, float obstacleSpeed, float acceleration, Sprite sprite, Vector3 trasl, int i)
     //{
-    //    Vector3 targetPoint = new Vector3(cubesAndTags.other.transform.position.x, cubesAndTags.other.transform.position.y, cubesAndTags.other.transform.position.z);
+    //    Vector3 targetPoint = new Vector3(cubesAndTags.other.transform.position.x, cubesAndTags.other.transform.position.y/*rayCastPos.position.y*/, cubesAndTags.other.transform.position.z);
     //    float dstToTarget = Vector3.Distance(rayCastPos.position, targetPoint);
     //    Renderer cubeRend = cubesAndTags.boundingCube[i].GetComponent<Renderer>();
     //    Canvas canvas = cubesAndTags.infoTag[i].GetComponent<Canvas>();
@@ -1129,7 +1129,7 @@ public class RiskAssessment
 
     //public void InfoTagWarnObstacle2(CubesAndTags cubesAndTags, Bounds bounds, float obstacleSpeed, float acceleration, Sprite sprite, Vector3 trasl, int i)
     //{
-    //    Vector3 targetPoint = new Vector3(cubesAndTags.other.transform.position.x, cubesAndTags.other.transform.position.y, cubesAndTags.other.transform.position.z);
+    //    Vector3 targetPoint = new Vector3(cubesAndTags.other.transform.position.x, cubesAndTags.other.transform.position.y/*rayCastPos.position.y*/, cubesAndTags.other.transform.position.z);
     //    float dstToTarget = Vector3.Distance(rayCastPos.position, targetPoint);
     //    Renderer cubeRend = cubesAndTags.boundingCube[i].GetComponent<Renderer>();
     //    Canvas canvas = cubesAndTags.infoTag[i].GetComponent<Canvas>();
@@ -1310,7 +1310,7 @@ public class RiskAssessment
                 audio.Play();
                 Debug.Log(cubesAndTags.other.transform.root.name);
             }
-            else if (audio.isPlaying && audio.clip == ResourceHandler.instance.audioClips[2])
+            else if (audio.isPlaying && audio.clip == ResourceHandler.instance.audioClips[2]/*cubesAndTags.prevState > 0.2f*/)
             {
                 audio.Stop();
             }
@@ -1324,7 +1324,7 @@ public class RiskAssessment
                 audio.Play();
                 Debug.Log(cubesAndTags.other.transform.root.name);
             }
-            else if (audio.isPlaying && audio.clip == ResourceHandler.instance.audioClips[1])
+            else if (audio.isPlaying && audio.clip == ResourceHandler.instance.audioClips[1]/*cubesAndTags.prevState <= 0.2f*/)
             {
                 audio.Stop();
             }
@@ -1342,5 +1342,5 @@ public class RiskAssessment
         else
             cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
 
-    }*/
+    }
 }

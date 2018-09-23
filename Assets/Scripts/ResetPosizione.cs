@@ -40,19 +40,19 @@ public class ResetPosizione : MonoBehaviour {
             if (posizioneAnterioreSinistra != null)
             {
                 Transform t = leggiFileDisco();
-                if (t != null && Vector3.Distance(transform.localPosition, t.position) < 10f)
+                if (t != null && Vector3.Distance(transform.position, t.position) < 10f)
                 {
                     //Vector3.Distance(transform.position, t.position) < 10f controlla che la posizione salvata non sia troppo distante da quella attuale, in tal caso significa che è una posizione memorizzata ma non corretta
-                    transform.localPosition = t.position;
-                    transform.localRotation = t.rotation;
+                    transform.position = t.position;
+                    transform.rotation = t.rotation;
                     ultimaPosizione = t.position;
-                    ultimaRotazione = t.rotation.eulerAngles;
+                    ultimaRotazione = t.eulerAngles;
                     Debug.Log("Ripristinata ultima posizione salvata");
                     return;
                 }
                 ResetPosizioneVisore(CenterEyeAnchor, posizioneAnterioreSinistra);
-                ultimaPosizione = transform.localPosition;
-                ultimaRotazione = transform.localRotation.eulerAngles;
+                ultimaPosizione = transform.position;
+                ultimaRotazione = transform.eulerAngles;
                 interventoAllaGuidaConsentito = true;
                 Debug.Log("Reset posizione tramite posizione visore");
             }
@@ -74,8 +74,8 @@ public class ResetPosizione : MonoBehaviour {
             if (posizioneAnterioreSinistra != null)
             {
                 ResetPosizioneVisoreGuidatore();
-                ultimaPosizione = transform.localPosition;
-                ultimaRotazione = transform.localRotation.eulerAngles;
+                ultimaPosizione = transform.position;
+                ultimaRotazione = transform.eulerAngles;
                 interventoAllaGuidaConsentito = true;
             }
             return;
@@ -232,10 +232,7 @@ public class ResetPosizione : MonoBehaviour {
         catch (Exception e)
         {
             Debug.Log("eccezzione nella lettura del file: " + e);
-            if (inputStream != null)
-            {
-                inputStream.Close();
-            }          
+            inputStream.Close();
             return null;
         }
 
@@ -254,11 +251,7 @@ public class ResetPosizione : MonoBehaviour {
         } catch (Exception e)
         {
             Debug.Log("Eccezione nella scrittura del file: " + e);
-            if (streamWriter != null)
-            {
-                streamWriter.Close();
-            }
-            
+            streamWriter.Close();
         }
         
     }
