@@ -402,14 +402,14 @@ public class RiskAssessment
             return;
         }
 
-        if (Vector3.Angle(rayCastPos.TransformDirection(Vector3.forward), dirToTarget) < 75f) //the car is in front of me
+        if (Vector3.Angle(rayCastPos.TransformDirection(Vector3.forward), dirToTarget) < 75f) 
         {
-            if (dstToTarget <= ResourceHandler.instance.visualisationVars.obstacleDistToWarn && vehicleController.CurrentSpeed >= 0.1f)
+            if (dstToTarget <= ResourceHandler.instance.visualisationVars.DangerousCarDistToWarn && vehicleController.CurrentSpeed >= 0.1f)
             {
                 bool blink = false;
-                Color32 topColor = linesUtils.ChangeMatByDistance(dstToTarget / Mathf.Abs(ResourceHandler.instance.visualisationVars.obstacleDistToWarn), ref blink, ref cubesAndTags);
+                Color32 topColor = linesUtils.ChangeMatByDistance(dstToTarget / Mathf.Abs(ResourceHandler.instance.visualisationVars.DangerousCarDistToWarn), ref blink, ref cubesAndTags);
                 topColor.a = 0;
-                Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTarget / Mathf.Abs(ResourceHandler.instance.visualisationVars.obstacleDistToWarn), ref blink, ref cubesAndTags);
+                Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTarget / Mathf.Abs(ResourceHandler.instance.visualisationVars.DangerousCarDistToWarn), ref blink, ref cubesAndTags);
                 bottomColor.a = 0x51;
                 cubeRend.material.SetColor("_Color1", topColor);
                 cubeRend.material.SetColor("_Color2", bottomColor);
@@ -417,9 +417,9 @@ public class RiskAssessment
                 anim.SetFloat("Multiplier", 3.0f);
                 anim.SetBool("BlinkLoop", blink);
 
-                PlayAudio(audio, dstToTarget / ResourceHandler.instance.visualisationVars.obstacleDistToWarn, cubesAndTags);
+                PlayAudio(audio, dstToTarget / ResourceHandler.instance.visualisationVars.DangerousCarDistToWarn, cubesAndTags);
 
-                SetDashBoardColor(dstToTarget / ResourceHandler.instance.visualisationVars.obstacleDistToWarn, cubesAndTags);
+                SetDashBoardColor(dstToTarget / ResourceHandler.instance.visualisationVars.DangerousCarDistToWarn, cubesAndTags);
             }
             else
             {
