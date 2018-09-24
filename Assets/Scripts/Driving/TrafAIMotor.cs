@@ -142,6 +142,9 @@ public class TrafAIMotor : MonoBehaviour
     private float velocitaInizialeFrenata;
 
     public float distanzaInizioValutazioneSemaforo = 40f;
+    public float distanzaValutazioneAutoTraffico = 35f;
+
+    public bool sorpasso = false;
 
 
 
@@ -240,9 +243,9 @@ public class TrafAIMotor : MonoBehaviour
         }
 
         //if(Physics.Raycast(raycastOrigin.position, raycastOrigin.forward, out blockedInfo, brakeDistance, ~(1 << LayerMask.NameToLayer("BridgeRoad"))))
-        if (Physics.Raycast(raycastOrigin.position, raycastOrigin.forward, out blockedInfo, 35f, ~(1 << LayerMask.NameToLayer("BridgeRoad"))) ||
-            Physics.Raycast(raggioDestra.transform.position, raggioDestra.transform.forward, out blockedInfo, 35f, ~(1 << LayerMask.NameToLayer("BridgeRoad"))) ||
-            Physics.Raycast(raggioSinistra.transform.position, raggioSinistra.transform.forward, out blockedInfo, 35f, ~(1 << LayerMask.NameToLayer("BridgeRoad"))))
+        if (Physics.Raycast(raycastOrigin.position, raycastOrigin.forward, out blockedInfo, 50f, ~(1 << LayerMask.NameToLayer("BridgeRoad"))) ||
+            Physics.Raycast(raggioDestra.transform.position, raggioDestra.transform.forward, out blockedInfo, 50f, ~(1 << LayerMask.NameToLayer("BridgeRoad"))) ||
+            Physics.Raycast(raggioSinistra.transform.position, raggioSinistra.transform.forward, out blockedInfo, 50f, ~(1 << LayerMask.NameToLayer("BridgeRoad"))))
         {
             return true;
         }
@@ -687,7 +690,7 @@ public class TrafAIMotor : MonoBehaviour
                     }
                 }
                 Debug.DrawLine(this.transform.position, hitInfo.transform.position);
-                if (hitInfo.distance <= 35f)
+                if (hitInfo.distance <= distanzaValutazioneAutoTraffico)
                 {
                     if (((this.currentEntry.identifier >= 1000 || Vector3.Distance(this.gameObject.transform.position, currentEntry.waypoints[0]) < 10f) && (currentTurn > 5f || currentTurn < -5f))) //  || velocitaAttuale <= 0)
                     {
@@ -825,7 +828,7 @@ public class TrafAIMotor : MonoBehaviour
                     float frontSpeed = macchinaDavanti.currentSpeed;
                     float miaVelocita = velocitaAttuale;
 
-                    if ((!somethingInFront) || ((frontSpeed - miaVelocita) >= 0.5f && hitInfo.distance >= 1f) && (hitInfo.rigidbody.tag.Equals("TrafficCar") || hitInfo.rigidbody.tag.Equals("Player")))
+                    if ((!somethingInFront) || ((frontSpeed - miaVelocita) >= 0.5f && hitInfo.distance >= 1f) && (hitInfo.rigidbody.tag.Equals("TrafficCar") || hitInfo.rigidbody.tag.Equals("TrafficScooter") || hitInfo.rigidbody.tag.Equals("Player")))
 
                     {
                         //Se mi sono fermato per via di qualcosa di fronte che ora non c'è piu devo ripartire
@@ -965,7 +968,7 @@ public class TrafAIMotor : MonoBehaviour
         else
         {
             //DA TESTARE - ANTONELLO
-            if (currentTurn > 5f || currentTurn < -5f)
+            if ((currentTurn > 5f || currentTurn < -5f) && !sorpasso)
             {
                 //targetSpeed = targetSpeed * Mathf.Clamp(1 - (currentTurn / maxTurn), 0.1f, 1f);
                 targetSpeed = targetSpeed * Mathf.Clamp(1 - (Math.Abs(currentTurn) / maxTurn), 0.2f, 1f);
@@ -1544,6 +1547,7 @@ public class TrafAIMotor : MonoBehaviour
             //stopTarget.z -= 1f;
         }
         //Debug.Log("distanzaInizialeInchiodata = " + distanzaInizialeInchiodata);
+        distanzaInizialeInchiodata -= 6f;
     }
 
 

@@ -12,6 +12,7 @@ public class ScenarioTestUrbano : MonoBehaviour
     public GameObject[] prefabs;
     public GameObject prefabMacchinaOstacolo;
     public GameObject prefabScooter;
+    public GameObject barriera;
 
 
     //private TrafAIMotor macchinaTraffico;
@@ -575,7 +576,10 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(12, 0, 0.8f, percorso13_5);
     }
 
-
+    public void semaforo14()
+    {
+        car.GetComponent<TrafAIMotor>().distanzaValutazioneAutoTraffico = 35f;
+    }
 
     public void semaforo14a()
     {
@@ -667,8 +671,9 @@ public class ScenarioTestUrbano : MonoBehaviour
             motor.currentEntry.subIdentifier = 0;
             motor.maxSpeed = 3f;
         }
+        ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().sorpasso = false;
 
-        
+
     }
 
     public void semaforo5()
@@ -1097,6 +1102,8 @@ public class ScenarioTestUrbano : MonoBehaviour
         TrafficLightContainer container = entry.light;
         TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
         lights[0].StartCoroutine(attesa13());
+
+        car.GetComponent<TrafAIMotor>().distanzaValutazioneAutoTraffico = 45f;
     }
 
     public IEnumerator attesa13()
@@ -1117,6 +1124,8 @@ public class ScenarioTestUrbano : MonoBehaviour
         //CreaMacchinaTraffico(20, 2, 0.6f, percorso14_1);
         //CreaMacchinaTraffico(20, 1, 0.8f, percorso14_2);
 
+        
+
 
         List<RoadGraphEdge> percorso13_1 = ottieniPercorso13_1();
         TrafAIMotor autoLato = CreaMacchinaTraffico(11, 2, 0.45f, percorso13_1);
@@ -1125,6 +1134,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public void evento15()
     {
+        
         semaforo15a();
         if (macchinaTraffico != null)
         {
@@ -1284,7 +1294,7 @@ public class ScenarioTestUrbano : MonoBehaviour
     public void evento16()
     {
         semaforo16a();
-
+        car.GetComponent<TrafAIMotor>().distanzaValutazioneAutoTraffico = 45f;
 
         if (macchinaTagliaStrada.maxSpeed == 0)
         {
@@ -1296,7 +1306,7 @@ public class ScenarioTestUrbano : MonoBehaviour
             //mi ha tagliato la strada, risetto il livello a Traffic
             SetLayer(8, macchinaTagliaStrada.transform);
         }
-        GameObject.Destroy(GameObject.Find("Barriera"));
+        GameObject.Destroy(barriera);
         car.GetComponent<TrafAIMotor>().maxSpeed = 11f;
     }
 
@@ -1325,20 +1335,24 @@ public class ScenarioTestUrbano : MonoBehaviour
             } else
             {
                 ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().maxSpeed = 2f;
-            }                     
+            }
+            
         } catch (Exception e)
         {
             //c'è stato qualche problema con macchinaTraffico
             ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().maxSpeed = 2f;
         }
-        
+
+        yield return new WaitForSeconds(4f);
+        macchinaTraffico.maxSpeed = 4f;
+
     }
 
     TrafAIMotor macchinaAccodarmi = null;
     public void evento18()
     {
         //semaforo18a();
-        
+        car.GetComponent<TrafAIMotor>().distanzaValutazioneAutoTraffico = 35f;
 
         soloSemaforo16();
 
@@ -1370,7 +1384,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         GameObject go = ottieniRiferimentoPlayer();
         try
         { 
-            if (macchinaAccodarmi.transform.position.z > go.transform.position.z)
+            if ((macchinaAccodarmi.transform.position.z - go.transform.position.z) > -5f)
             {
                 TrafficLightContainer container = system.GetEntry(1049, 5).light;
                 TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
@@ -1384,6 +1398,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
 
         go.GetComponent<TrafAIMotor>().maxSpeed = 11f;
+        go.GetComponent<TrafAIMotor>().sorpasso = true;
 
 
         TrafEntry entry = system.GetEntry(18, 0);
@@ -1410,6 +1425,9 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public void evento5()
     {
+
+        car.GetComponent<TrafAIMotor>().distanzaValutazioneAutoTraffico = 45f;
+
         ottieniRiferimentoPlayer().GetComponent<TrafAIMotor>().maxSpeed = limiteVelocita;
 
         semaforo5a();
@@ -1459,6 +1477,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     public void evento4()
     {
+        car.GetComponent<TrafAIMotor>().distanzaValutazioneAutoTraffico = 35f;
         semaforo4a();
         List<RoadGraphEdge> percorso4_0 = ottieniPercorso4_0();
         List<RoadGraphEdge> percorso4_1 = ottieniPercorso4_1();
@@ -1596,6 +1615,7 @@ public class ScenarioTestUrbano : MonoBehaviour
     public void evento125()
     {
         macchinaTraffico.autoScorretta = true;
+        scooterTagliaStrada.autoScorretta = true;
         scooterTagliaStrada.GetComponent<AudioSource>().volume = 0.1f;
         semaforo4b();
         semaforo125a();
