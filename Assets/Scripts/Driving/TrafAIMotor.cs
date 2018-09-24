@@ -1491,7 +1491,13 @@ public class TrafAIMotor : MonoBehaviour
             {              
                 inizioSosta = false;
                 evitare = false;
-                situazionePalla = false;
+                if (situazionePalla)
+                {
+                    situazionePalla = false;
+                    GameObject palla = GameObject.Find("SF_Ball");
+                    GameObject.Destroy(palla);
+                }
+                
             }
         }
 
