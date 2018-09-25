@@ -9,7 +9,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 {
     public static event System.Action<GameObject> OnSpawnHeaps;
     public TrafSystem system;
-    public GameObject[] prefabs;
+    public GameObject prefabMacchinaTraffico;
     public GameObject prefabMacchinaOstacolo;
     public GameObject prefabScooter;
     public GameObject barriera;
@@ -4863,7 +4863,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
         if (!Physics.CheckSphere(pos.position, checkRadius, 1 << LayerMask.NameToLayer("Traffic")))
         {
-            GameObject go = GameObject.Instantiate(prefabs[UnityEngine.Random.Range(0, prefabs.Length)], pos.position, Quaternion.identity) as GameObject;
+            GameObject go = GameObject.Instantiate(prefabMacchinaTraffico, pos.position, Quaternion.identity) as GameObject;
             TrafAIMotor motor = go.GetComponent<TrafAIMotor>();
 
 
@@ -4979,7 +4979,7 @@ public class ScenarioTestUrbano : MonoBehaviour
 
         if (!Physics.CheckSphere(pos.position, checkRadius, 1 << LayerMask.NameToLayer("Traffic")))
         {
-            GameObject go = GameObject.Instantiate(prefabs[UnityEngine.Random.Range(0, prefabs.Length)], pos.position, Quaternion.identity) as GameObject;
+            GameObject go = GameObject.Instantiate(prefabMacchinaTraffico, pos.position, Quaternion.identity) as GameObject;
             //MacchinaTrafficoInchiodata motor = go.AddComponent<MacchinaTrafficoInchiodata>();
             //motor.nose = go.GetComponent<TrafAIMotor>().nose;
             //motor.raycastOrigin = go.GetComponent<TrafAIMotor>().raycastOrigin;
