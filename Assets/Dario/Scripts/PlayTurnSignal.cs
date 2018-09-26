@@ -6,6 +6,7 @@ public class PlayTurnSignal : MonoBehaviour {
 
     private bool hasPlayedON = false;
     private bool hasPlayedOFF = false;
+    private DashBoardControllerUrban dashBoardUrban;
 
     private AudioSource turnAudioSource;
 
@@ -14,24 +15,9 @@ public class PlayTurnSignal : MonoBehaviour {
     {
         turnAudioSource = transform.GetComponent<AudioSource>();
     }
-	
-	
-	void Update ()
-    {
-        
-    }
-
-   void PlayONAudio()
-    {
-        if (!hasPlayedON)
-        {
-            turnAudioSource.PlayOneShot(ResourceHandler.instance.audioClips[8]);
-            hasPlayedON = true;
-        }
-    }
 
     void PlayLoopAudio()
     {
-        turnAudioSource.PlayOneShot(ResourceHandler.instance.audioClips[6]);
+        turnAudioSource.PlayOneShot(ResourceHandler.instance.audioClips[5]);
     }
 }
