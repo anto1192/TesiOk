@@ -925,19 +925,15 @@ public class TrafAIMotor : MonoBehaviour
                 //distanzaCorrente -= 2f;
             } else
             {
+                
                 distanzaCorrente -= 5f;
+                
             }
             
             Debug.DrawLine(stopTarget, transform.position);
             targetSpeed = velocitaInizialeFrenata * distanzaCorrente / distanzaIniziale;
-            /*if (velocitaInizialeFrenata >= 6f)
-            {
-                targetSpeed = velocitaInizialeFrenata * distanzaCorrente / distanzaIniziale;
-            }
-            else
-            {
-                targetSpeed = 6f * distanzaCorrente / distanzaIniziale;
-            }*/
+
+
             if (targetSpeed <= _pidPars.sogliaFermata)
             {
                 targetSpeed = 0;
@@ -1471,6 +1467,8 @@ public class TrafAIMotor : MonoBehaviour
             vehicleController.steerInput = sterzata / 45;
         }
 
+        currentSpeed = velocitaAttuale;
+
         /*if (velocitaAttuale < 2.5f && !inizioSosta)
         {
             inizioSostaDopoPericolo = DateTime.Now;
@@ -1478,6 +1476,7 @@ public class TrafAIMotor : MonoBehaviour
         }*/
         if (inizioSosta)
         {
+            SteerCar();
             if (situazionePalla)
             {
                 //vehicleController.accellInput = -0.05f;
@@ -1486,7 +1485,7 @@ public class TrafAIMotor : MonoBehaviour
             }            
             TimeSpan differenza = (DateTime.Now - inizioSostaDopoPericolo);
             float secondi = differenza.Seconds + differenza.Milliseconds / 1000;
-            if (secondi > 2f)
+            if (situazionePalla && secondi > 2f)
             {
                 vehicleController.accellInput = -0.05f;
             }
@@ -1528,6 +1527,12 @@ public class TrafAIMotor : MonoBehaviour
             //stopTarget.z -= 1f;
         }
         //Debug.Log("distanzaIniziale = " + distanzaIniziale);
+
+        //if (maxThrottle == throttleDopoPericolo)
+        //{
+        //    distanzaIniziale -= 5;
+        //}
+        
     }
 
     //ANTONELLO
@@ -1681,7 +1686,7 @@ public class TrafAIMotor : MonoBehaviour
                 if (other.gameObject.GetComponentInParent<BallObstacle>())
                 {
                     motor.situazionePalla = true;
-                    motor.durataSosta = 4.99f;
+                    motor.durataSosta = 6.99f;
                     return;
                 }
                 if (other.gameObject.name.Equals("Body1"))
@@ -1697,10 +1702,10 @@ public class TrafAIMotor : MonoBehaviour
                 
                 if (motor.velocitaAttuale < 2f)
                 {
-                    motor.durataSosta = 4.99f;
+                    motor.durataSosta = 5.99f;
                 } else
                 {
-                    motor.durataSosta = 2.99f;
+                    motor.durataSosta = 4.99f;
                 }
             }
             
