@@ -30,7 +30,7 @@ public class OstacoloCaneCorsa : BaseObstacle
         if (animChoice == 0)
         {
             animator.SetBool("Idle", true);
-            animator.SetBool("Walk", false);
+            animator.SetBool("Run", false);
         }
         else if (animChoice == 1)
         {
@@ -86,6 +86,7 @@ public class OstacoloCaneCorsa : BaseObstacle
         }
 
         state = AnimalState.IDLE;
+        GetComponent<AudioSource>().enabled = false;
         ChooseAnimation(0);
     }
 

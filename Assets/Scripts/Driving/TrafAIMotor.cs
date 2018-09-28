@@ -94,7 +94,7 @@ public class TrafAIMotor : MonoBehaviour
     //ANTONELLo
     private Vector3 targetPrecedente = Vector3.zero;
 
-    public const float giveWayRegisterDistance = 12f;
+    public float giveWayRegisterDistance = 40f;
     //ANTONELLO
     //public const float brakeDistance = 10f;
     public const float brakeDistance = 20f; //stabilisce dove arriva il raycast
@@ -114,7 +114,8 @@ public class TrafAIMotor : MonoBehaviour
     /*private RaycastHit hitSinsitra;
     private RaycastHit hitDestra;*/
 
-    private bool somethingInFront = false;
+    public bool somethingInFront = false;
+    public GameObject oggettoRilevato;
     //ANTONELLO
     public bool noRaycast = false;
     public bool sterzataMassima = false;
@@ -171,6 +172,8 @@ public class TrafAIMotor : MonoBehaviour
     public bool luceStop = false;
     public bool forzaLuceStop = false;
     private bool autoPassata = false;
+
+    public bool playAudio = false;
 
 
     //ANTONELLO
@@ -422,7 +425,7 @@ public class TrafAIMotor : MonoBehaviour
             }
 
             //PER DARIO
-            if (Vector3.Distance(nose.transform.position, currentEntry.waypoints[currentEntry.waypoints.Count - 1]) <= 50f && !hasNextEntry50) //10 in piu dello spazio di freanata al semaforo
+            if (Vector3.Distance(nose.transform.position, currentEntry.waypoints[currentEntry.waypoints.Count - 1]) <= (distanzaInizioValutazioneSemaforo + 10f) && !hasNextEntry50) //10 in piu dello spazio di freanata al semaforo
             {
                 var node = system.roadGraph.GetNode(currentEntry.identifier, currentEntry.subIdentifier);
 
@@ -453,7 +456,7 @@ public class TrafAIMotor : MonoBehaviour
             //last waypoint in this entry, grab the next path when we are in range
             //ANTONELLO
             //if(Vector3.Distance(nose.transform.position, currentEntry.waypoints[currentEntry.waypoints.Count - 1]) <= giveWayRegisterDistance)
-            if (Vector3.Distance(nose.transform.position, currentEntry.waypoints[currentEntry.waypoints.Count - 1]) <= 40f) //era a 20
+            if (Vector3.Distance(nose.transform.position, currentEntry.waypoints[currentEntry.waypoints.Count - 1]) <= giveWayRegisterDistance) //era a 20
             {
                 var node = system.roadGraph.GetNode(currentEntry.identifier, currentEntry.subIdentifier);
 
@@ -680,6 +683,7 @@ public class TrafAIMotor : MonoBehaviour
         {
             if (hitInfo.rigidbody != null && (hitInfo.rigidbody.tag.Equals("TrafficCar") || hitInfo.rigidbody.tag.Equals("TrafficScooter") || hitInfo.rigidbody.tag.Equals("Player")))
             {
+                oggettoRilevato = hitInfo.rigidbody.gameObject;
                 if (hitInfo.rigidbody.GetComponent<AutoTrafficoNoRayCast>() != null && macchinaTrafficoInchiodata)
                 {
                     if (hitInfo.rigidbody.GetComponent<AutoTrafficoNoRayCast>().autoScorretta)
@@ -807,6 +811,10 @@ public class TrafAIMotor : MonoBehaviour
                         //}
                     }
                 }
+            }
+            else
+            {
+                oggettoRilevato = null;
             }
         }
         else
@@ -1461,7 +1469,7 @@ public class TrafAIMotor : MonoBehaviour
         //currentThrottle = Mathf.Clamp(-riduzioneVelocitaNecessaria, -1f, -0.5f);
         currentThrottle = Mathf.Clamp(-riduzioneVelocitaNecessaria, -1f, 0f);
         vehicleController.accellInput = currentThrottle;
-
+        playAudio = true;
         if (Vector3.Distance(transform.position, ostacoloEvitare.transform.position) < 8f && currentThrottle < -0.5f)
         {
             vehicleController.steerInput = sterzata / 45;
@@ -1493,6 +1501,7 @@ public class TrafAIMotor : MonoBehaviour
             {              
                 inizioSosta = false;
                 evitare = false;
+                playAudio = false;
                 if (situazionePalla)
                 {
                     situazionePalla = false;
