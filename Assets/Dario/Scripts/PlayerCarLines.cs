@@ -5,94 +5,28 @@ using UnityEngine;
 
 public class PlayerCarLines : MonoBehaviour {
 
-    private Material[] mats;
-    private Sprite[] sprites;
-    private GameObject[] prefabs;
-
     private GameObject pathEnhanced = null;
     private GameObject centerLine = null;
     private LinesUtilsAlt linesUtilsAlt = new LinesUtilsAlt();
     public enum Lane { RIGHT, OPPOSITE }
+    public enum LaneState { RED, YELLOW, GREEN } 
+    public LaneState laneState = LaneState.GREEN; //this is for the symbol on the dashboard
     private CurvySplineSegment curSegment = null;
     private List<CurvySplineSegment> segmentsToSearch = new List<CurvySplineSegment>();
     private Transform rayCastPos;
 
-    private void Awake()
-    {
-        LoadMaterials();
-        LoadPrefabs();
-    }
-    
     void Start () {
 
         LoadCarHierarchy();
 
         CreatePathEnhanced();
         CreateCenterLine();
-        linesUtilsAlt.LineRend = linesUtilsAlt.CreateLineRenderer(ref linesUtilsAlt.lineRendererEmpty, "LineRenderer", 2.5f, new Color32(0x3A, 0xC1, 0xAA, 0xFF), mats[3], () => linesUtilsAlt.InitGlowTexture());
-        linesUtilsAlt.LineRend2 = linesUtilsAlt.CreateLineRenderer(ref linesUtilsAlt.centerLineRendererEmpty, "centerLineRenderer", 0.5f, new Color32(0xFF, 0xFF, 0xFF, 0xFF), mats[3], () => linesUtilsAlt.InitGlowTexture2());
-        linesUtilsAlt.CenterLineLerper();
+        linesUtilsAlt.LineRend = linesUtilsAlt.CreateLineRenderer(ref linesUtilsAlt.lineRendererEmpty, "LineRenderer", 2.5f, new Color32(0x3A, 0xC1, 0xAA, 0xFF), ResourceHandler.instance.mats[2]);
+        linesUtilsAlt.LineRend2 = linesUtilsAlt.CreateLineRenderer(ref linesUtilsAlt.centerLineRendererEmpty, "centerLineRenderer", 0.5f, new Color32(0xFF, 0xFF, 0xFF, 0xFF), ResourceHandler.instance.mats[2]);
+        linesUtilsAlt.CenterLineLerper(Color.red, Color.yellow, Color.green);
         StartCoroutine(InitNavigationLine());
         StartCoroutine(NavigationLine(0.25f));
         StartCoroutine(LaneKeeping(0.25f));
-    }
-
-    void LoadSprites()
-    {
-
-        try
-        {
-            Debug.Log("Loading sprites...");
-            sprites = Resources.LoadAll<Sprite>("UI/Sprites");
-            foreach (var sp in sprites)
-            {
-                Debug.Log(sp.name);
-            }
-        }
-        catch (Exception e)
-        {
-            Debug.Log("Loading sprites failed with the following exception: ");
-            Debug.Log(e);
-        }
-
-    }
-
-    void LoadMaterials()
-    {
-
-        try
-        {
-            Debug.Log("Loading materials...");
-            mats = Resources.LoadAll<Material>("Materials");
-            foreach (var mat in mats)
-            {
-                Debug.Log(mat.name);
-            }
-        }
-        catch (Exception e)
-        {
-            Debug.Log("Loading materials failed with the following exception: ");
-            Debug.Log(e);
-        }
-
-    }
-
-    void LoadPrefabs()
-    {
-        try
-        {
-            Debug.Log("Loading prefabs...");
-            prefabs = Resources.LoadAll<GameObject>("Prefabs");
-            foreach (var pre in prefabs)
-            {
-                Debug.Log(pre.name);
-            }
-        }
-        catch (Exception e)
-        {
-            Debug.Log("Loading prefabs failed with the following exception: ");
-            Debug.Log(e);
-        }
     }
 
     void LoadCarHierarchy()
@@ -155,36 +89,64 @@ public class PlayerCarLines : MonoBehaviour {
 
             RaycastHit hit;
             CurvySpline curvySpline = null;
+            CurvySpline pathEnhancedCurvySpline = null;
             if (Physics.Raycast(rayCastPos.position, rayCastPos.TransformDirection(-Vector3.up), out hit, 10.0f, 1 << LayerMask.NameToLayer("Graphics")))
             {
                 curvySpline = hit.collider.gameObject.GetComponent<CurvySpline>();
-                if (curvySpline.IsInitialized)
+                pathEnhancedCurvySpline = pathEnhanced.GetComponent<CurvySpline>();
+                if (curvySpline.IsInitialized && pathEnhancedCurvySpline.IsInitialized)
                 {
                     float carTf = curvySpline.GetNearestPointTF(transform.position); //determine the nearest t of the car with respect to the centerLine
-                    float carTf2 = pathEnhanced.GetComponent<CurvySpline>().GetNearestPointTF(transform.position);
+                    float carTf2 = pathEnhancedCurvySpline.GetNearestPointTF(transform.position);
                     float dist = Vector3.Distance(transform.position, curvySpline.Interpolate(carTf));
-                    Lane lane = MonitorLane(pathEnhanced.GetComponent<CurvySpline>().GetTangentFast(carTf2)); //this is to understand if I am partially in the oncoming lane
+                    Lane lane = MonitorLane(pathEnhancedCurvySpline.GetTangentFast(carTf2)); //this is to understand if I am partially in the oncoming lane
                     if (dist < 4.0f && lane == Lane.RIGHT)
-                        linesUtilsAlt.CenterLineColor = linesUtilsAlt.ChangeMatByDistance(dist);
+                    {
+                        linesUtilsAlt.CenterLineColor = linesUtilsAlt.ChangeMatByDistance(dist / 4.0f);
+                        SetDashBoardColor(dist, 4.0f);
+                    }
+                        
                     else if (dist >= 4.0f && lane == Lane.RIGHT)
-                        linesUtilsAlt.CenterLineColor = new Color32(0xFF, 0xFF, 0xFF, 0xFF);
+                    {
+                        linesUtilsAlt.CenterLineColor = new Color32(0x00, 0xFF, 0x00, 0x00);
+                        laneState = LaneState.GREEN;
+                    }
+                        
                     else if (lane == Lane.OPPOSITE)
+                    {
                         linesUtilsAlt.CenterLineColor = new Color32(0xFF, 0x00, 0x00, 0xFF);
-                    linesUtilsAlt.DrawCenterLine(carTf, MonitorLane(curvySpline.GetTangentFast(carTf)), curvySpline);
+                        laneState = LaneState.RED;
+                    }
+                        
+                    linesUtilsAlt.DrawCenterLine(carTf, MonitorLane(curvySpline.GetTangentFast(carTf)), curvySpline, ResourceHandler.instance.sprites[33].texture);
                 }
             }
+            else
+                laneState = LaneState.GREEN;
         }
     }
 
     void CreatePathEnhanced()
     {
-        pathEnhanced = Instantiate(prefabs[10]);
+        pathEnhanced = Instantiate(ResourceHandler.instance.prefabs[13]);
     }
 
     void CreateCenterLine()
     {
-        centerLine = Instantiate(prefabs[8]);
+        centerLine = Instantiate(ResourceHandler.instance.prefabs[11]);
     }
+
+    void SetDashBoardColor(float dist, float normFactor)
+    {
+        float value = Mathf.Clamp(dist / normFactor, 0.0f, 1.0f);
+        if (value <= 0.4f)
+            laneState = LaneState.RED;
+        else if (value > 0.4f && value <= 0.8f)
+            laneState = LaneState.YELLOW;
+        else
+            laneState = LaneState.GREEN;
+    }
+
 
 
 }

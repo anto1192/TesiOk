@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class RiskAssessment
+public class RiskAssessmentSelective
 {
     private LinesUtils linesUtils;
     private Transform rayCastPos;
@@ -18,7 +18,7 @@ public class RiskAssessment
     private AnimationCurve infoTagResize;
     private VisualisationVars visualisationVars;
 
-    public RiskAssessment(Vector3 infoTagStartScale, DriverCamera driverCam, AnimationCurve infoTagResize, Transform rayCastPos, GameObject gameObject, LayerMask mask, LinesUtils linesUtils)
+    public RiskAssessmentSelective(Vector3 infoTagStartScale, DriverCamera driverCam, AnimationCurve infoTagResize, Transform rayCastPos, GameObject gameObject, LayerMask mask, LinesUtils linesUtils)
     {
         this.infoTagStartScale = infoTagStartScale;
         this.driverCam = driverCam;
@@ -85,6 +85,7 @@ public class RiskAssessment
                     animTag.SetBool("BlinkLoop", false);
 
                     
+
                 }
             }
             else
@@ -95,6 +96,7 @@ public class RiskAssessment
                 animTag.SetBool("BlinkLoop", false);
 
                 
+
             }
         }
         else
@@ -105,6 +107,7 @@ public class RiskAssessment
             animTag.SetBool("BlinkLoop", false);
 
             
+
         }
 
     } //this is for static objects. In order to show a smooth vanishing when exiting the gradient state I can do a fading animation and control it by a bool that is set in the gradient if and reset after the animation has been played
@@ -120,11 +123,6 @@ public class RiskAssessment
         Animator anim = cubesAndTags.infoTag[i].GetComponent<Animator>();
         AudioSource audio = cubesAndTags.boundingCube[i].GetComponent<AudioSource>();
 
-        cubeRend.enabled = true;
-        canvas.enabled = true;
-
-        UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
-
         float viewAngle = 5f;
 
         if (dstToTarget <= 8f)
@@ -137,8 +135,8 @@ public class RiskAssessment
 
             if (dist <= 6.0f) //and I am located near the line that defines the intersection. This second condition is necessary since hasNextEntry is set earlier, not in correspondence with the line of the crossing.
             {
-                cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
-                cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
+                cubeRend.enabled = false;
+                canvas.enabled = false;
 
                 anim.SetBool("BlinkLoop", false);
 
@@ -167,15 +165,20 @@ public class RiskAssessment
                     cubeRend.material.SetColor("_Color1", topColor);
                     cubeRend.material.SetColor("_Color2", bottomColor);
 
+                    cubeRend.enabled = true;
+                    canvas.enabled = true;
+                    UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
+
                     anim.SetFloat("Multiplier", 3.0f);
                     anim.SetBool("BlinkLoop", blink);
 
                     PlayAudio(audio, dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), cubesAndTags);
+
                 }
                 else
                 {
-                    cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
-                    cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
+                    cubeRend.enabled = false;
+                    canvas.enabled = false;
 
                     anim.SetBool("BlinkLoop", false);
 
@@ -186,20 +189,20 @@ public class RiskAssessment
             }
             else
             {
-                cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
-                cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
+                cubeRend.enabled = false;
+                canvas.enabled = false;
 
                 anim.SetBool("BlinkLoop", false);
 
-               
+                
 
                 cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
             }
         }
         else
         {
-            cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
-            cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
+            cubeRend.enabled = false;
+            canvas.enabled = false;
 
             anim.SetBool("BlinkLoop", false);
 
@@ -215,8 +218,6 @@ public class RiskAssessment
         float dstToTarget = Vector3.Distance(rayCastPos.position, targetPoint);
         Renderer cubeRend = cubesAndTags.boundingCube[i].GetComponent<Renderer>();
         Canvas canvas = cubesAndTags.infoTag[i].GetComponent<Canvas>();
-        cubeRend.enabled = true;
-        canvas.enabled = true;
 
         UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
 
@@ -235,26 +236,27 @@ public class RiskAssessment
             Debug.DrawLine(rayCastPos.position, intersection3D, Color.black);
             float distToWarn = rigidbody.velocity.magnitude * ResourceHandler.instance.visualisationVars.freeRunningTime + 0.5f * (Mathf.Pow(rigidbody.velocity.magnitude, 2) / ResourceHandler.instance.visualisationVars.systemAccSF); //DARIO
 
-            if (dstToTarget <= /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarn)
+            if (dstToTarget <= distToWarn)
             {
                 float distToWarnEncoded = Mathf.Pow(distToWarn, 2.5f);
                 float dstToTargetEncoded = Mathf.Pow(dstToTarget, 2.5f);
                 bool blink = false;
-                Color32 topColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarnEncoded), ref blink, ref cubesAndTags);
+                Color32 topColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), ref blink, ref cubesAndTags);
                 topColor.a = 0;
-                Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarnEncoded), ref blink, ref cubesAndTags);
+                Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), ref blink, ref cubesAndTags);
                 bottomColor.a = 0x51;
                 cubeRend.material.SetColor("_Color1", topColor);
                 cubeRend.material.SetColor("_Color2", bottomColor);
+                cubeRend.enabled = true;
+                canvas.enabled = true;
+                UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
 
                 anim.SetFloat("Multiplier", 3.0f);
                 anim.SetBool("BlinkLoop", blink);
 
-                Debug.Log("obstacle is: " + cubesAndTags.other.name + dstToTargetEncoded / /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarnEncoded);
+                PlayAudio(audio, dstToTargetEncoded / distToWarnEncoded, cubesAndTags);
 
-                PlayAudio(audio, dstToTargetEncoded / /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarnEncoded, cubesAndTags);
-
-                cubesAndTags.prevState = dstToTargetEncoded / /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarnEncoded;
+                cubesAndTags.prevState = dstToTargetEncoded / distToWarnEncoded;
 
                 cubesAndTags.gradient = CubesAndTags.Gradient.ON;
             }
@@ -270,7 +272,6 @@ public class RiskAssessment
                 else
                     value = 1;
 
-                Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
                 Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
                 Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
 
@@ -284,7 +285,11 @@ public class RiskAssessment
                 cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
 
                 if (cubesAndTags.prevState >= 0.99f)
+                {
                     cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
+                    cubeRend.enabled = false;
+                    canvas.enabled = false;
+                }
             }
         }
         else
@@ -299,7 +304,6 @@ public class RiskAssessment
             else
                 value = 1;
 
-            Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
             Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
             Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
 
@@ -313,8 +317,12 @@ public class RiskAssessment
             cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
 
             if (cubesAndTags.prevState >= 0.99f)
+            {
                 cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
-        }
+                cubeRend.enabled = false;
+                canvas.enabled = false;
+            }    
+        }   
     }//this is for dynamic objects
 
     public void BoundingCubeLerperScooterSF(CubesAndTags cubesAndTags, Bounds bounds, float obstacleSpeed, Sprite sprite, Vector3 trasl, int i)
@@ -324,10 +332,6 @@ public class RiskAssessment
         Vector3 dirToTarget = (targetPoint - rayCastPos.transform.position);
         Renderer cubeRend = cubesAndTags.boundingCube[i].GetComponent<Renderer>();
         Canvas canvas = cubesAndTags.infoTag[i].GetComponent<Canvas>();
-        cubeRend.enabled = true;
-        canvas.enabled = true;
-
-        UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
 
         Animator anim = cubesAndTags.infoTag[i].GetComponent<Animator>();
         AudioSource audio = cubesAndTags.boundingCube[i].GetComponent<AudioSource>();
@@ -357,15 +361,20 @@ public class RiskAssessment
                         cubeRend.material.SetColor("_Color1", topColor);
                         cubeRend.material.SetColor("_Color2", bottomColor);
 
+                        cubeRend.enabled = true;
+                        canvas.enabled = true;
+                        UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
+
                         anim.SetFloat("Multiplier", 3.0f);
                         anim.SetBool("BlinkLoop", blink);
 
                         PlayAudio(audio, dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), cubesAndTags);
+
                     }
                     else
                     {
-                        cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
-                        cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
+                        cubeRend.enabled = false;
+                        canvas.enabled = false;
 
                         anim.SetBool("BlinkLoop", false);
 
@@ -376,8 +385,8 @@ public class RiskAssessment
                 }
                 else
                 {
-                    cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
-                    cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
+                    cubeRend.enabled = false;
+                    canvas.enabled = false;
 
                     anim.SetBool("BlinkLoop", false);
 
@@ -401,15 +410,20 @@ public class RiskAssessment
                 cubeRend.material.SetColor("_Color1", topColor);
                 cubeRend.material.SetColor("_Color2", bottomColor);
 
+                cubeRend.enabled = true;
+                canvas.enabled = true;
+                UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
+
                 anim.SetFloat("Multiplier", 3.0f);
                 anim.SetBool("BlinkLoop", blink);
 
                 PlayAudio(audio, dstToTarget / ResourceHandler.instance.visualisationVars.DangerousCarDistToWarn, cubesAndTags);
+
             }
             else
             {
-                cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
-                cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
+                cubeRend.enabled = false;
+                canvas.enabled = false;
 
                 anim.SetBool("BlinkLoop", false);
 
@@ -420,398 +434,16 @@ public class RiskAssessment
         }
         else
         {
-            cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
-            cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
+            cubeRend.enabled = false;
+            canvas.enabled = false;
 
             anim.SetBool("BlinkLoop", false);
 
-           
+            
 
             cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
         }
     } //this is for dynamic objects (scooter)
-
-
-
-    public void BoundingCubeLerperPCH(CubesAndTags cubesAndTags, Bounds bounds, Sprite sprite, Vector3 trasl, int i)
-    {
-        Renderer cubeRend = cubesAndTags.boundingCube[i].GetComponent<Renderer>();
-        Canvas canvas = cubesAndTags.infoTag[i].GetComponent<Canvas>();
-        Vector3 targetPoint = cubesAndTags.other.transform.position;
-        Vector3 dirToTarget = (targetPoint - rayCastPos.transform.position);
-        Animator animTag = cubesAndTags.infoTag[i].GetComponent<Animator>();
-        Animator animCube = cubesAndTags.boundingCube[i].GetComponent<Animator>();
-        AudioSource audio = cubesAndTags.boundingCube[i].GetComponent<AudioSource>();
-
-        float dstToTarget = Vector3.Distance(rayCastPos.position, targetPoint);
-        float viewAngle = 15f;
-
-        if (dstToTarget <= 8f)
-            viewAngle = 25f;
-
-        if (Vector3.Angle(rayCastPos.TransformDirection(Vector3.forward), dirToTarget) < viewAngle / 2)
-        {
-            if (Physics.Raycast(rayCastPos.position, dirToTarget, dstToTarget, mask))
-            {
-                float distToWarn = RiskAssessmentFormulaD(rigidbody.velocity.magnitude, 0, 0, dstToTarget, ResourceHandler.instance.visualisationVars.systemAccStaticPCH); //velocity component of obstacles is null since they are orthogonal to the playerCar
-                if (dstToTarget <= Mathf.Abs(distToWarn) && Mathf.Abs(vehicleController.steerInput) == 0f)
-                {
-                    Debug.DrawLine(rayCastPos.position, targetPoint, Color.red);
-                    float distToWarnEncoded = Mathf.Pow(distToWarn, 2.5f);
-                    float dstToTargetEncoded = Mathf.Pow(dstToTarget, 2.5f);
-                    bool blink = false;
-                    Color32 topColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), ref blink, ref cubesAndTags);
-                    topColor.a = 0;
-                    Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), ref blink, ref cubesAndTags);
-                    bottomColor.a = 0x51;
-                    cubeRend.material.SetColor("_Color1", topColor);
-                    cubeRend.material.SetColor("_Color2", bottomColor);
-                    cubeRend.enabled = true;
-                    canvas.enabled = true;
-
-                    cubesAndTags.alreadyEvaluated = true;
-
-                    animTag.SetFloat("Multiplier", 3.0f);
-                    animTag.SetBool("BlinkLoop", blink);
-
-                    PlayAudio(audio, dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), cubesAndTags);
-
-                    UpdateInfoTag(cubesAndTags, bounds, "0", sprite, dstToTarget, trasl, i);
-
-                    //cubesAndTags.prevState = dstToTargetEncoded / Mathf.Abs(distToWarnEncoded);
-                }
-                else
-                {
-                    cubeRend.enabled = false;
-                    canvas.enabled = false;
-
-                    animTag.SetBool("BlinkLoop", false);
-
-
-                }
-            }
-            else
-            {
-                cubeRend.enabled = false;
-                canvas.enabled = false;
-
-                animTag.SetBool("BlinkLoop", false);
-
-
-            }
-        }
-        else
-        {
-            cubeRend.enabled = false;
-            canvas.enabled = false;
-
-            animTag.SetBool("BlinkLoop", false);
-
-
-        }
-    } //this is for static objects. OK!
-
-    public void BoundingCubeLerperPCH(CubesAndTags cubesAndTags, Bounds bounds, float obstacleSpeed, float acceleration, Sprite sprite, Vector3 trasl, int i)
-    {
-        Vector3 targetPoint = cubesAndTags.other.transform.position;
-        Vector3 dirToTarget = (targetPoint - rayCastPos.transform.position);
-        float dstToTarget = Vector3.Distance(rayCastPos.position, targetPoint);
-        Renderer cubeRend = cubesAndTags.boundingCube[i].GetComponent<Renderer>();
-        Canvas canvas = cubesAndTags.infoTag[i].GetComponent<Canvas>();
-        cubeRend.enabled = true;
-        canvas.enabled = true;
-
-        UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
-
-        Animator anim = cubesAndTags.infoTag[i].GetComponent<Animator>();
-        AudioSource audio = cubesAndTags.boundingCube[i].GetComponent<AudioSource>();
-
-        float viewAngle = 45f;
-
-        if (dstToTarget <= 20f)
-            viewAngle = 25f;
-
-        if (Vector3.Angle(rayCastPos.TransformDirection(Vector3.forward), dirToTarget) < viewAngle / 2) //the car is in front of me
-        {
-            if (Physics.Raycast(rayCastPos.position, dirToTarget, dstToTarget, mask))
-            {
-                float distToWarn = RiskAssessmentFormulaD(rigidbody.velocity.magnitude, obstacleSpeed, 0, dstToTarget, ResourceHandler.instance.visualisationVars.systemAccPCH); //velocity component of obstacles is null since they are orthogonal to the playerCar
-                if (dstToTarget <= Mathf.Abs(distToWarn))
-                {
-                    float distToWarnEncoded = Mathf.Pow(distToWarn, 2.5f);
-                    float dstToTargetEncoded = Mathf.Pow(dstToTarget, 2.5f);
-                    bool blink = false;
-                    Color32 topColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), ref blink, ref cubesAndTags);
-                    topColor.a = 0;
-                    Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), ref blink, ref cubesAndTags);
-                    bottomColor.a = 0x51;
-                    cubeRend.material.SetColor("_Color1", topColor);
-                    cubeRend.material.SetColor("_Color2", bottomColor);
-                    cubeRend.enabled = true;
-                    canvas.enabled = true;
-
-                    anim.SetFloat("Multiplier", 3.0f);
-                    anim.SetBool("BlinkLoop", blink);
-
-                    PlayAudio(audio, dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), cubesAndTags);
-
-                    UpdateInfoTag(cubesAndTags, bounds, "0", sprite, dstToTarget, trasl, i);
-
-                    //cubesAndTags.prevState = dstToTargetEncoded / Mathf.Abs(distToWarnEncoded);
-
-                }
-                else
-                {
-                    cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
-                    cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
-
-                    anim.SetBool("BlinkLoop", false);
-
-
-
-                    cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
-                }
-            }
-            else
-            {
-                cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
-                cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
-
-                anim.SetBool("BlinkLoop", false);
-
-
-
-                cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
-            }
-        }
-        else
-        {
-            cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
-            cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
-
-            anim.SetBool("BlinkLoop", false);
-
-
-
-
-            cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
-        }
-    } //this is for dynamic objects
-
-    public void BoundingCubeLerperObstaclePCH(CubesAndTags cubesAndTags, Bounds bounds, float obstacleSpeed, float acceleration, Sprite sprite, Vector3 trasl, int i)
-    {
-        Vector3 targetPoint = cubesAndTags.other.transform.position;
-        Vector3 heading = (targetPoint - rayCastPos.position).normalized; //direction from PlayerCar to Obstacle
-        float dot = Vector3.Dot(rayCastPos.transform.forward, heading); //cosine of angle between heading and direction of PlayerCar
-        float dstToTarget = Vector3.Distance(rayCastPos.position, targetPoint);
-
-        Renderer cubeRend = cubesAndTags.boundingCube[i].GetComponent<Renderer>();
-        Canvas canvas = cubesAndTags.infoTag[i].GetComponent<Canvas>();
-        cubeRend.enabled = true;
-        canvas.enabled = true;
-
-        UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
-
-        Animator anim = cubesAndTags.infoTag[i].GetComponent<Animator>();
-        AudioSource audio = cubesAndTags.boundingCube[i].GetComponent<AudioSource>();
-
-        float distToCollision = dstToTarget * dot; //this is the distance from PlayerCar to the endPoint of the triangle cathetus
-        Debug.DrawLine(rayCastPos.position, targetPoint, Color.blue);
-        Vector3 endPoint = rayCastPos.position + (rayCastPos.transform.forward * distToCollision);
-        Debug.DrawLine(rayCastPos.position, endPoint, Color.blue);
-
-        Vector3 obstacleHeading = endPoint - targetPoint; //this is to understand if the obstacle has passed the endPoint
-        if (Vector3.Dot(obstacleHeading, cubesAndTags.other.transform.forward) > 0) //endPoint is in front of me
-        {
-            float distToWarn = rigidbody.velocity.magnitude * ResourceHandler.instance.visualisationVars.freeRunningTime + 0.5f * (Mathf.Pow(rigidbody.velocity.magnitude, 2) / ResourceHandler.instance.visualisationVars.systemAccPCH); //DARIO
-            if (dstToTarget <= ResourceHandler.instance.visualisationVars.obstacleDistToWarn)
-            {
-                bool blink = false;
-                Color32 topColor = linesUtils.ChangeMatByDistance(dstToTarget / distToWarn/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/, ref blink, ref cubesAndTags);
-                topColor.a = 0;
-                Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTarget / distToWarn/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/, ref blink, ref cubesAndTags);
-                bottomColor.a = 0x51;
-                cubeRend.material.SetColor("_Color1", topColor);
-                cubeRend.material.SetColor("_Color2", bottomColor);
-
-                anim.SetFloat("Multiplier", 3.0f);
-                anim.SetBool("BlinkLoop", blink);
-
-                PlayAudio(audio, dstToTarget / distToWarn/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/, cubesAndTags);
-
-
-
-                cubesAndTags.prevState = dstToTarget / distToWarn/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/;
-
-                cubesAndTags.gradient = CubesAndTags.Gradient.ON;
-            }
-            else
-            {
-                bool blink = false;
-                float value = 0f;
-                if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
-                {
-                    value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
-                    cubesAndTags.prevState = value;
-                }
-                else
-                    value = 1;
-
-                Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
-                Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
-                Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
-
-                topColor.a = 0;
-                bottomColor.a = 0x51;
-                cubeRend.material.SetColor("_Color1", topColor);
-                cubeRend.material.SetColor("_Color2", bottomColor);
-
-                anim.SetBool("BlinkLoop", false);
-
-
-
-                cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
-
-                if (value == 1)
-                    cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
-            }
-        }
-        else
-        {
-            bool blink = false;
-            float value = 0f;
-            if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
-            {
-                value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
-                cubesAndTags.prevState = value;
-            }
-            else
-                value = 1;
-
-            Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
-            Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
-            Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
-
-            topColor.a = 0;
-            bottomColor.a = 0x51;
-            cubeRend.material.SetColor("_Color1", topColor);
-            cubeRend.material.SetColor("_Color2", bottomColor);
-
-            anim.SetBool("BlinkLoop", false);
-
-
-
-            cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
-
-            if (value == 1)
-                cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
-        }
-    } //this is for dynamic objects
-
-    public void BoundingCubeLerperDangerousCarPCH(CubesAndTags cubesAndTags, Bounds bounds, float obstacleSpeed, float distToWarn, float viewAngle, Sprite sprite, Vector3 trasl, int i)
-    {
-        Vector3 targetPoint = cubesAndTags.other.transform.position;
-        Vector3 dirToTarget = (targetPoint - rayCastPos.transform.position);
-        float dstToTarget = Vector3.Distance(rayCastPos.position, targetPoint);
-
-        Renderer cubeRend = cubesAndTags.boundingCube[i].GetComponent<Renderer>();
-        Canvas canvas = cubesAndTags.infoTag[i].GetComponent<Canvas>();
-        cubeRend.enabled = true;
-        canvas.enabled = true;
-
-        UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
-
-        Animator anim = cubesAndTags.infoTag[i].GetComponent<Animator>();
-        AudioSource audio = cubesAndTags.boundingCube[i].GetComponent<AudioSource>();
-
-        if (Vector3.Angle(rayCastPos.TransformDirection(Vector3.forward), dirToTarget) < ResourceHandler.instance.visualisationVars.viewAngle / 2)
-        {
-            if (dstToTarget <= distToWarn)
-            {
-                float distToWarnEncoded = Mathf.Pow(distToWarn, 2.5f);
-                float dstToTargetEncoded = Mathf.Pow(dstToTarget, 2.5f);
-                bool blink = false;
-                Color32 topColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), ref blink, ref cubesAndTags);
-                topColor.a = 0;
-                Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), ref blink, ref cubesAndTags);
-                bottomColor.a = 0x51;
-                cubeRend.material.SetColor("_Color1", topColor);
-                cubeRend.material.SetColor("_Color2", bottomColor);
-
-                anim.SetFloat("Multiplier", 3.0f);
-                anim.SetBool("BlinkLoop", blink);
-
-                PlayAudio(audio, dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), cubesAndTags);
-
-
-
-                cubesAndTags.prevState = dstToTargetEncoded / Mathf.Abs(distToWarnEncoded);
-
-                cubesAndTags.gradient = CubesAndTags.Gradient.ON;
-            }
-            else
-            {
-                bool blink = false;
-                float value = 0f;
-                if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
-                {
-                    value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
-                    cubesAndTags.prevState = value;
-                }
-                else
-                    value = 1;
-
-                Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
-                Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
-                Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
-
-                topColor.a = 0;
-                bottomColor.a = 0x51;
-                cubeRend.material.SetColor("_Color1", topColor);
-                cubeRend.material.SetColor("_Color2", bottomColor);
-
-                anim.SetBool("BlinkLoop", false);
-
-
-
-                cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
-
-                if (value == 1)
-                    cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
-            }
-        }
-        else
-        {
-            bool blink = false;
-            float value = 0f;
-            if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
-            {
-                value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
-                cubesAndTags.prevState = value;
-            }
-            else
-                value = 1;
-
-            Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
-            Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
-            Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
-
-            topColor.a = 0;
-            bottomColor.a = 0x51;
-            cubeRend.material.SetColor("_Color1", topColor);
-            cubeRend.material.SetColor("_Color2", bottomColor);
-
-            anim.SetBool("BlinkLoop", false);
-
-
-
-            cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
-
-            if (value == 1)
-                cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
-        }
-    } //this is for dynamic objects
-
 
 
 
@@ -912,7 +544,7 @@ public class RiskAssessment
             {
                 audio.PlayOneShot(ResourceHandler.instance.audioClips[9]);
                 cubesAndTags.alreadyPlayed = true;
-            } 
+            }
         }
     }
 }

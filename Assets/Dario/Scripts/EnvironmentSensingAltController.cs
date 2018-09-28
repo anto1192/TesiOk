@@ -8,7 +8,7 @@ public class EnvironmentSensingAltController : MonoBehaviour
     private Environment selectedEnv = Environment.NONE;
     
     private EnvironmentSensingAltTrigger envSensing;
-    private EnvironmentSensingAltUrbanTrigger envSensingUrban;
+    private EnvironmentSensingAltUrbanTriggerSelective envSensingUrban;
 
     private float radius = 150;
 
@@ -53,7 +53,7 @@ public class EnvironmentSensingAltController : MonoBehaviour
             
             transform.gameObject.AddComponent<PlayerCarLinesUrban>();
 
-            envSensingUrban = ColliderEnv.transform.gameObject.AddComponent<EnvironmentSensingAltUrbanTrigger>();
+            envSensingUrban = ColliderEnv.transform.gameObject.AddComponent<EnvironmentSensingAltUrbanTriggerSelective>();
             envSensingUrban.DriverCam = driverCam;
             envSensingUrban.LeapCam = leapCam;
             envSensingUrban.enabled = true;
