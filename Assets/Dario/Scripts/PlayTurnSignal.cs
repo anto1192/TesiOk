@@ -4,13 +4,9 @@ using UnityEngine;
 
 public class PlayTurnSignal : MonoBehaviour {
 
-    private bool hasPlayedON = false;
-    private bool hasPlayedOFF = false;
     private DashBoardControllerUrban dashBoardUrban;
-
     private AudioSource turnAudioSource;
 
-   
     void Start ()
     {
         turnAudioSource = transform.GetComponent<AudioSource>();
