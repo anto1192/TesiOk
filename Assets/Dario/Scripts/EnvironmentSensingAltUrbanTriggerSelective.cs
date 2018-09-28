@@ -9,12 +9,12 @@ using System.Linq;
 using TMPro;
 
 
-public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
+public class EnvironmentSensingAltUrbanTriggerSelective : MonoBehaviour
 {
     private bool dashORHud = false; //enable/disable dash
 
     private LinesUtils linesUtils = new LinesUtils();
-    private RiskAssessment riskAssessment;
+    private RiskAssessmentSelective RiskAssessmentSelective;
     private TrafficLightContainer trafLight; //this is to track the last trafficLight
 
     private Vector3 infoTagStartScale = Vector3.zero;
@@ -27,7 +27,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
     private Dictionary<string, int> CSVSignDictionary = new Dictionary<string, int>(); //this is to store the precomputed values of angle(speed)
 
     private Quaternion rot0; //this is to store the initial rotation of the needle
-    
+
     private LayerMask mask;
 
     private Transform rayCastPos;
@@ -39,7 +39,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
 
     public DriverCamera DriverCam { set { driverCam = value; } }
     public GameObject LeapCam { set { leapCam = value; } }
-    public Transform RayCastPos { get { return rayCastPos; }}
+    public Transform RayCastPos { get { return rayCastPos; } }
     public Rigidbody Rb { get { return rb; } }
     public VehicleController Vc { get { return vehicleController; } }
     public LayerMask Mask { get { return mask; } }
@@ -63,13 +63,13 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
 
         StartCoroutine(CleanObjects(0.25f));
 
-        riskAssessment = new RiskAssessment(infoTagStartScale, driverCam, infoTagResize, rayCastPos, gameObject, mask, linesUtils);
+        RiskAssessmentSelective = new RiskAssessmentSelective(infoTagStartScale, driverCam, infoTagResize, rayCastPos, gameObject, mask, linesUtils);
     }
 
     void Update()
     {
         SetSpeed();
-        
+
         EnvironmentDetect();
 
         if (Input.GetKeyDown(KeyCode.D))
@@ -82,105 +82,12 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
         PlayNearestAudio();
     }
 
-    //void OnDrawGizmos()
-    //{
-    //    //DebugExtension.DrawCone(rayCastPos.position, rayCastPos.forward * 150f, Color.magenta, 15);
-    //}
-
     void OnTriggerEnter(Collider other)
     {
         if (((1 << other.gameObject.layer) & mask) != 0) //matched one!
         {
             switch (other.gameObject.layer)
             {
-                case 16:
-                    {
-                        Bounds bounds = new Bounds();
-                        if (other.transform.CompareTag("ParkedCar"))
-                        {
-                            BoxCollider boxCol = other as BoxCollider;
-                            bounds.center = Quaternion.Euler(other.transform.localEulerAngles) * boxCol.center;
-                            bounds.size = boxCol.size;
-                            GameObject boundingCube = CreateBoundingCube(other.transform, other.transform.position + bounds.center, bounds.size);
-                            GameObject infoTag = null;
-                            infoTag = CreateInfoTag(other.transform.position + bounds.center);
-                            UpdateIDsAndGos(boundingCube, infoTag, other, bounds);
-                        }
-                        else if (other.transform.CompareTag("Sign"))
-                        {
-                            BoxCollider boxCol = other as BoxCollider;
-                            bounds.center = boxCol.center;
-                            bounds.size = boxCol.size * 1.25f;
-                            GameObject boundingCube = CreateBoundingCube(other.transform, other.transform.position + bounds.center, bounds.size);
-                            GameObject infoTagSign = CreateInfoTagSign(other.transform.position + bounds.center);
-                            UpdateIDsAndGos(boundingCube, infoTagSign, other, bounds);
-                        }
-                        switch (other.transform.name)
-                        {
-                            case "streetlight":
-                                {
-                                    CapsuleCollider capsCol = other as CapsuleCollider;
-                                    bounds.center = Quaternion.Euler(other.transform.localEulerAngles) * capsCol.center;
-                                    bounds.size = new Vector3(capsCol.radius * 4.0f, capsCol.radius * 4.0f, capsCol.height);
-                                    GameObject boundingCube = CreateBoundingCube(other.transform, other.transform.position + bounds.center, bounds.size);
-                                    GameObject infoTag = null;
-                                    infoTag = CreateInfoTag(other.transform.position + bounds.center);
-                                    UpdateIDsAndGos(boundingCube, infoTag, other, bounds);
-                                }
-                                break;
-                            case "tree_dec01":
-                                {
-                                    Transform oldParent = other.transform.parent;
-                                    other.transform.parent = null; //I am forced to unparent since I can't take into account the parent scale in the bounding box computation
-                                    CapsuleCollider capsCol = other as CapsuleCollider;
-                                    bounds.center = Quaternion.Euler(other.transform.localEulerAngles) * new Vector3(capsCol.center.x * other.transform.localScale.x, capsCol.center.y * other.transform.localScale.y, capsCol.center.z * other.transform.localScale.z);
-                                    bounds.size = new Vector3(capsCol.radius * 2.0f * other.transform.localScale.x, capsCol.radius * 2.0f * other.transform.localScale.y, capsCol.height * other.transform.localScale.z);
-                                    other.transform.parent = oldParent;
-                                    GameObject boundingCube = CreateBoundingCube(other.transform, other.transform.position + bounds.center, bounds.size);
-                                    GameObject infoTag = null;
-                                    infoTag = CreateInfoTag(other.transform.position + bounds.center);
-                                    UpdateIDsAndGos(boundingCube, infoTag, other, bounds);
-                                }
-                                break;
-
-                            case "Post":
-                                {
-                                    BoxCollider boxCol = other as BoxCollider;
-                                    bounds.center = Quaternion.Euler(other.transform.localEulerAngles) * new Vector3(boxCol.center.x * other.transform.localScale.x, boxCol.center.y * other.transform.localScale.y, boxCol.center.z * other.transform.localScale.z);
-                                    bounds.size = new Vector3(boxCol.size.x * other.transform.localScale.x * 3.0f, boxCol.size.y * other.transform.localScale.y, boxCol.size.z * other.transform.localScale.z * 3.0f);
-                                    GameObject boundingCube = CreateBoundingCube(other.transform, other.transform.position + bounds.center, bounds.size);
-                                    GameObject infoTag = null;
-                                    infoTag = CreateInfoTag(other.transform.position + bounds.center);
-                                    UpdateIDsAndGos(boundingCube, infoTag, other, bounds);
-                                }
-                                break;
-
-                            case "Dumpster":
-
-                            case "busstop":
-
-                            case "barrier_concrete":
-
-                            case "barrier_metal":
-
-                            case "Lamppost":
-
-                            case "Table_For2":
-
-                            case "Table_For4":
-                                {
-                                    BoxCollider boxCol = other as BoxCollider;
-                                    bounds.center = Quaternion.Euler(other.transform.localEulerAngles) * new Vector3(boxCol.center.x * other.transform.localScale.x, boxCol.center.y * other.transform.localScale.y, boxCol.center.z * other.transform.localScale.z);
-                                    bounds.size = new Vector3(boxCol.size.x * other.transform.localScale.x, boxCol.size.y * other.transform.localScale.y, boxCol.size.z * other.transform.localScale.z);
-                                    GameObject boundingCube = CreateBoundingCube(other.transform, other.transform.position + bounds.center, bounds.size);
-                                    GameObject infoTag = null;
-                                    infoTag = CreateInfoTag(other.transform.position + bounds.center);
-                                    UpdateIDsAndGos(boundingCube, infoTag, other, bounds);
-                                }
-                                break;
-                        }
-                    }
-                    break;
                 case 17:
                     { //Signage
                         Bounds bounds = new Bounds();
@@ -194,18 +101,19 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                         bounds.size = boxCol.size * 1.25f;
                         GameObject boundingCube = CreateBoundingCube(other.transform, other.transform.position + bounds.center, bounds.size);
                         GameObject infoTagSign = CreateInfoTagSign(other.transform.position + bounds.center);
-                        UpdateIDsAndGos(boundingCube, infoTagSign, other, bounds);  
+                        UpdateIDsAndGos(boundingCube, infoTagSign, other, bounds);
                     }
                     break;
                 case 12:
                     {  //obstacle
-                        
+
                         Bounds bounds = new Bounds();
                         GameObject boundingCube = null;
                         GameObject infoTag = null;
-                        if  (other.transform.root.CompareTag("TrafficCar"))
+                        if (other.transform.root.CompareTag("TrafficCar"))
                         {
-                            if (other.transform.name.Equals("Body1")) {
+                            if (other.transform.name.Equals("Body1"))
+                            {
                                 bounds = ComputeBounds(other.transform.root);
                                 try
                                 {
@@ -215,12 +123,13 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                 {
                                     Debug.Log("object incriminated is: " + other.transform.position);
                                 }
-                                
+
                                 infoTag = CreateInfoTag(other.transform.position + bounds.center);
                                 UpdateIDsAndGos(boundingCube, infoTag, other, bounds);
-                                other.transform.root.gameObject.AddComponent<TrafficCarNavigationLineUrban>();
+                                TrafficCarNavigationLineUrban trafficCarNavigationLineUrban = other.transform.root.gameObject.AddComponent<TrafficCarNavigationLineUrban>();
+                                trafficCarNavigationLineUrban.enabled = false;
                             }
-                        }   
+                        }
                         else
                         {
                             bounds = ComputeBounds(other.transform);
@@ -232,7 +141,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                             {
                                 Debug.Log("object incriminated is: " + other.transform.position);
                             }
-                            
+
                             infoTag = CreateInfoTag(other.transform.position + bounds.center);
                             UpdateIDsAndGos(boundingCube, infoTag, other, bounds);
                         }
@@ -248,7 +157,8 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                             GameObject infoTag = null;
                             infoTag = CreateInfoTag(other.transform.position + bounds.center);
                             UpdateIDsAndGos(boundingCube, infoTag, other, bounds);
-                            other.transform.root.gameObject.AddComponent<TrafficCarNavigationLineUrban>();
+                            TrafficCarNavigationLineUrban trafficCarNavigationLineUrban = other.transform.root.gameObject.AddComponent<TrafficCarNavigationLineUrban>();
+                            trafficCarNavigationLineUrban.enabled = false;
                         }
                     }
                     break;
@@ -350,7 +260,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
 
             case "tree_dec01":
                 {
-                    
+
                     trasl = new Vector3(0, -Mathf.Abs(trasl.z) * 0.25f, Mathf.Abs(trasl.x));
                 }
                 break;
@@ -470,7 +380,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
         {
             Vector3 obstacleNextPos = cubesAndTags.other.transform.position;
             cubesAndTags.obstaclePrevSpeed = (obstacleNextPos - cubesAndTags.obstaclePrevPos).magnitude / (t - cubesAndTags.obstaclePrevTime); //speed works in play mode, in editor mode since you stop playing, Time.deltatime gives erratic results
-            cubesAndTags.obstaclePrevPos = obstacleNextPos; 
+            cubesAndTags.obstaclePrevPos = obstacleNextPos;
             cubesAndTags.obstaclePrevTime = t;
             cubesAndTags.obstacleNextTime = t + 0.5f;
             return cubesAndTags.obstaclePrevSpeed;
@@ -526,7 +436,8 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                 }
                 IDsAndGos[other.gameObject.GetInstanceID()].DisableCubesAndTags();
                 IDsAndGos.Remove(other.gameObject.GetInstanceID());
-            } else if (other.gameObject.layer.Equals(LayerMask.NameToLayer("obstacle")))
+            }
+            else if (other.gameObject.layer.Equals(LayerMask.NameToLayer("obstacle")))
             {
                 IDsAndGos[other.gameObject.GetInstanceID()].DisableCubesAndTags();
                 IDsAndGos.Remove(other.gameObject.GetInstanceID());
@@ -648,13 +559,13 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                     }
                 }
             }
-        } 
+        }
     }
 
     void PlayNearestAudio()
     {
         List<CubesAndTags> audioIDsAndGos = IDsAndGos.Values.Where(x => x.boundingCube[0] != null).Where(x => x.boundingCube[0].GetComponent<AudioSource>().isPlaying == true).ToList();
-        
+
         CubesAndTags nearest = null; //nearest object whose AudioSource is playing
         float nearDist = 9999;
         foreach (var item in audioIDsAndGos)
@@ -698,62 +609,30 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
 
                 switch (objectsList[i].other.gameObject.layer)
                 {
-                    case 16:
-                        {
-                            Bounds bounds = objectsList[i].bounds[0];
-                            if (!objectsList[i].other.transform.CompareTag("Sign"))
-                            {
-                                Sprite sprite;
-                                if (objectsList[i].other.transform.name.Equals("tree_dec01"))
-                                    sprite = ResourceHandler.instance.sprites[17];
-                                else
-                                    sprite = objectsList[i].other.GetComponent<Image>().sprite;
-                               riskAssessment.BoundingCubeLerperSF(objectsList[i], bounds, sprite, ReturnTrasl(bounds, objectsList[i].other), 0);
-                                
-                            }
-                            else
-                            {
-                                float dotProduct = Vector3.Dot(gameObject.transform.TransformDirection(Vector3.forward), objectsList[i].other.transform.TransformDirection(Vector3.up));
-                                if (dotProduct >= -1 && dotProduct <= -0.707f)
-                                {
-                                    objectsList[i].boundingCube[0].GetComponent<Renderer>().enabled = true;
-                                    objectsList[i].infoTag[0].GetComponent<Canvas>().enabled = true;
-                                    int spriteIndex = CSVSignDictionary[objectsList[i].other.name];
-                                    riskAssessment.UpdateInfoTag(objectsList[i], bounds, "", ResourceHandler.instance.sprites[spriteIndex], dist, Vector3.zero, 0); 
-                                }
-                                else
-                                {
-                                    objectsList[i].boundingCube[0].GetComponent<Renderer>().enabled = false;
-                                    objectsList[i].infoTag[0].GetComponent<Canvas>().enabled = false;
-                                }
-                            }
-                        }
-                        break;
                     case 17: //Signage
                         {
                             float dotProduct = Vector3.Dot(gameObject.transform.TransformDirection(Vector3.forward), objectsList[i].other.transform.TransformDirection(Vector3.up));
                             Animator anim = objectsList[i].infoTag[0].GetComponent<Animator>();
                             if (dotProduct >= -1 && dotProduct <= -0.707f)
                             {
-                                Bounds bounds = objectsList[i].bounds[0];
-                                int spriteIndex = CSVSignDictionary[objectsList[i].other.name];
-                                objectsList[i].boundingCube[0].GetComponent<Renderer>().enabled = true;
-                                objectsList[i].infoTag[0].GetComponent<Canvas>().enabled = true;
-                                riskAssessment.UpdateInfoTag(objectsList[i], bounds, "", ResourceHandler.instance.sprites[spriteIndex], dist, Vector3.zero, 0);
-
-                                if (objectsList[i].other.transform.name.Equals("StopSign") || objectsList[i].other.transform.name.Equals("RoadWork"))
+                                if ((objectsList[i].other.transform.name.Equals("StopSign") || objectsList[i].other.transform.name.Equals("RoadWork")) && dist <= 40)
                                 {
-                                    if (dist <= 40)
-                                        anim.SetBool("Blink", true);
-                                    else
-                                        anim.SetBool("Blink", false);
+                                    Bounds bounds = objectsList[i].bounds[0];
+                                    int spriteIndex = CSVSignDictionary[objectsList[i].other.name];
+                                    objectsList[i].boundingCube[0].GetComponent<Renderer>().enabled = true;
+                                    objectsList[i].infoTag[0].GetComponent<Canvas>().enabled = true;
+                                    RiskAssessmentSelective.UpdateInfoTag(objectsList[i], bounds, "", ResourceHandler.instance.sprites[spriteIndex], dist, Vector3.zero, 0);
+                                    anim.SetBool("Blink", true);
+                                }
+                                else
+                                {
+                                    objectsList[i].boundingCube[0].GetComponent<Renderer>().enabled = false;
+                                    objectsList[i].infoTag[0].GetComponent<Canvas>().enabled = false;
+                                    anim.SetBool("Blink", false);
                                 }
                             }
                             else
                             {
-                                objectsList[i].boundingCube[0].GetComponent<Renderer>().enabled = false;
-                                objectsList[i].infoTag[0].GetComponent<Canvas>().enabled = false;
-
                                 if (objectsList[i].other.transform.name.Equals("StopSign") || objectsList[i].other.transform.name.Equals("RoadWork"))
                                     anim.SetBool("Blink", false);
                             }
@@ -763,16 +642,8 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                         {
                             Bounds bounds = objectsList[i].bounds[0];
                             Sprite sprite = objectsList[i].other.GetComponent<Image>().sprite;
-                            if (/*BOUNDINGCUBE*/objectsList[i].other.CompareTag("Obstacle"))
-                                riskAssessment.BoundingCubeLerperObstacleDefSF(objectsList[i], bounds, CalculateObstacleSpeed(objectsList[i]), 0, sprite, Vector3.zero, 0);
-                            else
-                            {
-                                Vector3 targetPoint = new Vector3(objectsList[i].other.transform.position.x, rayCastPos.transform.position.y, objectsList[i].other.transform.position.z);
-                                float dstToTarget = Vector3.Distance(rayCastPos.position, targetPoint);
-                                objectsList[i].boundingCube[0].GetComponent<Renderer>().enabled = true;
-                                objectsList[i].infoTag[0].GetComponent<Canvas>().enabled = true;
-                                riskAssessment.UpdateInfoTag(objectsList[i], bounds, Mathf.RoundToInt(CalculateObstacleSpeed(objectsList[i]) * 3.6f).ToString(), sprite, dstToTarget, Vector3.zero, 0);
-                            }
+                            if (objectsList[i].other.CompareTag("Obstacle"))
+                                RiskAssessmentSelective.BoundingCubeLerperObstacleDefSF(objectsList[i], bounds, CalculateObstacleSpeed(objectsList[i]), 0, sprite, Vector3.zero, 0);
                         }
                         break;
                     case 8:
@@ -785,10 +656,10 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                 float speed = trafAIMotor.currentSpeed;
                                 float acceleration = trafAIMotor.accelerazione;
                                 Sprite sprite = objectsList[i].other.GetComponent<Image>().sprite;
-                                if (/*BOUNDINGCUBE*/objectsList[i].other.transform.root.CompareTag("TrafficCar"))
-                                    riskAssessment.BoundingCubeLerperSF(objectsList[i], bounds, speed, acceleration, sprite, Vector3.zero, 0);
+                                if (objectsList[i].other.transform.root.CompareTag("TrafficCar"))
+                                    RiskAssessmentSelective.BoundingCubeLerperSF(objectsList[i], bounds, speed, acceleration, sprite, Vector3.zero, 0);
                                 else
-                                    riskAssessment.BoundingCubeLerperScooterSF(objectsList[i], bounds, speed, sprite, Vector3.zero, 0);
+                                    RiskAssessmentSelective.BoundingCubeLerperScooterSF(objectsList[i], bounds, speed, sprite, Vector3.zero, 0);
                             }
                         }
                         break;
@@ -817,7 +688,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                             {
                                                 Panel.transform.GetChild(3).GetComponent<Image>().sprite = ResourceHandler.instance.sprites[27];
                                                 Panel.transform.GetChild(2).GetComponent<TextMeshProUGUI>().text = "GO";
-                                                Panel.transform.GetChild(2).GetComponent<TextMeshProUGUI>().color = new Color32(0x3B, 0xAA, 0x34, 0xFF); 
+                                                Panel.transform.GetChild(2).GetComponent<TextMeshProUGUI>().color = new Color32(0x3B, 0xAA, 0x34, 0xFF);
 
                                                 anim.SetInteger("trafLightState", (int)TrafLightState.GREEN);
 
@@ -839,7 +710,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                                 {
                                                     Panel.transform.GetChild(2).GetComponent<TextMeshProUGUI>().text = "GO";
                                                 }
-                                                Panel.transform.GetChild(2).GetComponent<TextMeshProUGUI>().color = new Color32(0xFE, 0xED, 0x01, 0xFF); 
+                                                Panel.transform.GetChild(2).GetComponent<TextMeshProUGUI>().color = new Color32(0xFE, 0xED, 0x01, 0xFF);
                                                 anim.SetInteger("trafLightState", (int)TrafLightState.YELLOW);
 
                                             }
@@ -850,7 +721,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                                 Panel.transform.GetChild(2).GetComponent<TextMeshProUGUI>().color = new Color32(0xE3, 0x07, 0x13, 0xFF);
 
                                                 anim.SetInteger("trafLightState", (int)TrafLightState.RED);
-                                                
+
                                             }
 
 
@@ -895,406 +766,18 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                 }
                                 Bounds boundsPost = objectsList[i].bounds[2];
                                 Sprite sprite = objectsList[i].other.GetComponent<Image>().sprite;
-                                riskAssessment.BoundingCubeLerperSF(objectsList[i], boundsPost, sprite, ReturnTrasl(boundsPost, objectsList[i].other), 2);
+                                RiskAssessmentSelective.BoundingCubeLerperSF(objectsList[i], boundsPost, sprite, ReturnTrasl(boundsPost, objectsList[i].other), 2);
                             }
                             else
                             {
                                 Bounds boundsPost = objectsList[i].bounds[0];
                                 Sprite sprite = objectsList[i].other.GetComponent<Image>().sprite;
-                                riskAssessment.BoundingCubeLerperSF(objectsList[i], boundsPost, sprite, ReturnTrasl(boundsPost, objectsList[i].other), 0);
+                                RiskAssessmentSelective.BoundingCubeLerperSF(objectsList[i], boundsPost, sprite, ReturnTrasl(boundsPost, objectsList[i].other), 0);
                             }
                         }
                         break;
-                }       
+                }
             }
         }
-    }
-
-    //Transform CalculatePointDistance(Collider[] colls, string pointType)
-    //{
-    //    Transform nearest = null; //in URBAN I considr the nearest point otherwise the furthest would be a point located in the near lanes
-    //    float nearDist = 9999;
-    //    for (int i = 0; i < colls.Length; ++i)
-    //    {
-    //        if (colls[i].tag.Equals(pointType))
-    //        { //consider only Centerpoints and ignore other Colliders that belong to Graphics 
-    //            float thisDist = (transform.position - cacheColls[i].transform.position).sqrMagnitude; //this is squaredMagnitude i.e. magnitude without square root
-    //            if (thisDist < nearDist)
-    //            {
-    //                nearDist = thisDist;
-    //                nearest = cacheColls[i].transform;
-    //            }
-    //        }
-    //    }
-    //    return nearest;
-    //}
-
-    //void CreateAnimationCurve()
-    //{
-    //    float distMin = 5.5f;
-    //    float distInter = 50f;
-    //    float distMax = 150f;
-    //    float scaleMin = infoTagStartScale.x;
-    //    float scaleInter = (scaleMin * distInter) / distMin;
-    //    float scaleMax = (scaleMin * distMax) / distMin;
-
-    //    infoTagResize.AddKey(new Keyframe(distMin/distMax, scaleMin/scaleMax, 0, 0)); //this is to compute an ease-in-ease-out curve
-    //    infoTagResize.AddKey(new Keyframe(distInter/distMax, scaleInter/scaleMax , 0, 0));
-
-    //    infoTagResize.AddKey(new Keyframe(0, scaleMin / scaleMax, 0, 0)); 
-    //    infoTagResize.AddKey(new Keyframe(1, scaleInter / scaleMax, 0, 0));
-    //}
-
-    //KeyValuePair<Sprite, string> ReturnSignPic(string signName, Sprite[] sprites)
-    //{
-    //    KeyValuePair<Sprite, string> returnPair = new KeyValuePair<Sprite, string>(null, "");
-
-    //    switch (signName)
-    //    {
-    //        case "One_Way_Right":
-    //        case "OneWayRight":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[41], "ONE WAY RIGHT");
-    //            }
-    //            break;
-
-    //        case "One_Way_Left":
-    //        case "OneWayLeft":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[40], "ONE WAY LEFT");
-    //            }
-    //            break;
-
-
-    //        case "NotNotEnter_NoPole":
-    //        case "DoNotEnter":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[57], "DO NOT ENTER");
-    //            }
-    //            break;
-
-    //        case "2_Hr_Parking":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[43], "2 HR PARKING");
-    //            }
-    //            break;
-
-    //        case "15_Minute_Parking":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[56], "15 MIN PARKING");
-    //            }
-    //            break;
-
-    //        case "30_Minute_Parking":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[42], "30 MIN PARKING");
-    //            }
-    //            break;
-
-
-    //        case "Bicycle":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[34], "WATCH FOR CYCLISTS");
-    //            }
-    //            break;
-
-    //        case "Disabled_Parking":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[55], "DISABLED PARKING");
-    //            }
-    //            break;
-
-    //        case "Do_Not_Block_Intersection":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[35], "DO NOT BLOCK INTERSECTION");
-    //            }
-    //            break;
-
-
-    //        case "Left_Lane_Must_Turn_Left":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[39], "LEFT LANE MUST TURN LEFT");
-    //            }
-    //            break;
-
-    //        case "Left_Turn_Signal_Yield_on_Green":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[49], "ONE WAY");
-    //            }
-    //            break;
-
-    //        case "NoTurnLeft_NoPole":
-    //        case "No_Left_Turn":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[36], "NO LEFT TURN");
-    //            }
-    //            break;
-
-    //        case "NoTurnRight_NoPole":
-    //        case "No_Right_Turn":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[37], "NO RIGHT TURN");
-    //            }
-    //            break;
-
-    //        case "No_Parking":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[27], "NO PARKING");
-    //            }
-    //            break;
-
-    //        case "No_Parking_Bus_Stop":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[47], "NO PARKING BUS STOP");
-    //            }
-    //            break;
-
-    //        case "No_Truck_Parking":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[26], "NO TRUCK PARKING");
-    //            }
-    //            break;
-
-    //        case "NoParkingAnyTime":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[23], "NO PARKING");
-    //            }
-    //            break;
-
-    //        case "Parking":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[45], "PARKING");
-    //            }
-    //            break;
-
-    //        case "Parking_2":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[46], "PARKING");
-    //            }
-    //            break;
-
-    //        case "PickUp_DropOff":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[24], "PICK-UP DROPOFF");
-
-    //            }
-    //            break;
-
-    //        case "Reserved_Disabled_Parking":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[25], "DISABLED PARKING");
-    //            }
-    //            break;
-
-    //        case "Reserved_Parking_":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[28], "RESERVED PARKING");
-    //            }
-    //            break;
-
-    //        case "Right_Lane_Must_Turn_Right":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[38], "RIGHT LANE MUST TURN RIGHT");
-    //            }
-    //            break;
-
-    //        case "Right_Only":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[52], "RIGHT ONLY");
-    //            }
-    //            break;
-
-    //        case "Road_Work_Ahead":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[33], "ROADWORK AHEAD");
-    //            }
-    //            break;
-
-    //        case "Speed_Limit_15":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[31], "SPEED LIMIT 15");
-    //            }
-    //            break;
-
-    //        case "Speed_Limit_25":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[30], "SPEED LIMIT 25");
-    //            }
-    //            break;
-
-    //        case "Speed_Limit_35":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[29], "SPEED LIMIT 35");
-    //            }
-    //            break;
-
-    //        case "This_Lane":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[53], "THIS LANE");
-    //            }
-    //            break;
-
-    //        case "Tow__Away_Zone":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[44], "TOW AWAY ZONE");
-    //            }
-    //            break;
-
-    //        case "Turn":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[32], "WATCH OUT CURVE");
-    //            }
-    //            break;
-
-    //        case "Turning_Traffic_Must_Yield_To_Pedestrians":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[50], "YIELD TO PEDS");
-    //            }
-    //            break;
-
-    //        case "Turning_Vehicles":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[51], "TURNING VEHICLES");
-    //            }
-    //            break;
-
-    //        case "Yield_To_Peds":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[48], "YIELD TO PEDS");
-    //            }
-    //            break;
-
-    //        case "StopSign":
-    //            {
-    //                returnPair = new KeyValuePair<Sprite, string>(sprites[58], "STOP");
-    //            }
-    //            break;
-    //    }
-    //    return returnPair;
-    //}
-
-    //public Rect GetWorldRect(RectTransform rectTransform/*, Vector2 scale*/)
-    //{
-    //    Vector3[] _fourCorners = new Vector3[4];
-    //    rectTransform.GetWorldCorners(_fourCorners);
-
-    //    //Vector2 scaledSize = new Vector2(scale.x * rectTransform.rect.size.x, scale.y * rectTransform.rect.size.y);
-
-    //    //return new Rect(_fourCorners[1], scaledSize);
-    //    float height = Mathf.Abs(_fourCorners[1].y - _fourCorners[3].y);
-    //    float width = Mathf.Abs(_fourCorners[2].x - _fourCorners[0].x);
-    //    return new Rect(_fourCorners[1].x, _fourCorners[1].y, width, height);
-    //}
-
-    //public Rect GetWorldRect3(RectTransform rectTransform)
-    //{
-    //    Vector3[] _fourCorners = new Vector3[4];
-    //    rectTransform.GetWorldCorners(_fourCorners);
-
-    //    GameObject g = new GameObject("sovrapp");
-    //    g.transform.position = _fourCorners[1];
-    //    GameObject g1 = new GameObject("sovrapp1");
-    //    g1.transform.position = _fourCorners[1] +  new Vector3(rectTransform.rect.width, 0 ,0);
-    //    GameObject g2 = new GameObject("sovrapp2");
-    //    g2.transform.position = _fourCorners[1] + new Vector3(0, rectTransform.rect.height, 0);
-
-
-
-    //    return new Rect(_fourCorners[0].x, _fourCorners[0].y, Mathf.Abs(_fourCorners[3].x - _fourCorners[0].x), Mathf.Abs(_fourCorners[1].y - _fourCorners[0].y));
-    //}
-
-    //public Rect GetWorldRect4(RectTransform rt, Vector2 scale)
-    //{
-    //    // Convert the rectangle to world corners and grab the top left
-    //    Vector3[] corners = new Vector3[4];
-    //    rt.GetWorldCorners(corners);
-    //    Vector3 topLeft = corners[1];
-
-    //    // Rescale the size appropriately based on the current Canvas scale
-    //    Vector2 scaledSize = new Vector2(scale.x * rt.rect.size.x, scale.y * rt.rect.size.y);
-    //    return new Rect(topLeft, scaledSize);
-    //}
-
-
-
-    //int CompareInfoTags(KeyValuePair<int, CubesAndTags> x, KeyValuePair<int, CubesAndTags> y)
-    ////{
-    ////    int retval = x.Value.infoTag[i].transform.position.y.CompareTo(y.Value.infoTag[i].transform.position.y);
-    ////    //if (retval != 0) //y is not equal
-    ////        return retval;
-    ////    //else
-    ////    //{
-    ////    //    int retval2 = x.Value.infoTag[i].transform.position.x.CompareTo(y.Value.infoTag[i].transform.position.x);
-    ////    //    return retval2;
-    ////    //}
-    ////}
-
-    //public static void DrawRect(Rect rect, Color col)
-    //{
-    //    Vector3 pos = new Vector3(rect.x + rect.width / 2, rect.y + rect.height / 2, 0.0f);
-    //    Vector3 scale = new Vector3(rect.width, rect.height, 0.0f);
-
-    //    DrawRect(pos, col, scale);
-    //}
-
-    //public static void DrawRect(Vector3 pos, Color col, Vector3 scale)
-    //{
-    //    Vector3 halfScale = scale * 0.5f;
-
-    //    Vector3[] points = new Vector3[]
-    //    {
-    //        pos + new Vector3(halfScale.x,      halfScale.y,    halfScale.z),
-    //        pos + new Vector3(-halfScale.x,     halfScale.y,    halfScale.z),
-    //        pos + new Vector3(-halfScale.x,     -halfScale.y,   halfScale.z),
-    //        pos + new Vector3(halfScale.x,      -halfScale.y,   halfScale.z),
-    //    };
-
-    //    Debug.DrawLine(points[0], points[1], col);
-    //    Debug.DrawLine(points[1], points[2], col);
-    //    Debug.DrawLine(points[2], points[3], col);
-    //    Debug.DrawLine(points[3], points[0], col);
-    //}
-
-    //bool Overlapping(Vector3 upperLeftA, Vector3 lowerRightA, Vector3 upperLeftB, Vector3 lowerRightB)
-    //{
-    //    return (upperLeftA.x < lowerRightB.x && lowerRightA.x > upperLeftB.x && upperLeftA.y > lowerRightB.y && lowerRightA.y < upperLeftB.y);
-    //}
-
-}
-
-public static class RectExt
-{
-    public static bool OverlapsAlt(this Rect r, Rect other)
-    {
-        float factor = 1.1f;
-        return (double)other.xMax > (double)r.xMin && (double)other.xMin < (double)r.xMax * factor && (double)other.yMax * factor > (double)r.yMin && (double)other.yMin < (double)r.yMax;
-    }
-
-    public static bool OverlapsAlt(this Rect r, Rect other, bool allowInverse)
-    {
-        Rect rect = r;
-        if (allowInverse)
-        {
-            rect = OrderMinMax(rect);
-            other = OrderMinMax(other);
-        }
-        return rect.Overlaps(other);
-    }
-
-    private static Rect OrderMinMax(Rect rect)
-    {
-        if ((double)rect.xMin > (double)rect.xMax)
-        {
-            float xMin = rect.xMin;
-            rect.xMin = rect.xMax;
-            rect.xMax = xMin;
-        }
-        if ((double)rect.yMin > (double)rect.yMax)
-        {
-            float yMin = rect.yMin;
-            rect.yMin = rect.yMax;
-            rect.yMax = yMin;
-        }
-        return rect;
     }
 }
