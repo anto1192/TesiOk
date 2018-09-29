@@ -12,9 +12,10 @@ public class VehicleSelection : MonoBehaviour {
     public List<GameObject> autoIncrocio = new List<GameObject>();
     public List<GameObject> autoVisualizzate = new List<GameObject>();
 
+    private EnvironmentSensingAltUrbanTriggerSelective envSelective;  //DARIO
+
 
     private GameObject oggettoInRimozione = null;
-
 
     void FixedUpdate()
     {
@@ -27,6 +28,7 @@ public class VehicleSelection : MonoBehaviour {
                 return;
             }
             motor = gameObject.GetComponent<TrafAIMotor>();
+            envSelective = transform.Find("colliderEnv").GetComponent<EnvironmentSensingAltUrbanTriggerSelective>(); //DARIO
         }
 
         //CONTROLLO AUTO DAVANTI
@@ -315,11 +317,11 @@ public class VehicleSelection : MonoBehaviour {
                 oggettoInRimozione = null;
             }
         }
-
-        //verde 
-        Color32 carColor = new Color32(34, 180, 92, 255);
-        Material mat = go.transform.GetChild(5).GetChild(0).GetComponent<Renderer>().material;
-        mat.color = carColor;
+        go.transform.GetChild(0).GetChild(0).GetChild(0).gameObject.SetActive(true);
+        GameObject infoTag = envSelective.IDsAndGos[go.transform.GetChild(0).GetChild(0).GetInstanceID()].infoTag[0];
+        infoTag.SetActive(true);
+        go.GetComponent <TrafficCarNavigationLineUrban>().enabled = true;
+        go.transform.Find("TrafLineRenderer").GetComponent<LineRenderer>().enabled = true;
     }
 
     private void RimuoviBoxLinea(GameObject go)
@@ -332,11 +334,10 @@ public class VehicleSelection : MonoBehaviour {
             scooterMat.color = scooterColor;
             return;
         }
-
-
-        //rosso 
-        Color32 carColor = new Color32(135, 28, 28, 255);
-        Material mat = go.transform.GetChild(5).GetChild(0).GetComponent<Renderer>().material;
-        mat.color = carColor;
+       
+        GameObject infoTag = envSelective.IDsAndGos[go.transform.GetChild(0).GetChild(0).GetInstanceID()].infoTag[0];
+        infoTag.SetActive(false);
+        go.transform.GetChild(0).GetChild(0).GetChild(0).gameObject.SetActive(false);
+        go.transform.Find("TrafLineRenderer").GetComponent<LineRenderer>().enabled = false;
     }
 }
