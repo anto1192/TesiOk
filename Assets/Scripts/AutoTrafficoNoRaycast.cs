@@ -180,6 +180,9 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
         raggioSinistra.transform.localRotation = Quaternion.identity;
         raggioSinistra.transform.localScale = Vector3.zero;
 
+        TrafAIMotor motor = GetComponent<TrafAIMotor>();
+        motor.system = system;
+        motor.fixedPath = fixedPath;
 
     }
 
@@ -349,6 +352,9 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
         motor.hasStopTarget = hasStopTarget;
         motor.frenata = frenata;
         motor.luceStop = luceStop;
+        motor.hasNextEntry = hasNextEntry;
+        motor.currentEntry = currentEntry;
+        
 
 
         if (!currentEntry.isIntersection() && currentIndex > 0 && !hasNextEntry)
