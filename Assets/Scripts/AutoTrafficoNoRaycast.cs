@@ -354,6 +354,7 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
         motor.luceStop = luceStop;
         motor.hasNextEntry = hasNextEntry;
         motor.currentEntry = currentEntry;
+        motor.nextEntry = nextEntry;
         
 
 

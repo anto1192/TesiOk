@@ -5091,7 +5091,8 @@ public class ScenarioTestUrbano : MonoBehaviour
         if (!Physics.CheckSphere(pos.position, checkRadius, 1 << LayerMask.NameToLayer("Traffic")))
         {
             GameObject go = GameObject.Instantiate(prefabMacchinaOstacolo, pos.position, Quaternion.identity) as GameObject;
-            //go.GetComponent<TrafAIMotor>().enabled = false;
+            go.GetComponent<TrafAIMotor>().enabled = false;
+            //TrafAIMotor motor = go.GetComponent<TrafAIMotor>();
             AutoTrafficoNoRayCast motor = go.AddComponent<AutoTrafficoNoRayCast>();
             motor.nose = go.GetComponent<TrafAIMotor>().nose;
             motor.raycastOrigin = go.GetComponent<TrafAIMotor>().raycastOrigin;
