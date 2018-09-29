@@ -1699,8 +1699,8 @@ public class ScenarioTestUrbano : MonoBehaviour
 
     }
 
-    bool secondaVolta = true;
-    bool secondaVolta1011 = true;
+    bool secondaVolta = false;
+    bool secondaVolta1011 = false;
 
     /*public void evento1008()
     {
