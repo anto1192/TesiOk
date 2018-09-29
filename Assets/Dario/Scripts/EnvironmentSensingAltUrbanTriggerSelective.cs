@@ -127,7 +127,6 @@ public class EnvironmentSensingAltUrbanTriggerSelective : MonoBehaviour
                                 infoTag = CreateInfoTag(other.transform.position + bounds.center);
                                 UpdateIDsAndGos(boundingCube, infoTag, other, bounds);
                                 TrafficCarNavigationLineUrban trafficCarNavigationLineUrban = other.transform.root.gameObject.AddComponent<TrafficCarNavigationLineUrban>();
-                                trafficCarNavigationLineUrban.enabled = false;
                             }
                         }
                         else
