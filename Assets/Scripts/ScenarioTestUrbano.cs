@@ -5026,7 +5026,10 @@ public class ScenarioTestUrbano : MonoBehaviour
             {
                 OnSpawnHeaps(go);
             }
-            car.GetComponent<VehicleSelection>().autoTraffico.Add(motor);
+            if (car.GetComponent<VehicleSelection>() != null)
+            {
+                car.GetComponent<VehicleSelection>().autoTraffico.Add(motor);
+            }
             return motor;
         }
         return null;
@@ -5063,7 +5066,10 @@ public class ScenarioTestUrbano : MonoBehaviour
             {
                 OnSpawnHeaps(go);
             }
-            car.GetComponent<VehicleSelection>().autoTraffico.Add(motor);
+            if (car.GetComponent<VehicleSelection>() != null)
+            {
+                car.GetComponent<VehicleSelection>().autoTraffico.Add(motor);
+            }            
             return motor;
         }
         return null;
@@ -5143,7 +5149,10 @@ public class ScenarioTestUrbano : MonoBehaviour
             {
                 OnSpawnHeaps(go);
             }
-            car.GetComponent<VehicleSelection>().nuovaAuto = motor;
+            if (car.GetComponent<VehicleSelection>() != null)
+            {
+                car.GetComponent<VehicleSelection>().nuovaAuto = motor;
+            }           
             return motor;
         }
         return null;

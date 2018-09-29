@@ -214,7 +214,7 @@ public class TrafAIMotor : MonoBehaviour
         raggioSinistra.transform.localRotation = Quaternion.identity;
         raggioSinistra.transform.localScale = Vector3.zero;
 
-        valoreOriginaleMaxSpeed = maxSpeed;
+        valoreOriginaleMaxSpeed = 13.8f;
     }
 
     private void Start()
