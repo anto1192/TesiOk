@@ -258,7 +258,11 @@ public class RiskAssessmentSelective
                 cubesAndTags.gradient = CubesAndTags.Gradient.ON;
 
                 if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
-                    cubesAndTags.other.transform.root.Find("TrafLineRenderer").GetComponent<LineRenderer>().enabled = true;
+                {
+                    Transform lineRenderer = cubesAndTags.other.transform.root.Find("TrafLineRenderer");
+                    if (lineRenderer)
+                        lineRenderer.GetComponent<LineRenderer>().enabled = true;
+                }
             }
             else
             {
@@ -290,7 +294,11 @@ public class RiskAssessmentSelective
                     cubeRend.enabled = false;
                     canvas.enabled = false;
                     if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
-                        cubesAndTags.other.transform.root.Find("TrafLineRenderer").GetComponent<LineRenderer>().enabled = false;
+                    {
+                        Transform lineRenderer = cubesAndTags.other.transform.root.Find("TrafLineRenderer");
+                        if (lineRenderer)
+                            lineRenderer.GetComponent<LineRenderer>().enabled = false;
+                    }
                 }
             }
         }
@@ -324,7 +332,11 @@ public class RiskAssessmentSelective
                 cubeRend.enabled = false;
                 canvas.enabled = false;
                 if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
-                    cubesAndTags.other.transform.root.Find("TrafLineRenderer").GetComponent<LineRenderer>().enabled = false;
+                {
+                    Transform lineRenderer = cubesAndTags.other.transform.root.Find("TrafLineRenderer");
+                    if (lineRenderer)
+                    lineRenderer.GetComponent<LineRenderer>().enabled = false;
+                }    
             }    
         }   
     }//this is for dynamic objects
@@ -441,7 +453,119 @@ public class RiskAssessmentSelective
         }
     } //this is for dynamic objects (scooter)
 
+    public void BoundingCubeLerperManSF(CubesAndTags cubesAndTags, Bounds bounds, float obstacleSpeed, float acceleration, Sprite sprite, Vector3 trasl, int i)
+    {
+        Vector3 targetPoint = new Vector3(cubesAndTags.other.transform.position.x, rayCastPos.transform.position.y, cubesAndTags.other.transform.position.z);
+        float dstToTarget = Vector3.Distance(rayCastPos.position, targetPoint);
+        Renderer cubeRend = cubesAndTags.boundingCube[i].GetComponent<Renderer>();
+        Canvas canvas = cubesAndTags.infoTag[i].GetComponent<Canvas>();
 
+        UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
+
+        Animator anim = cubesAndTags.infoTag[i].GetComponent<Animator>();
+        AudioSource audio = cubesAndTags.boundingCube[i].GetComponent<AudioSource>();
+
+        Vector3 targetDst = targetPoint + cubesAndTags.other.transform.TransformDirection(0, 0, Vector3.forward.z * 50f);
+        Debug.DrawLine(targetPoint, targetDst, Color.magenta);
+
+        Vector3 myDst = rayCastPos.position + rayCastPos.transform.TransformDirection(0, 0, Vector3.forward.z * 150f);
+
+        Vector2 intersection = Vector2.zero;
+        if (LineSegmentsIntersection(new Vector2(targetPoint.x, targetPoint.z), new Vector2(targetDst.x, targetDst.z), new Vector2(rayCastPos.position.x, rayCastPos.position.z), new Vector2(myDst.x, myDst.z), out intersection) && (obstacleSpeed >= 0.1f && rigidbody.velocity.magnitude >= 0.1f) /*&& Mathf.Abs(vehicleController.steerInput) <= 0.4f*/)
+        {
+            Vector3 intersection3D = new Vector3(intersection.x, rayCastPos.position.y, intersection.y);
+            Debug.DrawLine(rayCastPos.position, intersection3D, Color.black);
+            float distToWarn = rigidbody.velocity.magnitude * ResourceHandler.instance.visualisationVars.freeRunningTime + 0.5f * (Mathf.Pow(rigidbody.velocity.magnitude, 2) / ResourceHandler.instance.visualisationVars.systemAccSF); //DARIO
+
+            if (dstToTarget <= distToWarn)
+            {
+                float distToWarnEncoded = Mathf.Pow(distToWarn, 2.5f);
+                float dstToTargetEncoded = Mathf.Pow(dstToTarget, 2.5f);
+                bool blink = false;
+                Color32 topColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), ref blink, ref cubesAndTags);
+                topColor.a = 0;
+                Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), ref blink, ref cubesAndTags);
+                bottomColor.a = 0x51;
+                cubeRend.material.SetColor("_Color1", topColor);
+                cubeRend.material.SetColor("_Color2", bottomColor);
+                cubeRend.enabled = true;
+                canvas.enabled = true;
+                UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
+
+                anim.SetFloat("Multiplier", 3.0f);
+                anim.SetBool("BlinkLoop", blink);
+
+                PlayAudio(audio, dstToTargetEncoded / distToWarnEncoded, cubesAndTags);
+
+                cubesAndTags.prevState = dstToTargetEncoded / distToWarnEncoded;
+
+                cubesAndTags.gradient = CubesAndTags.Gradient.ON;   
+            }
+            else
+            {
+                bool blink = false;
+                float value = 0f;
+                if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
+                {
+                    value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
+                    cubesAndTags.prevState = value;
+                }
+                else
+                    value = 1;
+
+                Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
+                Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
+
+                topColor.a = 0;
+                bottomColor.a = 0x51;
+                cubeRend.material.SetColor("_Color1", topColor);
+                cubeRend.material.SetColor("_Color2", bottomColor);
+
+                anim.SetBool("BlinkLoop", false);
+
+                cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
+
+                if (cubesAndTags.prevState >= 0.99f)
+                {
+                    cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
+                    cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
+                    cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
+                }
+            }
+        }
+        else
+        {
+            bool blink = false;
+            float value = 0f;
+            if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
+            {
+                value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
+                cubesAndTags.prevState = value;
+            }
+            else
+                value = 1;
+
+            Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
+            Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
+
+            topColor.a = 0;
+            bottomColor.a = 0x51;
+            cubeRend.material.SetColor("_Color1", topColor);
+            cubeRend.material.SetColor("_Color2", bottomColor);
+
+            anim.SetBool("BlinkLoop", false);
+
+            cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
+
+            if (cubesAndTags.prevState >= 0.99f)
+            {
+                cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
+                cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
+                cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
+
+            }
+        }
+    }//this is for dynamic objects
 
     public void UpdateInfoTag(CubesAndTags cubesAndTags, Bounds bounds, string text, Sprite sprite, float dstToTarget, Vector3 trasl, int i)
     {

@@ -643,6 +643,11 @@ public class EnvironmentSensingAltUrbanTriggerSelective : MonoBehaviour
                             Sprite sprite = objectsList[i].other.GetComponent<Image>().sprite;
                             if (objectsList[i].other.CompareTag("Obstacle"))
                                 RiskAssessmentSelective.BoundingCubeLerperObstacleDefSF(objectsList[i], bounds, CalculateObstacleSpeed(objectsList[i]), 0, sprite, Vector3.zero, 0);
+                            else if (objectsList[i].other.CompareTag("Stop"))
+                                RiskAssessmentSelective.BoundingCubeLerperManSF(objectsList[i], bounds, CalculateObstacleSpeed(objectsList[i]), 0, sprite, Vector3.zero, 0);
+
+
+
                         }
                         break;
                     case 8:
