@@ -84,7 +84,7 @@ public class RiskAssessment
 
                     animTag.SetBool("BlinkLoop", false);
 
-                    
+
                 }
             }
             else
@@ -94,7 +94,7 @@ public class RiskAssessment
 
                 animTag.SetBool("BlinkLoop", false);
 
-                
+
             }
         }
         else
@@ -104,7 +104,7 @@ public class RiskAssessment
 
             animTag.SetBool("BlinkLoop", false);
 
-            
+
         }
 
     } //this is for static objects. In order to show a smooth vanishing when exiting the gradient state I can do a fading animation and control it by a bool that is set in the gradient if and reset after the animation has been played
@@ -142,7 +142,7 @@ public class RiskAssessment
 
                 anim.SetBool("BlinkLoop", false);
 
-                
+
 
                 cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
 
@@ -179,7 +179,7 @@ public class RiskAssessment
 
                     anim.SetBool("BlinkLoop", false);
 
-                    
+
 
                     cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
                 }
@@ -191,7 +191,7 @@ public class RiskAssessment
 
                 anim.SetBool("BlinkLoop", false);
 
-               
+
 
                 cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
             }
@@ -203,7 +203,7 @@ public class RiskAssessment
 
             anim.SetBool("BlinkLoop", false);
 
-            
+
 
             cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
         }
@@ -291,7 +291,7 @@ public class RiskAssessment
                     cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
                     if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
                         cubesAndTags.other.transform.root.Find("TrafLineRenderer").GetComponent<LineRenderer>().enabled = false;
-                }     
+                }
             }
         }
         else
@@ -325,7 +325,7 @@ public class RiskAssessment
                 if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
                     cubesAndTags.other.transform.root.Find("TrafLineRenderer").GetComponent<LineRenderer>().enabled = false;
             }
-                
+
         }
     }//this is for dynamic objects
 
@@ -381,7 +381,7 @@ public class RiskAssessment
 
                         anim.SetBool("BlinkLoop", false);
 
-                        
+
 
                         cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
                     }
@@ -393,7 +393,7 @@ public class RiskAssessment
 
                     anim.SetBool("BlinkLoop", false);
 
-                    
+
 
                     cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
                 }
@@ -425,7 +425,7 @@ public class RiskAssessment
 
                 anim.SetBool("BlinkLoop", false);
 
-                
+
 
                 cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
             }
@@ -437,7 +437,7 @@ public class RiskAssessment
 
             anim.SetBool("BlinkLoop", false);
 
-           
+
 
             cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
         }
