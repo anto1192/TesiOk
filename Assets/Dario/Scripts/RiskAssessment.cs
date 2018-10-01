@@ -259,7 +259,11 @@ public class RiskAssessment
                 cubesAndTags.gradient = CubesAndTags.Gradient.ON;
 
                 if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
-                    cubesAndTags.other.transform.root.Find("TrafLineRenderer").GetComponent<LineRenderer>().enabled = true;
+                {
+                    Transform lineRenderer = cubesAndTags.other.transform.root.Find("TrafLineRenderer");
+                    if (lineRenderer)
+                        lineRenderer.GetComponent<LineRenderer>().enabled = true;
+                }
             }
             else
             {
@@ -290,7 +294,11 @@ public class RiskAssessment
                 {
                     cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
                     if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
-                        cubesAndTags.other.transform.root.Find("TrafLineRenderer").GetComponent<LineRenderer>().enabled = false;
+                    {
+                        Transform lineRenderer = cubesAndTags.other.transform.root.Find("TrafLineRenderer");
+                        if (lineRenderer)
+                            lineRenderer.GetComponent<LineRenderer>().enabled = false;
+                    }
                 }
             }
         }
@@ -323,7 +331,11 @@ public class RiskAssessment
             {
                 cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
                 if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
-                    cubesAndTags.other.transform.root.Find("TrafLineRenderer").GetComponent<LineRenderer>().enabled = false;
+                {
+                    Transform lineRenderer = cubesAndTags.other.transform.root.Find("TrafLineRenderer");
+                    if (lineRenderer)
+                        lineRenderer.GetComponent<LineRenderer>().enabled = false;
+                }
             }
 
         }
