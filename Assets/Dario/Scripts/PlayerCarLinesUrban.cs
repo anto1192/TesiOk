@@ -87,13 +87,13 @@ public class PlayerCarLinesUrban : MonoBehaviour {
                     float dist = Vector3.Distance(transform.position, centerLinePoint);
                     Lane lane = MonitorLane(centerLinePoint); //this is to understand if I am partially in the oncoming lane
 
-                    if (dist < 4.0f && lane == Lane.RIGHT) //if dist2 < 2.7f I am in the right lane
+                    if (dist < 2.0f && lane == Lane.RIGHT) //if dist2 < 2.7f I am in the right lane
                     {
-                        linesUtilsAlt.CenterLineColor = linesUtilsAlt.ChangeMatByDistance(dist / 4.0f);
-                        SetDashBoardColor(dist, 4.0f);
+                        linesUtilsAlt.CenterLineColor = linesUtilsAlt.ChangeMatByDistance(dist / 2.0f);
+                        SetDashBoardColor(dist, 2.0f);
                     }
                         
-                    else if (dist >= 4.0f && lane == Lane.RIGHT)
+                    else if (dist >= 2.0f && lane == Lane.RIGHT)
                     {
                         linesUtilsAlt.CenterLineColor = new Color32(0x00, 0xFF, 0x00, 0x00);
                         laneState = LaneState.GREEN;
@@ -105,7 +105,7 @@ public class PlayerCarLinesUrban : MonoBehaviour {
                         laneState = LaneState.RED;
                     }
                         
-                    linesUtilsAlt.DrawCenterLine(gameObject, carTf, curvySpline, ResourceHandler.instance.sprites[33].texture);
+                    linesUtilsAlt.DrawCenterLine(gameObject, carTf, curvySpline, ResourceHandler.instance.sprites[36].texture);
                 }
             }
             else
