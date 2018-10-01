@@ -435,6 +435,7 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
         {
             distanzaWaypoint = 0;
             modificaTarget(false);
+            //Debug.Log("Target = " + target.x + " " + target.y + "  " + target.z);
             numeroWaypointSaltati = 0;
         }
         else
@@ -453,6 +454,7 @@ public class AutoTrafficoNoRayCast : MonoBehaviour
                     distanzaWaypoint = 0;
                     contatore = 0;
                     modificaTarget(true);
+                    //Debug.Log("Target = " + target.x + " " + target.y + "  " + target.z);
                     //hasStopTarget = false;
                     //hasGiveWayTarget = false;
                 }

@@ -599,7 +599,9 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(11, 2, 0.6f, percorso13_1);
         macchinaTagliaStrada = CreaMacchinaTraffico(12, 0, 0.3f, percorso13_2);
         //CreaMacchinaTraffico(11, 3, 0.7f, percorso13_3);
-        CreaMacchinaTrafficoNoRaycast(11, 3, 0.95f, percorso13_3).autoScorretta = true;
+        AutoTrafficoNoRayCast macchina = CreaMacchinaTrafficoNoRaycast(11, 3, 0.95f, percorso13_3);
+        macchina.autoScorretta = true;
+        SetLayer(8, macchina.transform);
         CreaMacchinaTraffico(12, 1, 0.6f, percorso13_4);
         CreaMacchinaTraffico(12, 0, 0.8f, percorso13_5);
     }
@@ -1303,6 +1305,10 @@ public class ScenarioTestUrbano : MonoBehaviour
             {
                 //se non è false la macchina rimarrebbe piantata perchè la macchina del traffico non uscirebbe mai dalla collisione
                 SetLayer(8, macchinaTagliaStrada.transform);
+            } else
+            {
+                yield return new WaitForSeconds(0.5f);
+                StartCoroutine(CourutineCambioLayer());
             }
             
         }
@@ -4127,7 +4133,7 @@ public class ScenarioTestUrbano : MonoBehaviour
         RoadGraphEdge edge3 = new RoadGraphEdge();
 
         edge1.id = 1011;
-        edge1.subId = 0;
+        edge1.subId = 7;
 
         edge2.id = 163;
         edge2.subId = 0;
