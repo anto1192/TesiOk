@@ -746,7 +746,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                 objectsList[i].infoTag[0].GetComponent<Canvas>().enabled = true;
                                 riskAssessment.UpdateInfoTag(objectsList[i], bounds, "", ResourceHandler.instance.sprites[spriteIndex], dist, Vector3.zero, 0);
 
-                                if (objectsList[i].other.transform.name.Equals("StopSign") || objectsList[i].other.transform.name.Equals("RoadWork"))
+                                if ((objectsList[i].other.transform.name.Equals("StopSign") || objectsList[i].other.transform.name.Equals("RoadWork") || objectsList[i].other.transform.name.Equals("Speed_Limit_40") || objectsList[i].other.transform.name.Equals("Speed_Limit_50") || objectsList[i].other.transform.name.Equals("End_Limit_40") || objectsList[i].other.transform.name.Equals("Speed_Limit_60")) && dist <= 40)
                                 {
                                     if (dist <= 40)
                                         anim.SetBool("Blink", true);
@@ -759,7 +759,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                 objectsList[i].boundingCube[0].GetComponent<Renderer>().enabled = false;
                                 objectsList[i].infoTag[0].GetComponent<Canvas>().enabled = false;
 
-                                if (objectsList[i].other.transform.name.Equals("StopSign") || objectsList[i].other.transform.name.Equals("RoadWork"))
+                                if (objectsList[i].other.transform.name.Equals("StopSign") || objectsList[i].other.transform.name.Equals("RoadWork") || objectsList[i].other.transform.name.Equals("Speed_Limit_40") || objectsList[i].other.transform.name.Equals("Speed_Limit_50") || objectsList[i].other.transform.name.Equals("End_Limit_40") || objectsList[i].other.transform.name.Equals("Speed_Limit_60"))
                                     anim.SetBool("Blink", false);
                             }
                         }
@@ -820,7 +820,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                             Animator anim = objectsList[i].infoTag[0].GetComponent<Animator>();
                                             if (currentState.Equals(TrafLightState.GREEN))
                                             {
-                                                Panel.transform.GetChild(3).GetComponent<Image>().sprite = ResourceHandler.instance.sprites[27];
+                                                Panel.transform.GetChild(3).GetComponent<Image>().sprite = ResourceHandler.instance.sprites[30];
                                                 Panel.transform.GetChild(2).GetComponent<TextMeshProUGUI>().text = "GO";
                                                 Panel.transform.GetChild(2).GetComponent<TextMeshProUGUI>().color = new Color32(0x3B, 0xAA, 0x34, 0xFF);
 
@@ -829,7 +829,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                             }
                                             else if (currentState.Equals(TrafLightState.YELLOW))
                                             {
-                                                Panel.transform.GetChild(3).GetComponent<Image>().sprite = ResourceHandler.instance.sprites[28];
+                                                Panel.transform.GetChild(3).GetComponent<Image>().sprite = ResourceHandler.instance.sprites[31];
                                                 Vector3 offset = trafLight.transform.position - rayCastPos.position;
                                                 float mag = offset.sqrMagnitude;
                                                 if (mag >= 1600 || trafAIMotor.hasStopTarget) //40m 
@@ -850,7 +850,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                             }
                                             else
                                             {
-                                                Panel.transform.GetChild(3).GetComponent<Image>().sprite = ResourceHandler.instance.sprites[29];
+                                                Panel.transform.GetChild(3).GetComponent<Image>().sprite = ResourceHandler.instance.sprites[32];
                                                 Panel.transform.GetChild(2).GetComponent<TextMeshProUGUI>().text = "STOP";
                                                 Panel.transform.GetChild(2).GetComponent<TextMeshProUGUI>().color = new Color32(0xE3, 0x07, 0x13, 0xFF);
 
