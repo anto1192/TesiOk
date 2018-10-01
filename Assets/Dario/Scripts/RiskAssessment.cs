@@ -235,14 +235,14 @@ public class RiskAssessment
             Debug.DrawLine(rayCastPos.position, intersection3D, Color.black);
             float distToWarn = rigidbody.velocity.magnitude * ResourceHandler.instance.visualisationVars.freeRunningTime + 0.5f * (Mathf.Pow(rigidbody.velocity.magnitude, 2) / ResourceHandler.instance.visualisationVars.systemAccSF); //DARIO
 
-            if (dstToTarget <= /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarn)
+            if (dstToTarget <= distToWarn)
             {
                 float distToWarnEncoded = Mathf.Pow(distToWarn, 2.5f);
                 float dstToTargetEncoded = Mathf.Pow(dstToTarget, 2.5f);
                 bool blink = false;
-                Color32 topColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarnEncoded), ref blink, ref cubesAndTags);
+                Color32 topColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), ref blink, ref cubesAndTags);
                 topColor.a = 0;
-                Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarnEncoded), ref blink, ref cubesAndTags);
+                Color32 bottomColor = linesUtils.ChangeMatByDistance(dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), ref blink, ref cubesAndTags);
                 bottomColor.a = 0x51;
                 cubeRend.material.SetColor("_Color1", topColor);
                 cubeRend.material.SetColor("_Color2", bottomColor);
@@ -250,13 +250,16 @@ public class RiskAssessment
                 anim.SetFloat("Multiplier", 3.0f);
                 anim.SetBool("BlinkLoop", blink);
 
-                Debug.Log("obstacle is: " + cubesAndTags.other.name + dstToTargetEncoded / /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarnEncoded);
+                Debug.Log("obstacle is: " + cubesAndTags.other.name + dstToTargetEncoded / distToWarnEncoded);
 
-                PlayAudio(audio, dstToTargetEncoded / /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarnEncoded, cubesAndTags);
+                PlayAudio(audio, dstToTargetEncoded / distToWarnEncoded, cubesAndTags);
 
-                cubesAndTags.prevState = dstToTargetEncoded / /*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/distToWarnEncoded;
+                cubesAndTags.prevState = dstToTargetEncoded / distToWarnEncoded;
 
                 cubesAndTags.gradient = CubesAndTags.Gradient.ON;
+
+                if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
+                    cubesAndTags.other.transform.root.Find("TrafLineRenderer").GetComponent<LineRenderer>().enabled = true;
             }
             else
             {
@@ -284,7 +287,11 @@ public class RiskAssessment
                 cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
 
                 if (cubesAndTags.prevState >= 0.99f)
+                {
                     cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
+                    if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
+                        cubesAndTags.other.transform.root.Find("TrafLineRenderer").GetComponent<LineRenderer>().enabled = false;
+                }     
             }
         }
         else
@@ -313,7 +320,12 @@ public class RiskAssessment
             cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
 
             if (cubesAndTags.prevState >= 0.99f)
+            {
                 cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
+                if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
+                    cubesAndTags.other.transform.root.Find("TrafLineRenderer").GetComponent<LineRenderer>().enabled = false;
+            }
+                
         }
     }//this is for dynamic objects
 
@@ -908,11 +920,11 @@ public class RiskAssessment
     {
         if (cubesAndTags.alreadyPlayed.Equals(false))
         {
-            if (normDist <= 0.2f)
+            if ((cubesAndTags.other.gameObject.layer.Equals(LayerMask.NameToLayer("obstacle")) && gameObject.transform.root.GetComponent<TrafAIMotor>().playAudio) || (cubesAndTags.other.gameObject.layer.Equals(LayerMask.NameToLayer("Traffic")) && normDist <= 0.2f))
             {
                 audio.PlayOneShot(ResourceHandler.instance.audioClips[9]);
                 cubesAndTags.alreadyPlayed = true;
-            } 
+            }
         }
     }
 }

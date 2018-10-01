@@ -291,21 +291,13 @@ public class VehicleSelection : MonoBehaviour {
             }
         }
 
-        if (go.tag.Equals("TrafficScooter"))
+        Collider other = go.transform.Find("CollidersBody/Body1").GetComponent<Collider>();
+        if (envSelective.IDsAndGos.ContainsKey(other.gameObject.GetInstanceID()))
         {
-            //vespa
-            Color32 scooterColor = new Color32(0, 8, 156, 255);
-            Material scooterMat = go.transform.GetChild(2).GetComponent<Renderer>().material;
-            scooterMat.color = scooterColor;
-            return;
+            CubesAndTags cubesAndTags = envSelective.IDsAndGos[other.gameObject.GetInstanceID()];
+            cubesAndTags.boundingCube[0].GetComponent<Renderer>().enabled = true;
+            cubesAndTags.infoTag[0].GetComponent<Canvas>().enabled = true;
         }
-
-        //blu
-        Color32 carColor = new Color32(0, 8, 156, 255);
-        Material mat = go.transform.GetChild(5).GetChild(0).GetComponent<Renderer>().material;
-        mat.color = carColor;
-
-        
     }
 
     private void AggiungiBoxLinea(GameObject go)
@@ -317,27 +309,31 @@ public class VehicleSelection : MonoBehaviour {
                 oggettoInRimozione = null;
             }
         }
-        go.transform.GetChild(0).GetChild(0).GetChild(0).gameObject.SetActive(true);
-        GameObject infoTag = envSelective.IDsAndGos[go.transform.GetChild(0).GetChild(0).GetInstanceID()].infoTag[0];
-        infoTag.SetActive(true);
-        go.GetComponent <TrafficCarNavigationLineUrban>().enabled = true;
-        go.transform.Find("TrafLineRenderer").GetComponent<LineRenderer>().enabled = true;
+
+        Collider other = go.transform.Find("CollidersBody/Body1").GetComponent<Collider>();
+        if (envSelective.IDsAndGos.ContainsKey(other.gameObject.GetInstanceID()))
+        {
+            CubesAndTags cubesAndTags = envSelective.IDsAndGos[other.gameObject.GetInstanceID()];
+            cubesAndTags.boundingCube[0].GetComponent<Renderer>().enabled = true;
+            cubesAndTags.infoTag[0].GetComponent<Canvas>().enabled = true;
+            go.GetComponent<TrafficCarNavigationLineUrban>().enabled = true;
+            Transform trafLineRenderer = go.transform.Find("TrafLineRenderer");
+            if (trafLineRenderer != null)
+                trafLineRenderer.GetComponent<LineRenderer>().enabled = true;
+        }       
     }
 
     private void RimuoviBoxLinea(GameObject go)
     {
-        if (go.tag.Equals("TrafficScooter"))
+        Collider other = go.transform.Find("CollidersBody/Body1").GetComponent<Collider>();
+        if (envSelective.IDsAndGos.ContainsKey(other.gameObject.GetInstanceID()))
         {
-            //vespa
-            Color32 scooterColor = new Color32(135, 28, 28, 255);
-            Material scooterMat = go.transform.GetChild(2).GetComponent<Renderer>().material;
-            scooterMat.color = scooterColor;
-            return;
-        }
-       
-        GameObject infoTag = envSelective.IDsAndGos[go.transform.GetChild(0).GetChild(0).GetInstanceID()].infoTag[0];
-        infoTag.SetActive(false);
-        go.transform.GetChild(0).GetChild(0).GetChild(0).gameObject.SetActive(false);
-        go.transform.Find("TrafLineRenderer").GetComponent<LineRenderer>().enabled = false;
+            CubesAndTags cubesAndTags = envSelective.IDsAndGos[other.gameObject.GetInstanceID()];
+            cubesAndTags.boundingCube[0].GetComponent<Renderer>().enabled = false;
+            cubesAndTags.infoTag[0].GetComponent<Canvas>().enabled = false;
+            Transform trafLineRenderer = go.transform.Find("TrafLineRenderer");
+            if (trafLineRenderer != null)
+                trafLineRenderer.GetComponent<LineRenderer>().enabled = false;
+        } 
     }
 }

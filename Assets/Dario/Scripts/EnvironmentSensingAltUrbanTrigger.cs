@@ -213,7 +213,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                 }
                                 catch (NullReferenceException)
                                 {
-                                    Debug.Log("object incriminated is: " + other.transform.position);
+                                    Debug.Log("object incriminated is: ");
                                 }
                                 
                                 infoTag = CreateInfoTag(other.transform.position + bounds.center);
@@ -230,7 +230,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                             }
                             catch (NullReferenceException)
                             {
-                                Debug.Log("object incriminated is: " + other.transform.position);
+                                Debug.Log("object incriminated is: ");
                             }
                             
                             infoTag = CreateInfoTag(other.transform.position + bounds.center);
@@ -522,7 +522,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                 }
                 catch (NullReferenceException e)
                 {
-                    Debug.Log("incriminated car is: " + other.transform.position);
+                    Debug.Log("incriminated car is: ");
                 }
                 IDsAndGos[other.gameObject.GetInstanceID()].DisableCubesAndTags();
                 IDsAndGos.Remove(other.gameObject.GetInstanceID());

@@ -123,6 +123,8 @@ public class RiskAssessmentSelective
         Animator anim = cubesAndTags.infoTag[i].GetComponent<Animator>();
         AudioSource audio = cubesAndTags.boundingCube[i].GetComponent<AudioSource>();
 
+        UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
+
         float viewAngle = 5f;
 
         if (dstToTarget <= 8f)
@@ -135,12 +137,12 @@ public class RiskAssessmentSelective
 
             if (dist <= 6.0f) //and I am located near the line that defines the intersection. This second condition is necessary since hasNextEntry is set earlier, not in correspondence with the line of the crossing.
             {
-                cubeRend.enabled = false;
-                canvas.enabled = false;
+                cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
+                cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
 
                 anim.SetBool("BlinkLoop", false);
 
-                
+
 
                 cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
 
@@ -165,48 +167,43 @@ public class RiskAssessmentSelective
                     cubeRend.material.SetColor("_Color1", topColor);
                     cubeRend.material.SetColor("_Color2", bottomColor);
 
-                    cubeRend.enabled = true;
-                    canvas.enabled = true;
-                    UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
-
                     anim.SetFloat("Multiplier", 3.0f);
                     anim.SetBool("BlinkLoop", blink);
 
                     PlayAudio(audio, dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), cubesAndTags);
-
                 }
                 else
                 {
-                    cubeRend.enabled = false;
-                    canvas.enabled = false;
+                    cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
+                    cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
 
                     anim.SetBool("BlinkLoop", false);
 
-                    
+
 
                     cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
                 }
             }
             else
             {
-                cubeRend.enabled = false;
-                canvas.enabled = false;
+                cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
+                cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
 
                 anim.SetBool("BlinkLoop", false);
 
-                
+
 
                 cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
             }
         }
         else
         {
-            cubeRend.enabled = false;
-            canvas.enabled = false;
+            cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
+            cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
 
             anim.SetBool("BlinkLoop", false);
 
-            
+
 
             cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
         }
@@ -259,6 +256,9 @@ public class RiskAssessmentSelective
                 cubesAndTags.prevState = dstToTargetEncoded / distToWarnEncoded;
 
                 cubesAndTags.gradient = CubesAndTags.Gradient.ON;
+
+                if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
+                    cubesAndTags.other.transform.root.Find("TrafLineRenderer").GetComponent<LineRenderer>().enabled = true;
             }
             else
             {
@@ -289,6 +289,8 @@ public class RiskAssessmentSelective
                     cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
                     cubeRend.enabled = false;
                     canvas.enabled = false;
+                    if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
+                        cubesAndTags.other.transform.root.Find("TrafLineRenderer").GetComponent<LineRenderer>().enabled = false;
                 }
             }
         }
@@ -321,6 +323,8 @@ public class RiskAssessmentSelective
                 cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
                 cubeRend.enabled = false;
                 canvas.enabled = false;
+                if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
+                    cubesAndTags.other.transform.root.Find("TrafLineRenderer").GetComponent<LineRenderer>().enabled = false;
             }    
         }   
     }//this is for dynamic objects
@@ -332,6 +336,8 @@ public class RiskAssessmentSelective
         Vector3 dirToTarget = (targetPoint - rayCastPos.transform.position);
         Renderer cubeRend = cubesAndTags.boundingCube[i].GetComponent<Renderer>();
         Canvas canvas = cubesAndTags.infoTag[i].GetComponent<Canvas>();
+        
+        UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
 
         Animator anim = cubesAndTags.infoTag[i].GetComponent<Animator>();
         AudioSource audio = cubesAndTags.boundingCube[i].GetComponent<AudioSource>();
@@ -361,36 +367,31 @@ public class RiskAssessmentSelective
                         cubeRend.material.SetColor("_Color1", topColor);
                         cubeRend.material.SetColor("_Color2", bottomColor);
 
-                        cubeRend.enabled = true;
-                        canvas.enabled = true;
-                        UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
-
                         anim.SetFloat("Multiplier", 3.0f);
                         anim.SetBool("BlinkLoop", blink);
 
                         PlayAudio(audio, dstToTargetEncoded / Mathf.Abs(distToWarnEncoded), cubesAndTags);
-
                     }
                     else
                     {
-                        cubeRend.enabled = false;
-                        canvas.enabled = false;
+                        cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
+                        cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
 
                         anim.SetBool("BlinkLoop", false);
 
-                        
+
 
                         cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
                     }
                 }
                 else
                 {
-                    cubeRend.enabled = false;
-                    canvas.enabled = false;
+                    cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
+                    cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
 
                     anim.SetBool("BlinkLoop", false);
 
-                    
+
 
                     cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
                 }
@@ -410,36 +411,31 @@ public class RiskAssessmentSelective
                 cubeRend.material.SetColor("_Color1", topColor);
                 cubeRend.material.SetColor("_Color2", bottomColor);
 
-                cubeRend.enabled = true;
-                canvas.enabled = true;
-                UpdateInfoTag(cubesAndTags, bounds, Mathf.RoundToInt(obstacleSpeed * 3.6f).ToString(), sprite, dstToTarget, trasl, i);
-
                 anim.SetFloat("Multiplier", 3.0f);
                 anim.SetBool("BlinkLoop", blink);
 
                 PlayAudio(audio, dstToTarget / ResourceHandler.instance.visualisationVars.DangerousCarDistToWarn, cubesAndTags);
-
             }
             else
             {
-                cubeRend.enabled = false;
-                canvas.enabled = false;
+                cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
+                cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
 
                 anim.SetBool("BlinkLoop", false);
 
-                
+
 
                 cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
             }
         }
         else
         {
-            cubeRend.enabled = false;
-            canvas.enabled = false;
+            cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
+            cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
 
             anim.SetBool("BlinkLoop", false);
 
-            
+
 
             cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
         }
@@ -540,7 +536,7 @@ public class RiskAssessmentSelective
     {
         if (cubesAndTags.alreadyPlayed.Equals(false))
         {
-            if (normDist <= 0.2f)
+            if ((cubesAndTags.other.gameObject.layer.Equals(LayerMask.NameToLayer("obstacle")) && gameObject.transform.root.GetComponent<TrafAIMotor>().playAudio) || (cubesAndTags.other.gameObject.layer.Equals(LayerMask.NameToLayer("Traffic")) && normDist <= 0.2f))
             {
                 audio.PlayOneShot(ResourceHandler.instance.audioClips[9]);
                 cubesAndTags.alreadyPlayed = true;
