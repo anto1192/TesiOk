@@ -1015,9 +1015,11 @@ public class ScenarioTestUrbano : MonoBehaviour
         CreaMacchinaTraffico(45, 1, 0, percorso39_0);
         CreaMacchinaTraffico(45, 0, 0.5f, percorso39_1);
         car.GetComponent<TrafAIMotor>().sterzataMassima = true;
-        car.GetComponent<TrafAIMotor>().maxSpeed = 13.8f;
+        
         car.GetComponent<TrafAIMotor>().distanzaInizioValutazioneSemaforo = 40f;
         car.GetComponent<TrafAIMotor>().giveWayRegisterDistance = 40f;
+
+        car.GetComponent<TrafAIMotor>().limiteVelocita = 50f;
     }
 
     public void evento1082()
@@ -4920,10 +4922,12 @@ public class ScenarioTestUrbano : MonoBehaviour
             if (numeroInizioTest == 0)
             {
                 motor.maxSpeed = 16.67f;
+                motor.limiteVelocita = 60f;
                 semaforo120a();
             } else
             {
                 motor.maxSpeed = 13.8f;
+                motor.limiteVelocita = 50f;
             }
 
             //Debug.Log("pos.position: x = " + pos.position.x + "; y = " + pos.position.y + "; z = " + pos.position.z + "; targetIndex = " + pos.targetIndex);

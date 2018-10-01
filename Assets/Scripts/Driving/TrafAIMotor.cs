@@ -94,6 +94,8 @@ public class TrafAIMotor : MonoBehaviour
     //ANTONELLo
     private Vector3 targetPrecedente = Vector3.zero;
 
+    public float limiteVelocita = 50f;
+
     public float giveWayRegisterDistance = 40f;
     //ANTONELLO
     //public const float brakeDistance = 10f;
