@@ -1184,6 +1184,14 @@ public class TrackController : UnitySingleton<TrackController> {
             obs.transform.position = spot[0];
             obs.transform.LookAt(spot[1]);
             obs.tag = "Obstacle";
+            if (id == 10)
+            {
+                obs.tag = "Untagged";
+                if (obs.transform.Find("Cube") != null)
+                {
+                    obs.transform.Find("Cube").GetComponent<Renderer>().enabled = true;
+                }
+            }
 
             
             if (id == 10)
