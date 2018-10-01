@@ -3803,8 +3803,8 @@ public class ScenarioTestUrbano : MonoBehaviour
     {
         RoadGraphEdge edge1 = new RoadGraphEdge();
         RoadGraphEdge edge2 = new RoadGraphEdge();
-        RoadGraphEdge edge3 = new RoadGraphEdge();
-        RoadGraphEdge edge4 = new RoadGraphEdge();
+        //RoadGraphEdge edge3 = new RoadGraphEdge();
+        //RoadGraphEdge edge4 = new RoadGraphEdge();
 
         edge1.id = 1014;
         edge1.subId = 0;
@@ -3812,19 +3812,19 @@ public class ScenarioTestUrbano : MonoBehaviour
         edge2.id = 125;
         edge2.subId = 0;
 
-        edge3.id = 159;
-        edge3.subId = 0;
+        //edge3.id = 159;
+        //edge3.subId = 0;
 
-        edge4.id = 158;
-        edge4.subId = 0;
+        //edge4.id = 158;
+        //edge4.subId = 0;
 
 
 
         List<RoadGraphEdge> percorso = new List<RoadGraphEdge>();
         percorso.Add(edge1);
         percorso.Add(edge2);
-        percorso.Add(edge3);
-        percorso.Add(edge4);
+        //percorso.Add(edge3);
+        //percorso.Add(edge4);
 
         return percorso;
     }
