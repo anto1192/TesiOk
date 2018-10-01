@@ -27,7 +27,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
     private Dictionary<string, int> CSVSignDictionary = new Dictionary<string, int>(); //this is to store the precomputed values of angle(speed)
 
     private Quaternion rot0; //this is to store the initial rotation of the needle
-    
+
     private LayerMask mask;
 
     private Transform rayCastPos;
@@ -39,7 +39,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
 
     public DriverCamera DriverCam { set { driverCam = value; } }
     public GameObject LeapCam { set { leapCam = value; } }
-    public Transform RayCastPos { get { return rayCastPos; }}
+    public Transform RayCastPos { get { return rayCastPos; } }
     public Rigidbody Rb { get { return rb; } }
     public VehicleController Vc { get { return vehicleController; } }
     public LayerMask Mask { get { return mask; } }
@@ -69,7 +69,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
     void Update()
     {
         SetSpeed();
-        
+
         EnvironmentDetect();
 
         if (Input.GetKeyDown(KeyCode.D))
@@ -194,18 +194,19 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                         bounds.size = boxCol.size * 1.25f;
                         GameObject boundingCube = CreateBoundingCube(other.transform, other.transform.position + bounds.center, bounds.size);
                         GameObject infoTagSign = CreateInfoTagSign(other.transform.position + bounds.center);
-                        UpdateIDsAndGos(boundingCube, infoTagSign, other, bounds);  
+                        UpdateIDsAndGos(boundingCube, infoTagSign, other, bounds);
                     }
                     break;
                 case 12:
                     {  //obstacle
-                        
+
                         Bounds bounds = new Bounds();
                         GameObject boundingCube = null;
                         GameObject infoTag = null;
-                        if  (other.transform.root.CompareTag("TrafficCar"))
+                        if (other.transform.root.CompareTag("TrafficCar"))
                         {
-                            if (other.transform.name.Equals("Body1")) {
+                            if (other.transform.name.Equals("Body1"))
+                            {
                                 bounds = ComputeBounds(other.transform.root);
                                 try
                                 {
@@ -215,12 +216,12 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                 {
                                     Debug.Log("object incriminated is: ");
                                 }
-                                
+
                                 infoTag = CreateInfoTag(other.transform.position + bounds.center);
                                 UpdateIDsAndGos(boundingCube, infoTag, other, bounds);
                                 other.transform.root.gameObject.AddComponent<TrafficCarNavigationLineUrban>();
                             }
-                        }   
+                        }
                         else
                         {
                             bounds = ComputeBounds(other.transform);
@@ -232,7 +233,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                             {
                                 Debug.Log("object incriminated is: ");
                             }
-                            
+
                             infoTag = CreateInfoTag(other.transform.position + bounds.center);
                             UpdateIDsAndGos(boundingCube, infoTag, other, bounds);
                         }
@@ -350,7 +351,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
 
             case "tree_dec01":
                 {
-                    
+
                     trasl = new Vector3(0, -Mathf.Abs(trasl.z) * 0.25f, Mathf.Abs(trasl.x));
                 }
                 break;
@@ -470,7 +471,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
         {
             Vector3 obstacleNextPos = cubesAndTags.other.transform.position;
             cubesAndTags.obstaclePrevSpeed = (obstacleNextPos - cubesAndTags.obstaclePrevPos).magnitude / (t - cubesAndTags.obstaclePrevTime); //speed works in play mode, in editor mode since you stop playing, Time.deltatime gives erratic results
-            cubesAndTags.obstaclePrevPos = obstacleNextPos; 
+            cubesAndTags.obstaclePrevPos = obstacleNextPos;
             cubesAndTags.obstaclePrevTime = t;
             cubesAndTags.obstacleNextTime = t + 0.5f;
             return cubesAndTags.obstaclePrevSpeed;
@@ -482,11 +483,14 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
 
     void SetSpeed()
     {
+        TrafAIMotor motor = GetComponentInParent<TrafAIMotor>();
         float speedToShow = Mathf.RoundToInt(rb.velocity.magnitude * 3.6f);
         TextMeshProUGUI textMeshProUGUI = speed.GetComponent<TextMeshProUGUI>();
-        if ((speedToShow > 50f && vehicleController.accellInput != 0))
+        if ((motor != null && speedToShow > motor.limiteVelocita && vehicleController.accellInput != 0))
+        {
             //speedToShow = 50f;
             textMeshProUGUI.color = Color.red;
+        }
         else
             textMeshProUGUI.color = Color.white;
         speed.GetComponent<TextMeshProUGUI>().text = speedToShow.ToString(); //speed in kph
@@ -526,7 +530,8 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                 }
                 IDsAndGos[other.gameObject.GetInstanceID()].DisableCubesAndTags();
                 IDsAndGos.Remove(other.gameObject.GetInstanceID());
-            } else if (other.gameObject.layer.Equals(LayerMask.NameToLayer("obstacle")))
+            }
+            else if (other.gameObject.layer.Equals(LayerMask.NameToLayer("obstacle")))
             {
                 IDsAndGos[other.gameObject.GetInstanceID()].DisableCubesAndTags();
                 IDsAndGos.Remove(other.gameObject.GetInstanceID());
@@ -648,13 +653,13 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                     }
                 }
             }
-        } 
+        }
     }
 
     void PlayNearestAudio()
     {
         List<CubesAndTags> audioIDsAndGos = IDsAndGos.Values.Where(x => x.boundingCube[0] != null).Where(x => x.boundingCube[0].GetComponent<AudioSource>().isPlaying == true).ToList();
-        
+
         CubesAndTags nearest = null; //nearest object whose AudioSource is playing
         float nearDist = 9999;
         foreach (var item in audioIDsAndGos)
@@ -708,8 +713,8 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                     sprite = ResourceHandler.instance.sprites[17];
                                 else
                                     sprite = objectsList[i].other.GetComponent<Image>().sprite;
-                               riskAssessment.BoundingCubeLerperSF(objectsList[i], bounds, sprite, ReturnTrasl(bounds, objectsList[i].other), 0);
-                                
+                                riskAssessment.BoundingCubeLerperSF(objectsList[i], bounds, sprite, ReturnTrasl(bounds, objectsList[i].other), 0);
+
                             }
                             else
                             {
@@ -719,7 +724,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                     objectsList[i].boundingCube[0].GetComponent<Renderer>().enabled = true;
                                     objectsList[i].infoTag[0].GetComponent<Canvas>().enabled = true;
                                     int spriteIndex = CSVSignDictionary[objectsList[i].other.name];
-                                    riskAssessment.UpdateInfoTag(objectsList[i], bounds, "", ResourceHandler.instance.sprites[spriteIndex], dist, Vector3.zero, 0); 
+                                    riskAssessment.UpdateInfoTag(objectsList[i], bounds, "", ResourceHandler.instance.sprites[spriteIndex], dist, Vector3.zero, 0);
                                 }
                                 else
                                 {
@@ -817,7 +822,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                             {
                                                 Panel.transform.GetChild(3).GetComponent<Image>().sprite = ResourceHandler.instance.sprites[27];
                                                 Panel.transform.GetChild(2).GetComponent<TextMeshProUGUI>().text = "GO";
-                                                Panel.transform.GetChild(2).GetComponent<TextMeshProUGUI>().color = new Color32(0x3B, 0xAA, 0x34, 0xFF); 
+                                                Panel.transform.GetChild(2).GetComponent<TextMeshProUGUI>().color = new Color32(0x3B, 0xAA, 0x34, 0xFF);
 
                                                 anim.SetInteger("trafLightState", (int)TrafLightState.GREEN);
 
@@ -839,7 +844,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                                 {
                                                     Panel.transform.GetChild(2).GetComponent<TextMeshProUGUI>().text = "GO";
                                                 }
-                                                Panel.transform.GetChild(2).GetComponent<TextMeshProUGUI>().color = new Color32(0xFE, 0xED, 0x01, 0xFF); 
+                                                Panel.transform.GetChild(2).GetComponent<TextMeshProUGUI>().color = new Color32(0xFE, 0xED, 0x01, 0xFF);
                                                 anim.SetInteger("trafLightState", (int)TrafLightState.YELLOW);
 
                                             }
@@ -850,7 +855,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                                                 Panel.transform.GetChild(2).GetComponent<TextMeshProUGUI>().color = new Color32(0xE3, 0x07, 0x13, 0xFF);
 
                                                 anim.SetInteger("trafLightState", (int)TrafLightState.RED);
-                                                
+
                                             }
 
 
@@ -905,7 +910,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                             }
                         }
                         break;
-                }       
+                }
             }
         }
     }

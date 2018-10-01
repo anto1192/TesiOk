@@ -391,11 +391,14 @@ public class EnvironmentSensingAltUrbanTriggerSelective : MonoBehaviour
 
     void SetSpeed()
     {
+        TrafAIMotor motor = GetComponentInParent<TrafAIMotor>();
         float speedToShow = Mathf.RoundToInt(rb.velocity.magnitude * 3.6f);
         TextMeshProUGUI textMeshProUGUI = speed.GetComponent<TextMeshProUGUI>();
-        if ((speedToShow > 50f && vehicleController.accellInput != 0))
+        if ((motor != null && speedToShow > motor.limiteVelocita && vehicleController.accellInput != 0))
+        {
             //speedToShow = 50f;
             textMeshProUGUI.color = Color.red;
+        }
         else
             textMeshProUGUI.color = Color.white;
         speed.GetComponent<TextMeshProUGUI>().text = speedToShow.ToString(); //speed in kph
