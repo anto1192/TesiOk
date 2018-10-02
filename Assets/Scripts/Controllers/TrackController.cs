@@ -1139,8 +1139,8 @@ public class TrackController : UnitySingleton<TrackController> {
         if (id == 10)
         {
             //spot = GetNextIntersectionTaffic();
-            spot[0] = new Vector3(1401f, 11.1f, 755.7f);
-            spot[1] = new Vector3(1399.2f, 11.1f, 747.62f);
+            spot[0] = new Vector3(1402f, 11.1f, 755.7f);
+            spot[1] = new Vector3(1401.6f, 11.1f, 747.62f);
         }
         if (id == 11 ) //&& spot[0] == Vector3.zero)
         {
@@ -1191,6 +1191,7 @@ public class TrackController : UnitySingleton<TrackController> {
                 {
                     obs.transform.Find("Cube").GetComponent<Renderer>().enabled = true;
                 }
+                obs.GetComponent<AnimalObstacle>().triggerDistance = 40f;
             }
 
             
