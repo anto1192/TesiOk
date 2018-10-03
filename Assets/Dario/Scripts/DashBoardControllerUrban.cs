@@ -8,13 +8,11 @@ using TMPro;
 
 public class DashBoardControllerUrban : MonoBehaviour
 {
-    private EnvironmentSensingAltUrbanTrigger envSensingUrban;
-    private PlayerCarLinesUrban playerCarLinesUrban;
-
-    private GameObject warning;
+    private EnvironmentSensingAltUrbanTriggerSelective envSensingUrban;
+   
     private GameObject turnLeft;
     private GameObject turnRight;
-    private GameObject speedLimit;
+   
     private GameObject laneWarning;
     private GameObject laneWarningLeft;
     private bool hasPlayedON = false;
@@ -23,15 +21,10 @@ public class DashBoardControllerUrban : MonoBehaviour
     private AudioSource turnLeftAudioSource;
     private AudioSource turnRightAudioSource;
 
-    private Image speedLimitImage;
-    private Image warnImage;
-    private Image laneImage;
-    private Image laneLeftImage;
+    
 
     private Transform rayCastPos;
-    private Rigidbody rb;
     private VehicleController vehicleController;
-    private LayerMask mask;
 
     private Animator turnLeftAnim;
     private Animator turnRightAnim;
@@ -40,51 +33,40 @@ public class DashBoardControllerUrban : MonoBehaviour
 
     void Start()
     {
-        envSensingUrban = transform.parent.Find("colliderEnv").gameObject.GetComponent<EnvironmentSensingAltUrbanTrigger>();
-        playerCarLinesUrban = transform.parent.GetComponent<PlayerCarLinesUrban>();
-
+        envSensingUrban = transform.parent.Find("colliderEnv").gameObject.GetComponent<EnvironmentSensingAltUrbanTriggerSelective>();
+        
         rayCastPos = envSensingUrban.RayCastPos;
-        rb = envSensingUrban.Rb;
+       
         vehicleController = envSensingUrban.Vc;
-        mask = envSensingUrban.Mask;
-
+        
         turnLeftAnim = turnLeft.GetComponent<Animator>();
         turnRightAnim = turnRight.GetComponent<Animator>();
 
         turnLeftAudioSource = turnLeft.GetComponent<AudioSource>();
         turnRightAudioSource = turnRight.GetComponent<AudioSource>();
-
-        speedLimitImage.sprite = ResourceHandler.instance.sprites[33];
-        speedLimitImage.enabled = true;
     }
 
     void OnEnable()
     {
         SetSpeedPanel();
 
-        warning.SetActive(true);
+        
         turnLeft.SetActive(true);
         turnRight.SetActive(true);
-        speedLimit.SetActive(true);
-        laneWarning.SetActive(true);
-        laneWarningLeft.SetActive(true);
+        
     }
 
     void OnDisable()
     {
-        warning.SetActive(false);
+        
         turnLeft.SetActive(false);
         turnRight.SetActive(false);
-        speedLimit.SetActive(false);
-        laneWarning.SetActive(false);
-        laneWarningLeft.SetActive(false);
+        
     }
 
     void Update()
     {
         SetTurnSignal();
-        SetCollisionWarning();
-        SetLaneWarning();
     }
 
     void SetTurnSignal()
@@ -96,22 +78,23 @@ public class DashBoardControllerUrban : MonoBehaviour
             AudioSource currentAudioSource = null;
             Animator currentAnim = null;
 
-            if (trafAIMotor.hasNextEntry && trafAIMotor.nextEntry.identifier != 1088) //this used to exclude the first road which is the only exception which I cannot exclude by the angle
+            if (trafAIMotor.hasNextEntry /*&& trafAIMotor.nextEntry.identifier != 1088*/) //this used to exclude the first road which is the only exception which I cannot exclude by the angle
             {//I am waiting at the intersection
                 float dstToTarget = Vector3.Distance(rayCastPos.position, trafAIMotor.nextEntry.waypoints[0]);
                 if (dstToTarget <= 20f) 
                 {
-                    Vector3 nextRoadWayPoint = trafAIMotor.nextEntry.waypoints[trafAIMotor.nextEntry.waypoints.Count - 1]; //I save the last waypoint of the next road
-                    Vector3 heading = (nextRoadWayPoint - rayCastPos.position).normalized; //direction from PlayerCar to the the last waypoint of the next road
+                    TrafEntry nextRoadWaypoints = trafAIMotor.system.GetEntry(trafAIMotor.fixedPath[trafAIMotor.currentFixedNode].id, trafAIMotor.fixedPath[trafAIMotor.currentFixedNode].subId); //points of the next piece of road
+                    Vector3 heading = (nextRoadWaypoints.waypoints[nextRoadWaypoints.waypoints.Count - 1] - rayCastPos.position).normalized;
                     float angle = Vector3.SignedAngle(rayCastPos.forward, heading, Vector3.up); //angle between heading and direction of PlayerCar
+                    print(angle);
 
-                    if (angle < -4f)
+                    if (angle < -20f)
                     {
                         currentAnim = turnLeftAnim;
                         currentAudioSource = turnLeftAudioSource;
                         lastTurnSignal = TurnSignal.LEFT;
                     }
-                    else if (angle > 4f)
+                    else if (angle > 20f)
                     {
                         currentAnim = turnRightAnim;
                         currentAudioSource = turnRightAudioSource;
@@ -157,80 +140,14 @@ public class DashBoardControllerUrban : MonoBehaviour
     void SetSpeedPanel()
     {
         Transform speedPanel = transform.GetChild(0).GetChild(0);
-        warning = speedPanel.Find("Warning").gameObject;
+        
         turnLeft = speedPanel.Find("TurnLeft").gameObject;
         turnRight = speedPanel.Find("TurnRight").gameObject;
-        speedLimit = speedPanel.Find("SpeedLimit").gameObject;
-        laneWarning = speedPanel.Find("LaneWarning").gameObject;
-        laneWarningLeft = speedPanel.Find("LaneWarningLeft").gameObject;
-
-        warnImage = warning.GetComponent<Image>();
-        speedLimitImage = speedLimit.GetComponent<Image>();
-        laneImage = laneWarning.GetComponent<Image>();
-        laneLeftImage = laneWarningLeft.GetComponent<Image>();
     }
 
-    void SetLaneWarning()
-    {
-        laneImage.enabled = true;
-        laneLeftImage.enabled = true;
-        switch (playerCarLinesUrban.laneState)
-        {
-            case PlayerCarLinesUrban.LaneState.GREEN:
-                {
-                    laneLeftImage.color = Color.green;
-                }
-                break;
-            case PlayerCarLinesUrban.LaneState.YELLOW:
-                {
-                    laneLeftImage.color = Color.yellow;
-                }
-                break;
+    
 
-            case PlayerCarLinesUrban.LaneState.RED:
-                {
-                    laneLeftImage.color = Color.red;
-                }
-                break;
-        }
-    }
-
-    void SetCollisionWarning()
-    {
-        List<CubesAndTags> objectsList = envSensingUrban.IDsAndGos.Values.Where(x => x.dangerState != CubesAndTags.DangerState.NONE).ToList();
-
-        if (objectsList.Count != 0)
-        {
-            CubesAndTags nearest = null; //nearest object whose AudioSource is playing
-            float nearDist = 9999;
-            foreach (var item in objectsList)
-            {
-                float thisDist = (transform.position - item.other.transform.position).sqrMagnitude; //this is squaredMagnitude i.e. magnitude without square root
-                if (thisDist < nearDist)
-                {
-                    nearDist = thisDist;
-                    nearest = item;
-                }
-            }
-
-            switch (nearest.dangerState)
-            {
-                case CubesAndTags.DangerState.YELLOW:
-                    {
-                        warnImage.sprite = ResourceHandler.instance.sprites[29]; //yellow warning 
-                        warnImage.enabled = true;
-                    }
-                    break;
-                case CubesAndTags.DangerState.RED:
-                    {
-                        warnImage.sprite = ResourceHandler.instance.sprites[30]; //red warning
-                        warnImage.enabled = true;
-                    }
-                    break;
-            }
-        } else
-            warnImage.enabled = false;
-    }
+    
 }
 
 
