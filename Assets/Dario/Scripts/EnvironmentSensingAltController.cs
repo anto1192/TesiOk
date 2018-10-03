@@ -8,7 +8,7 @@ public class EnvironmentSensingAltController : MonoBehaviour
     private Environment selectedEnv = Environment.NONE;
     
     private EnvironmentSensingAltTrigger envSensing;
-    private EnvironmentSensingAltUrbanTriggerSelective envSensingUrban;
+    private EnvironmentSensingAltUrbanTrigger/*Selective*/ envSensingUrban;
 
     private float radius = 150;
 
@@ -53,7 +53,7 @@ public class EnvironmentSensingAltController : MonoBehaviour
             
             transform.gameObject.AddComponent<PlayerCarLinesUrban>();
 
-            envSensingUrban = ColliderEnv.transform.gameObject.AddComponent<EnvironmentSensingAltUrbanTriggerSelective>();
+            envSensingUrban = ColliderEnv.transform.gameObject.AddComponent<EnvironmentSensingAltUrbanTrigger/*Selective*/>();
             envSensingUrban.DriverCam = driverCam;
             envSensingUrban.LeapCam = leapCam;
             envSensingUrban.enabled = true;
@@ -61,6 +61,7 @@ public class EnvironmentSensingAltController : MonoBehaviour
 
         Time.timeScale = 1.0f;
         transform.Find("InteriorLight").gameObject.SetActive(true);
+        Instantiate(ResourceHandler.instance.prefabs[15]); //Tablet
 
         Destroy(this);
     }
