@@ -13,6 +13,17 @@ public class ResetPosizione : MonoBehaviour {
         {
             gameObject.SetActive(false);
             interventoAllaGuidaConsentito = true;
+
+            //abilito la driverCamera
+            GameObject driverCamera = GameObject.Find("DriverCamera");
+            GameObject center = driverCamera.transform.Find("Center").gameObject;
+            center.GetComponent<Camera>().enabled = true;
+        } else
+        {
+            //disabilito la driverCamera
+            GameObject driverCamera = GameObject.Find("DriverCamera");
+            GameObject center = driverCamera.transform.Find("Center").gameObject;
+            center.GetComponent<Camera>().enabled = false;
         }
     }
 
