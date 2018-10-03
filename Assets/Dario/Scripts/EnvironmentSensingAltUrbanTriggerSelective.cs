@@ -72,8 +72,6 @@ public class EnvironmentSensingAltUrbanTriggerSelective : MonoBehaviour
 
         EnvironmentDetect();
 
-        if (Input.GetKeyDown(KeyCode.D))
-            DisableEnvironmentDetect();
     }
 
     void LateUpdate()
@@ -467,27 +465,6 @@ public class EnvironmentSensingAltUrbanTriggerSelective : MonoBehaviour
                 }
             }
         }
-    }
-
-    void DisableEnvironmentDetect()
-    {
-        GameObject instrumentCluster = transform.parent.Find("InstrumentCluster").gameObject;
-        if (!dashORHud)
-        {
-            if (instrumentCluster.GetComponent<DashBoardControllerUrban>() == null)
-                instrumentCluster.AddComponent<DashBoardControllerUrban>();
-            else
-                instrumentCluster.GetComponent<DashBoardControllerUrban>().enabled = true;
-        }
-        else
-            instrumentCluster.GetComponent<DashBoardControllerUrban>().enabled = false;
-
-        Camera camActive = driverCam.transform.GetChild(1).GetComponent<Camera>();
-        if (camActive.enabled)
-            camActive.cullingMask ^= 1 << LayerMask.NameToLayer("Graphics"); //use leapCam in VR
-        else
-            leapCam.GetComponent<Camera>().cullingMask ^= 1 << LayerMask.NameToLayer("Graphics"); //use leapCam in VR
-        dashORHud = !dashORHud;
     }
 
     void CreateInfoTagResizeCurve()

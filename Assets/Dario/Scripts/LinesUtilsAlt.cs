@@ -35,13 +35,36 @@ public class LinesUtilsAlt : LinesUtils
 
         if (trafAIMotor != null)
         {
-            if (trafAIMotor.hasNextEntry)
+            bool hasNextEntryOk;
+            TrafEntry nextEntryOk;
+            int index;
+            if (car.CompareTag("Player"))
+            {
+                //tesla
+                hasNextEntryOk = trafAIMotor.hasNextEntry50;
+                nextEntryOk = trafAIMotor.nextEntry50;
+                if (trafAIMotor.hasNextEntry)
+                {
+                    index = trafAIMotor.currentFixedNode;
+                }
+                else
+                {
+                    index = trafAIMotor.currentFixedNode + 1;
+                }
+            }
+            else
+            {
+                hasNextEntryOk = trafAIMotor.hasNextEntry;
+                nextEntryOk = trafAIMotor.nextEntry;
+                index = trafAIMotor.currentFixedNode;
+            }
+            if (hasNextEntryOk)
             {//I am waiting at the intersection
-                TrafEntry nextRoadWaypoints = trafAIMotor.system.GetEntry(trafAIMotor.fixedPath[trafAIMotor.currentFixedNode].id, trafAIMotor.fixedPath[trafAIMotor.currentFixedNode].subId); //points of the next piece of road
+                TrafEntry nextRoadWaypoints = trafAIMotor.system.GetEntry(trafAIMotor.fixedPath[index].id, trafAIMotor.fixedPath[index].subId); //points of the next piece of road
                 if (nextRoadWaypoints.waypoints.Count == 2)
                 {
                     LinePoints.Add(car.transform.position);
-                    List<Vector3> smoothedPoints = ChaikinCurve(trafAIMotor.nextEntry.waypoints.ToArray(), 4); //intersection points
+                    List<Vector3> smoothedPoints = ChaikinCurve(nextEntryOk.waypoints.ToArray(), 4); //intersection points
                     initialList.AddRange(smoothedPoints);
                     initialList.Add(nextRoadWaypoints.waypoints[nextRoadWaypoints.waypoints.Count - 1]);
                 }
@@ -49,12 +72,12 @@ public class LinesUtilsAlt : LinesUtils
                 {
                     List<Vector3> smoothedPoints = new List<Vector3>();
                     smoothedPoints.Add(car.transform.position);
-                    smoothedPoints.Add(trafAIMotor.nextEntry.waypoints[0]); //intersection points
+                    smoothedPoints.Add(nextEntryOk.waypoints[0]); //intersection points
                     smoothedPoints.AddRange(nextRoadWaypoints.waypoints);
                     initialList.AddRange(ChaikinCurve(smoothedPoints.ToArray(), 2));
                 }
             }
-            else if (!trafAIMotor.hasNextEntry  && trafAIMotor.currentEntry.isIntersection())
+            else if (!hasNextEntryOk  && trafAIMotor.currentEntry.isIntersection())
             {//I am crossing the intersection
                 TrafEntry nextRoadWaypoints = trafAIMotor.system.GetEntry(trafAIMotor.fixedPath[trafAIMotor.currentFixedNode].id, trafAIMotor.fixedPath[trafAIMotor.currentFixedNode].subId); //points of the next piece of road
                 if (nextRoadWaypoints.waypoints.Count == 2)
@@ -89,7 +112,7 @@ public class LinesUtilsAlt : LinesUtils
                     //initialList.AddRange(smoothedPoints);
                 }
             }
-            else if (!trafAIMotor.hasNextEntry && !trafAIMotor.currentEntry.isIntersection())
+            else if (!hasNextEntryOk && !trafAIMotor.currentEntry.isIntersection())
             {//I am on curves or on straight lines
                 LinePoints.Add(car.transform.position);
                 if (trafAIMotor.currentEntry.waypoints.Count == 2)

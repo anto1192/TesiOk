@@ -72,8 +72,6 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
 
         EnvironmentDetect();
 
-        if (Input.GetKeyDown(KeyCode.D))
-            DisableEnvironmentDetect();
     }
 
     void LateUpdate()
@@ -561,27 +559,6 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
         }
     }
 
-    void DisableEnvironmentDetect()
-    {
-        GameObject instrumentCluster = transform.parent.Find("InstrumentCluster").gameObject;
-        if (!dashORHud)
-        {
-            if (instrumentCluster.GetComponent<DashBoardControllerUrban>() == null)
-                instrumentCluster.AddComponent<DashBoardControllerUrban>();
-            else
-                instrumentCluster.GetComponent<DashBoardControllerUrban>().enabled = true;
-        }
-        else
-            instrumentCluster.GetComponent<DashBoardControllerUrban>().enabled = false;
-
-        Camera camActive = driverCam.transform.GetChild(1).GetComponent<Camera>();
-        if (camActive.enabled)
-            camActive.cullingMask ^= 1 << LayerMask.NameToLayer("Graphics"); //use leapCam in VR
-        else
-            leapCam.GetComponent<Camera>().cullingMask ^= 1 << LayerMask.NameToLayer("Graphics"); //use leapCam in VR
-        dashORHud = !dashORHud;
-    }
-
     void CreateInfoTagResizeCurve()
     {
         float distMin = 5.5f;
@@ -768,7 +745,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                         {
                             Bounds bounds = objectsList[i].bounds[0];
                             Sprite sprite = objectsList[i].other.GetComponent<Image>().sprite;
-                            if (/*BOUNDINGCUBE*/objectsList[i].other.CompareTag("Obstacle"))
+                            if (objectsList[i].other.CompareTag("Obstacle") || objectsList[i].other.CompareTag("Stop"))
                                 riskAssessment.BoundingCubeLerperObstacleDefSF(objectsList[i], bounds, CalculateObstacleSpeed(objectsList[i]), 0, sprite, Vector3.zero, 0);
                             else
                             {
