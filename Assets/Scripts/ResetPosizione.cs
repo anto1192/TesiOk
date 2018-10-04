@@ -18,14 +18,14 @@ public class ResetPosizione : MonoBehaviour {
             GameObject driverCamera = GameObject.Find("DriverCamera");
             GameObject center = driverCamera.transform.Find("Center").gameObject;
             center.GetComponent<Camera>().enabled = true;
-            center.GetComponent<AudioListener>().enabled = true;
+            driverCamera.GetComponent<AudioListener>().enabled = true;
         } else
         {
             //disabilito la driverCamera
             GameObject driverCamera = GameObject.Find("DriverCamera");
             GameObject center = driverCamera.transform.Find("Center").gameObject;
             center.GetComponent<Camera>().enabled = false;
-            center.GetComponent<AudioListener>().enabled = false;
+            driverCamera.GetComponent<AudioListener>().enabled = false;
         }
     }
 

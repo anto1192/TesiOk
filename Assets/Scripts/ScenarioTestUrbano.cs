@@ -445,9 +445,9 @@ public class ScenarioTestUrbano : MonoBehaviour
         TrafficLightContainer container2 = entry2.light;
         TrafficLight[] lights = container.gameObject.GetComponentsInParent<TrafficLight>();
         lights[0].StopAllCoroutines();
-        lights[0].StartCoroutine(courutineSemaforoVerde(container));
-        lights[0].StartCoroutine(courutineSemaforoVerde(container1));
-        lights[0].StartCoroutine(courutineSemaforoRosso(container2));
+        lights[0].StartCoroutine(courutineSemaforoRossoLungo(container));
+        lights[0].StartCoroutine(courutineSemaforoRossoLungo(container1));
+        lights[0].StartCoroutine(courutineSemaforoVerdeLungo(container2));
     }
 
     public void semaforo49()
@@ -1059,6 +1059,8 @@ public class ScenarioTestUrbano : MonoBehaviour
         List<RoadGraphEdge> percorso49_1 = ottieniPercorso49_1();
         TrafAIMotor macchina = CreaMacchinaTraffico(50, 1, 0f, percorso49_1);
         macchina.maxSpeed = 10f;
+
+        semaforo49a();
 
 
 
@@ -4958,6 +4960,18 @@ public class ScenarioTestUrbano : MonoBehaviour
         yield return new WaitForSeconds(2f);
         motor.Init();
         car.GetComponent<xSimScript>().enabled = true;
+        EnvironmentSensingAltUrbanTriggerSelective selective = car.GetComponentInChildren<EnvironmentSensingAltUrbanTriggerSelective>();
+        if (selective != null)
+        {
+            selective.enabled = true;
+        } else
+        {
+            EnvironmentSensingAltUrbanTrigger omni = car.GetComponentInChildren<EnvironmentSensingAltUrbanTrigger>();
+            if (omni != null)
+            {
+                omni.enabled = true;
+            }
+        }
     }
 
     //ANTONELLO
