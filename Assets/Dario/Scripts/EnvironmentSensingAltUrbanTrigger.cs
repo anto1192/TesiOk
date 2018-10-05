@@ -725,11 +725,13 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
 
                                 if ((objectsList[i].other.transform.name.Equals("StopSign") || objectsList[i].other.transform.name.Equals("RoadWork") || objectsList[i].other.transform.name.Equals("Speed_Limit_40") || objectsList[i].other.transform.name.Equals("Speed_Limit_50") || objectsList[i].other.transform.name.Equals("End_Limit_40") || objectsList[i].other.transform.name.Equals("Speed_Limit_60")) && dist <= 40)
                                 {
-                                    if (dist <= 40)
-                                        anim.SetBool("Blink", true);
-                                    else
-                                        anim.SetBool("Blink", false);
+                                    anim.SetBool("Blink", true);
+                                    float dotproduct2 = Vector3.Dot(gameObject.transform.TransformDirection(Vector3.forward), objectsList[i].other.transform.position - transform.position); //play audio only if sign is in front of me
+                                    if (dotproduct2 > 0)
+                                        objectsList[i].infoTag[0].GetComponent<PlaySignSignal>().PlayAudio(); //DARIO
                                 }
+                                else
+                                    anim.SetBool("Blink", false);
                             }
                             else
                             {

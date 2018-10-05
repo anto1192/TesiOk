@@ -250,20 +250,13 @@ public class RiskAssessment
                 anim.SetFloat("Multiplier", 3.0f);
                 anim.SetBool("BlinkLoop", blink);
 
-                Debug.Log("obstacle is: " + cubesAndTags.other.name + dstToTargetEncoded / distToWarnEncoded);
+                //Debug.Log("obstacle is: " + cubesAndTags.other.name + dstToTargetEncoded / distToWarnEncoded);
 
                 PlayAudio(audio, dstToTargetEncoded / distToWarnEncoded, cubesAndTags);
 
                 cubesAndTags.prevState = dstToTargetEncoded / distToWarnEncoded;
 
                 cubesAndTags.gradient = CubesAndTags.Gradient.ON;
-
-                if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
-                {
-                    Transform lineRenderer = cubesAndTags.other.transform.root.Find("TrafLineRenderer");
-                    if (lineRenderer)
-                        lineRenderer.GetComponent<LineRenderer>().enabled = true;
-                }
             }
             else
             {
@@ -277,7 +270,7 @@ public class RiskAssessment
                 else
                     value = 1;
 
-                Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
+                //Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
                 Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
                 Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
 
@@ -293,12 +286,6 @@ public class RiskAssessment
                 if (cubesAndTags.prevState >= 0.99f)
                 {
                     cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
-                    if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
-                    {
-                        Transform lineRenderer = cubesAndTags.other.transform.root.Find("TrafLineRenderer");
-                        if (lineRenderer)
-                            lineRenderer.GetComponent<LineRenderer>().enabled = false;
-                    }
                 }
             }
         }
@@ -314,7 +301,7 @@ public class RiskAssessment
             else
                 value = 1;
 
-            Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
+            //Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
             Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
             Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
 
@@ -330,14 +317,7 @@ public class RiskAssessment
             if (cubesAndTags.prevState >= 0.99f)
             {
                 cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
-                if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
-                {
-                    Transform lineRenderer = cubesAndTags.other.transform.root.Find("TrafLineRenderer");
-                    if (lineRenderer)
-                        lineRenderer.GetComponent<LineRenderer>().enabled = false;
-                }
             }
-
         }
     }//this is for dynamic objects
 
@@ -681,7 +661,7 @@ public class RiskAssessment
                 else
                     value = 1;
 
-                Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
+                //Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
                 Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
                 Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
 
@@ -712,7 +692,7 @@ public class RiskAssessment
             else
                 value = 1;
 
-            Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
+            //Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
             Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
             Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
 
@@ -785,7 +765,7 @@ public class RiskAssessment
                 else
                     value = 1;
 
-                Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
+                //Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
                 Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
                 Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
 
@@ -816,7 +796,7 @@ public class RiskAssessment
             else
                 value = 1;
 
-            Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
+            //Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
             Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
             Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
 

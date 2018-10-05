@@ -133,7 +133,6 @@ public class RiskAssessmentSelective
         if (trafAIMotor.hasNextEntry) //If I am waiting at the intersection
         {
             float dist = Vector3.Distance(rayCastPos.position, trafAIMotor.currentEntry.waypoints[trafAIMotor.currentEntry.waypoints.Count - 1]);
-            //Debug.Log(dist);
 
             if (dist <= 6.0f) //and I am located near the line that defines the intersection. This second condition is necessary since hasNextEntry is set earlier, not in correspondence with the line of the crossing.
             {
@@ -257,8 +256,13 @@ public class RiskAssessmentSelective
 
                 cubesAndTags.gradient = CubesAndTags.Gradient.ON;
 
-                if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
+                TrafficCarNavigationLineUrban trafficCarNavigationLineUrban = cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>();
+
+                if (trafficCarNavigationLineUrban)
                 {
+                    if (trafficCarNavigationLineUrban.enabled == false)
+                        trafficCarNavigationLineUrban.enabled = true;
+                
                     Transform lineRenderer = cubesAndTags.other.transform.root.Find("TrafLineRenderer");
                     if (lineRenderer)
                         lineRenderer.GetComponent<LineRenderer>().enabled = true;
