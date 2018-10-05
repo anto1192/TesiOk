@@ -103,23 +103,23 @@ public class ResetPosizione : MonoBehaviour {
         }
         if (Input.GetKeyDown(KeyCode.Keypad8) || (state.rgdwPOV[0] == 0 && state.rgdwPOV[1] != 0))   //tasto 8 sulla tastiera oppure freccia sopra sul volante
         {
-            //transform.Translate(0, 0, 0.001f);
-            transform.Translate(0.001f, 0, 0);
+            transform.Translate(0, 0, 0.001f);
+            //transform.Translate(0.001f, 0, 0);
         }
         if (Input.GetKeyDown(KeyCode.Keypad2) || state.rgdwPOV[0] == 18000)  //tasto 2 sulla tastiera oppure freccia sotto sul volante
         {
-            //transform.Translate(0, 0, -0.001f);
-            transform.Translate(-0.001f, 0, 0);
+            transform.Translate(0, 0, -0.001f);
+            //transform.Translate(-0.001f, 0, 0);
         }
         if (Input.GetKeyDown(KeyCode.Keypad6) || state.rgdwPOV[0] == 9000)  //tasto * sulla tastiera oppure freccia destra sul volante
         {
-            //transform.Translate(0.001f, 0, 0);
-            transform.Translate(0, 0, -0.001f);
+            transform.Translate(0.001f, 0, 0);
+            //transform.Translate(0, 0, -0.001f);
         }
         if (Input.GetKeyDown(KeyCode.Keypad4) || state.rgdwPOV[0] == 27000)  //tasto / sulla tastiera oppure freccia sinistra sul volante
         {
-            //transform.Translate(-0.001f, 0, 0);
-            transform.Translate(0, 0, 0.001f);
+            transform.Translate(-0.001f, 0, 0);
+            //transform.Translate(0, 0, 0.001f);
         }
 
         if (Input.GetKeyDown(KeyCode.F6) || state.rgbButtons[25] == 128) //tasto B
