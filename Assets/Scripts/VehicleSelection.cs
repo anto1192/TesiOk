@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class VehicleSelection : MonoBehaviour {
+public class VehicleSelection : MonoBehaviour
+{
 
     TrafAIMotor motor = null;
     GameObject macchinaTrafficoDavanti;
@@ -20,7 +21,7 @@ public class VehicleSelection : MonoBehaviour {
     void FixedUpdate()
     {
 
-        
+
         if (motor == null)
         {
             if (gameObject.GetComponent<TrafAIMotor>() == null)
@@ -31,28 +32,6 @@ public class VehicleSelection : MonoBehaviour {
             envSelective = transform.Find("colliderEnv").GetComponent<EnvironmentSensingAltUrbanTriggerSelective>(); //DARIO
         }
 
-        //CONTROLLO AUTO DAVANTI
-        /*if (motor.somethingInFront && motor.oggettoRilevato != null)
-        {
-            //c'è qualcosa davanti la macchina e si tratta di una macchina del traffico
-
-            if (macchinaTrafficoDavanti != motor.oggettoRilevato)
-            {
-                //devo visualizzare il box
-                macchinaTrafficoDavanti = motor.oggettoRilevato;
-                AggiungiBox(macchinaTrafficoDavanti);               
-                
-            }
-        }
-        else
-        {
-            if (macchinaTrafficoDavanti != null)
-            {
-                //non devo visualizzare piu il box
-                RimuoviBoxLinea(macchinaTrafficoDavanti);               
-                macchinaTrafficoDavanti = null;
-            }
-        }*/
         if (nuovaAuto != null)
         {
             autoTraffico.Add(nuovaAuto);
@@ -66,19 +45,19 @@ public class VehicleSelection : MonoBehaviour {
         {
             if (auto == null)
             {
-                listaIndici.Add(contatore);              
+                listaIndici.Add(contatore);
             }
             contatore++;
 
         }
-        for (int i = listaIndici.Count-1; i >= 0; i--)
+        for (int i = listaIndici.Count - 1; i >= 0; i--)
         {
             autoTraffico.RemoveAt(listaIndici[i]);
         }
 
 
         //cONTROLLO AUTO DAVANTI
-        foreach(TrafAIMotor auto in autoTraffico)
+        foreach (TrafAIMotor auto in autoTraffico)
         {
             bool controlloStessoCurrentEntry = auto.currentEntry.identifier == motor.currentEntry.identifier && auto.currentEntry.subIdentifier == motor.currentEntry.subIdentifier;
             bool controlloNextEntry = (motor.nextEntry != null && auto.currentEntry.identifier == motor.nextEntry.identifier && auto.currentEntry.subIdentifier == motor.nextEntry.subIdentifier);
@@ -87,18 +66,18 @@ public class VehicleSelection : MonoBehaviour {
             if (controlloProssimoNode)
             {
 
-                    Vector3 heading = (motor.system.GetEntry(motor.fixedPath[motor.currentFixedNode].id, 0).waypoints[motor.system.GetEntry(motor.fixedPath[motor.currentFixedNode].id, 0).waypoints.Count-1] - motor.nose.transform.position).normalized;
-                    
-                    if ((Mathf.Abs(Vector3.SignedAngle(motor.nose.transform.forward, heading, Vector3.up))) > 30)
-                    {
-                        //la prossima strada da percorrere non è davanti a me (si tratta di un incrocio a T o a X
-                        controlloProssimoNode = false;
-                    }
-                
+                Vector3 heading = (motor.system.GetEntry(motor.fixedPath[motor.currentFixedNode].id, 0).waypoints[motor.system.GetEntry(motor.fixedPath[motor.currentFixedNode].id, 0).waypoints.Count - 1] - motor.nose.transform.position).normalized;
+
+                if ((Mathf.Abs(Vector3.SignedAngle(motor.nose.transform.forward, heading, Vector3.up))) > 30)
+                {
+                    //la prossima strada da percorrere non è davanti a me (si tratta di un incrocio a T o a X
+                    controlloProssimoNode = false;
+                }
+
             }
             if (controlloProssimoNode2)
             {
-                Vector3 heading = (motor.system.GetEntry(motor.fixedPath[motor.currentFixedNode + 1].id, 0).waypoints[motor.system.GetEntry(motor.fixedPath[motor.currentFixedNode + 1].id, 0).waypoints.Count-1] - motor.nose.transform.position).normalized;
+                Vector3 heading = (motor.system.GetEntry(motor.fixedPath[motor.currentFixedNode + 1].id, 0).waypoints[motor.system.GetEntry(motor.fixedPath[motor.currentFixedNode + 1].id, 0).waypoints.Count - 1] - motor.nose.transform.position).normalized;
                 float angolo = Mathf.Abs(Vector3.SignedAngle(motor.nose.transform.forward, heading, Vector3.up));
                 if (angolo > 30)
                 {
@@ -109,14 +88,16 @@ public class VehicleSelection : MonoBehaviour {
 
             bool controlloStessoStartIncrocio = false;
 
-            if (auto.currentEntry.identifier > 1000 && (motor.currentEntry.identifier > 1000 || (motor.nextEntry != null && motor.nextEntry.identifier > 1000))) {
+            if (auto.currentEntry.identifier > 1000 && (motor.currentEntry.identifier > 1000 || (motor.nextEntry != null && motor.nextEntry.identifier > 1000)))
+            {
                 //entrambe le macchine sono in un'incrocio o si apprestano ad entrarci
                 int id, subId = 0;
                 if (motor.currentEntry.identifier > 1000)
                 {
                     id = motor.currentEntry.identifier;
                     subId = motor.currentEntry.subIdentifier;
-                } else
+                }
+                else
                 {
                     id = motor.nextEntry.identifier;
                     subId = motor.nextEntry.subIdentifier;
@@ -128,21 +109,29 @@ public class VehicleSelection : MonoBehaviour {
                 }
             }
 
-            //if ((auto.currentEntry.identifier == motor.currentEntry.identifier && auto.currentEntry.subIdentifier == motor.currentEntry.subIdentifier)
-            //    || (motor.nextEntry!= null && auto.currentEntry.identifier == motor.nextEntry.identifier && auto.currentEntry.subIdentifier == motor.nextEntry.subIdentifier)
-            //    || (auto.currentEntry.identifier == motor.fixedPath[motor.currentFixedNode].id && auto.currentEntry.subIdentifier == motor.fixedPath[motor.currentFixedNode].subId)
-            //    || (auto.currentEntry.identifier > 1000 && (motor.currentEntry.identifier > 1000 || (motor.nextEntry != null && motor.nextEntry.identifier > 1000)) && ((auto.system.GetEntry(auto.currentEntry.identifier, auto.currentEntry.subIdentifier).path.start == auto.system.GetEntry(motor.currentEntry.identifier, motor.currentEntry.subIdentifier).path.start) || (auto.system.GetEntry(auto.currentEntry.identifier, auto.currentEntry.subIdentifier).path.start == auto.system.GetEntry(motor.nextEntry.identifier, motor.nextEntry.subIdentifier).path.start)))
-            //    || ((motor.currentFixedNode + 1) < motor.fixedPath.Count && auto.currentEntry.identifier == motor.fixedPath[motor.currentFixedNode + 1].id && auto.currentEntry.subIdentifier == motor.fixedPath[motor.currentFixedNode + 1].subId))
-            if (controlloStessoCurrentEntry || (!motor.hasStopTarget && (controlloNextEntry || controlloProssimoNode || controlloProssimoNode2 || controlloStessoStartIncrocio)))
+            if (Vector3.Distance(motor.gameObject.transform.position, auto.gameObject.transform.position) < 150f && (controlloStessoCurrentEntry || (!motor.hasStopTarget && (controlloNextEntry || controlloProssimoNode || controlloProssimoNode2 || controlloStessoStartIncrocio))))
             {
+
+
 
                 //anche quando hanno lo stesso punto d'ingresso negli incroci
                 if (!autoVisualizzate.Contains(auto.gameObject))
                 {
+                    ///CASO PARTICOLARE -> SCOOTER
+                    if (auto.gameObject.CompareTag("TrafficScooter"))
+                    {
+                        AggiungiBoxLinea(auto.gameObject);
+                        StartCoroutine(AttesaRimuoviLinea(auto.gameObject));
+                    }
+                    else
+                    {
+                        //caso normale
+                        AggiungiBox(auto.gameObject);
+                    }
                     autoVisualizzate.Add(auto.gameObject);
-                    AggiungiBox(auto.gameObject);
+
                 }
-                
+
             }
             else
             {
@@ -151,7 +140,7 @@ public class VehicleSelection : MonoBehaviour {
                     StartCoroutine(AttesaRimuoviBox(auto.gameObject));
                     //RimuoviBoxLinea(auto.gameObject);
                     autoVisualizzate.Remove(auto.gameObject);
-                }               
+                }
             }
         }
 
@@ -243,20 +232,21 @@ public class VehicleSelection : MonoBehaviour {
                     }
                 }
             }
-        } else
+        }
+        else
         {
             //sono uscito dall'incrocio
             if (autoIncrocio.Count != 0)
             {
-                foreach(GameObject autoTraffico in autoIncrocio)
+                foreach (GameObject autoTraffico in autoIncrocio)
                 {
                     if (autoTraffico != null)
                     {
                         //devo rimuovere il box e la linea di navigazione
                         StartCoroutine(AttesaRimuoviBox(autoTraffico));
-                    }                   
+                    }
                 }
-                autoIncrocio.RemoveRange(0, autoIncrocio.Count -1); //elimina tutti glie elementi
+                autoIncrocio.RemoveRange(0, autoIncrocio.Count - 1); //elimina tutti glie elementi
             }
         }
 
@@ -277,7 +267,13 @@ public class VehicleSelection : MonoBehaviour {
             RimuoviBoxLinea(go);
             oggettoInRimozione = null;
         }
-       
+
+    }
+
+    IEnumerator AttesaRimuoviLinea(GameObject go)
+    {
+        yield return new WaitForSeconds(3f);
+        RimuoviLinea(go);
     }
 
 
@@ -290,7 +286,6 @@ public class VehicleSelection : MonoBehaviour {
                 oggettoInRimozione = null;
             }
         }
-
         Collider other = go.transform.Find("CollidersBody/Body1").GetComponent<Collider>();
         if (envSelective.IDsAndGos.ContainsKey(other.gameObject.GetInstanceID()))
         {
@@ -320,7 +315,7 @@ public class VehicleSelection : MonoBehaviour {
             Transform trafLineRenderer = go.transform.Find("TrafLineRenderer");
             if (trafLineRenderer != null)
                 trafLineRenderer.GetComponent<LineRenderer>().enabled = true;
-        }       
+        }
     }
 
     private void RimuoviBoxLinea(GameObject go)
@@ -334,6 +329,17 @@ public class VehicleSelection : MonoBehaviour {
             Transform trafLineRenderer = go.transform.Find("TrafLineRenderer");
             if (trafLineRenderer != null)
                 trafLineRenderer.GetComponent<LineRenderer>().enabled = false;
-        } 
+        }
+    }
+
+    private void RimuoviLinea(GameObject go)
+    {
+        Collider other = go.transform.Find("CollidersBody/Body1").GetComponent<Collider>();
+        if (envSelective.IDsAndGos.ContainsKey(other.gameObject.GetInstanceID()))
+        {
+            Transform trafLineRenderer = go.transform.Find("TrafLineRenderer");
+            if (trafLineRenderer != null)
+                trafLineRenderer.GetComponent<LineRenderer>().enabled = false;
+        }
     }
 }

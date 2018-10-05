@@ -8,8 +8,6 @@ using TMPro;
 
 public class DashBoardControllerUrban : MonoBehaviour
 {
-    private EnvironmentSensingAltUrbanTriggerSelective envSensingUrban;
-   
     private GameObject turnLeft;
     private GameObject turnRight;
    
@@ -33,12 +31,9 @@ public class DashBoardControllerUrban : MonoBehaviour
 
     void Start()
     {
-        envSensingUrban = transform.parent.Find("colliderEnv").gameObject.GetComponent<EnvironmentSensingAltUrbanTriggerSelective>();
-        
-        rayCastPos = envSensingUrban.RayCastPos;
+        rayCastPos = transform.parent.Find("rayCastPos");
+        vehicleController = transform.parent.GetComponent<VehicleController>();
        
-        vehicleController = envSensingUrban.Vc;
-        
         turnLeftAnim = turnLeft.GetComponent<Animator>();
         turnRightAnim = turnRight.GetComponent<Animator>();
 
@@ -78,7 +73,7 @@ public class DashBoardControllerUrban : MonoBehaviour
             AudioSource currentAudioSource = null;
             Animator currentAnim = null;
 
-            if (trafAIMotor.hasNextEntry /*&& trafAIMotor.nextEntry.identifier != 1088*/) //this used to exclude the first road which is the only exception which I cannot exclude by the angle
+            if (trafAIMotor.hasNextEntry) //this used to exclude the first road which is the only exception which I cannot exclude by the angle
             {//I am waiting at the intersection
                 float dstToTarget = Vector3.Distance(rayCastPos.position, trafAIMotor.nextEntry.waypoints[0]);
                 if (dstToTarget <= 20f) 
@@ -86,29 +81,30 @@ public class DashBoardControllerUrban : MonoBehaviour
                     TrafEntry nextRoadWaypoints = trafAIMotor.system.GetEntry(trafAIMotor.fixedPath[trafAIMotor.currentFixedNode].id, trafAIMotor.fixedPath[trafAIMotor.currentFixedNode].subId); //points of the next piece of road
                     Vector3 heading = (nextRoadWaypoints.waypoints[nextRoadWaypoints.waypoints.Count - 1] - rayCastPos.position).normalized;
                     float angle = Vector3.SignedAngle(rayCastPos.forward, heading, Vector3.up); //angle between heading and direction of PlayerCar
-                    print(angle);
-
+                    
                     if (angle < -20f)
                     {
                         currentAnim = turnLeftAnim;
                         currentAudioSource = turnLeftAudioSource;
+                        currentAnim.SetBool("Turn", true);
                         lastTurnSignal = TurnSignal.LEFT;
                     }
                     else if (angle > 20f)
                     {
+                        
                         currentAnim = turnRightAnim;
                         currentAudioSource = turnRightAudioSource;
+                        currentAnim.SetBool("Turn", true);
                         lastTurnSignal = TurnSignal.RIGHT;
                     }
 
                     hasPlayedOFF = false;
                     if (!hasPlayedON)
                     {
-                        currentAudioSource.PlayOneShot(ResourceHandler.instance.audioClips[7]);
+                        if (currentAudioSource)
+                            currentAudioSource.PlayOneShot(ResourceHandler.instance.audioClips[7]);
                         hasPlayedON = true;
-                    }
-
-                    currentAnim.SetBool("Turn", true);
+                    }  
                 }
             }
             else if ((!trafAIMotor.hasNextEntry && !trafAIMotor.currentEntry.isIntersection()) && Mathf.Abs(vehicleController.steerInput) <= 0.02f && hasPlayedON == true) //With the steerInput condition I assure that the turn signal is set off when steer has more or less angle equal to zero
@@ -117,22 +113,23 @@ public class DashBoardControllerUrban : MonoBehaviour
                 {
                     currentAnim = turnLeftAnim;
                     currentAudioSource = turnLeftAudioSource;
+                    currentAnim.SetBool("Turn", false);
                 }
                     
                 else if (lastTurnSignal.Equals(TurnSignal.RIGHT))
                 {
                     currentAnim = turnRightAnim;
                     currentAudioSource = turnRightAudioSource;
+                    currentAnim.SetBool("Turn", false);
                 }
 
                 hasPlayedON = false;
                 if (!hasPlayedOFF)
                 {
-                    currentAudioSource.PlayOneShot(ResourceHandler.instance.audioClips[6]);
+                    if (currentAudioSource)
+                        currentAudioSource.PlayOneShot(ResourceHandler.instance.audioClips[6]);
                     hasPlayedOFF = true;
-                }
-
-                currentAnim.SetBool("Turn", false);
+                } 
             }
         }
     }
@@ -144,28 +141,6 @@ public class DashBoardControllerUrban : MonoBehaviour
         turnLeft = speedPanel.Find("TurnLeft").gameObject;
         turnRight = speedPanel.Find("TurnRight").gameObject;
     }
-
-    
-
-    
 }
 
 
-//void DrawPath()
-//{
-//    TrafAIMotor trafAIMotor = transform.parent.gameObject.GetComponent<TrafAIMotor>();
-
-//    if (trafAIMotor != null)
-//    {
-//        foreach (var s in trafAIMotor.fixedPath)
-//        {
-//            TrafEntry entry = trafAIMotor.system.GetEntry(s.id, s.subId); //points of the next piece of road
-//            foreach (var p in entry.waypoints)
-//            {
-//                GameObject game = new GameObject("Node");
-//                game.transform.position = p;
-//                SphereCollider sphereCol = game.AddComponent<SphereCollider>();
-//            }
-//        }
-//    }
-//}
