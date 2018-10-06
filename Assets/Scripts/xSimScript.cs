@@ -142,10 +142,6 @@ public class xSimScript : MonoBehaviour
         sim.Pos.Y = posizioneOk.y;
         sim.Pos.Z = posizioneOk.z;
 
-        
-
-        
-
         //orientation: heading, roll, pitch
         Vector3 angoliEulero = ConvertRightHandedToLeftHandedQuaternion(transform.rotation);
         sim.Heading = angoliEulero.z * 3.14159f / 180f;
@@ -155,18 +151,7 @@ public class xSimScript : MonoBehaviour
 
         double accelerazioneLaterale = ((Math.Cos(angoliEulero.x) * accelerazioneOk.x + Math.Sin(angoliEulero.x) * accelerazioneOk.y)); // / 9.81f);
         double accelerazioneLongitudinale = ((-Math.Sin(angoliEulero.x) * accelerazioneOk.x + Math.Cos(angoliEulero.x) * accelerazioneOk.y)); // / 9.81f);
-        //if (Math.Abs(accelerazioneLongitudinale) > 0.01f)
-        //{
-        //    if (accelerazioneLongitudinale > 7f)
-        //    {
-        //        Debug.Log("accelerazione: " + accelerazioneOk.x + "." + accelerazioneOk.y + "." + accelerazioneOk.z);
-        //        Debug.Log("Orientazione: " + angoliEulero.x + "." + angoliEulero.y + "." + angoliEulero.z);
-        //    }
-        //    /*Debug.Log("accelerazione: " + accelerazioneOk.x + "." + accelerazioneOk.y + "." + accelerazioneOk.z);
-        //    Debug.Log("Orientazione: " + angoliEulero.x + "." + angoliEulero.y + "." + angoliEulero.z);*/
-        //    Debug.Log("accelerazioneLongitudinale: " + accelerazioneLongitudinale);
-        //    //Debug.Log("accelerazioneLaterale: " + accelerazioneLaterale);
-        //}
+
         lastLong = accelerazioneLongitudinale;
         lastLat = accelerazioneLaterale;
 

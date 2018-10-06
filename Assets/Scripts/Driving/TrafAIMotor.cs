@@ -1,11 +1,4 @@
-﻿/*
- * Copyright (C) 2016, Jaguar Land Rover
- * This program is licensed under the terms and conditions of the
- * Mozilla Public License, version 2.0.  The full text of the
- * Mozilla Public License is at https://www.mozilla.org/MPL/2.0/
- */
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -59,7 +52,6 @@ public class TrafAIMotor : MonoBehaviour
 
     public TrafSystem system;
     public TrafEntry currentEntry;
-    //ANTONELLO nextEntry era private
     public TrafEntry nextEntry = null;
     public bool hasNextEntry = false;
     public int currentIndex = 0;
@@ -68,18 +60,13 @@ public class TrafAIMotor : MonoBehaviour
     public float currentTurn;
     public GameObject nose;
     public Transform raycastOrigin;
-    //public float waypointThreshold = 0.3f;
-    //ANTONELLO
     public float waypointThreshold = 0.6f;
-    //ANTONELLO
-    //public float maxSpeed = 10f;
-    //public float maxSpeed = 11f;
     public float maxSpeed = 13.8f;
     public float maxTurn = 45f;
-    //public float maxAccell = 3f;
-    public float maxAccell = 2.5f; //ANTONELLO
-    //public float maxBrake = 4f; ANTONELLO
-    public float maxBrake = 5f; //VEDI SE VA BENE; DA TESTARE - ANTONELLO
+
+    public float maxAccell = 2.5f; 
+
+    public float maxBrake = 5f;
     public float targetHeight = 0f;
 
     public bool hasStopTarget = false;
@@ -87,22 +74,16 @@ public class TrafAIMotor : MonoBehaviour
     public bool isInIntersection = false;
     public Vector3 stopTarget;
     public Vector3 targetTangent = Vector3.zero;
-    //ANTONELLO - target era private
     public Vector3 target = Vector3.zero;
     public Vector3 nextTarget = Vector3.zero;
 
-    //ANTONELLo
     private Vector3 targetPrecedente = Vector3.zero;
-
     public float limiteVelocita = 50f;
 
     public float giveWayRegisterDistance = 40f;
-    //ANTONELLO
-    //public const float brakeDistance = 10f;
-    public const float brakeDistance = 20f; //stabilisce dove arriva il raycast
-    //public const float yellowLightGoDistance = 4f;
-    //ANTONELLO
-    public const float yellowLightGoDistance = 10f; //per evitare che inchiodi quando vede il semaforo arancione troppo tardi
+    public const float brakeDistance = 20f;
+
+    public const float yellowLightGoDistance = 10f; 
     public const float stopLength = 10f;
     private VehicleController vehicleController;
 
@@ -112,20 +93,12 @@ public class TrafAIMotor : MonoBehaviour
     private float nextRaycast = 0f;
     private RaycastHit hitInfo;
 
-    //ANTONELLo
-    /*private RaycastHit hitSinsitra;
-    private RaycastHit hitDestra;*/
-
     public bool somethingInFront = false;
     public GameObject oggettoRilevato;
-    //ANTONELLO
     public bool noRaycast = false;
     public bool sterzataMassima = false;
 
-
-    private float stopEnd = 0f;
-
-    //117 118 119 120 121 122  100 101 102 165 129 52 53 34 35             
+    private float stopEnd = 0f;           
 
     public bool fixedRoute = false;
     public List<RoadGraphEdge> fixedPath;
@@ -133,8 +106,6 @@ public class TrafAIMotor : MonoBehaviour
 
     private RaycastHit heightHit;
 
-
-    //ANTONELLO
     public bool frenata;
     private float distanzaIniziale;
     private float distanzaInizialeInchiodata;
@@ -149,9 +120,6 @@ public class TrafAIMotor : MonoBehaviour
 
     public bool sorpasso = false;
 
-
-
-    //ANTONELLO
     private bool angoloSterzataAlto = false;
     public bool interventoAllaGuidaAccelerazione = false;
     public bool interventoAllaGuidaSterzata = false;
@@ -177,8 +145,6 @@ public class TrafAIMotor : MonoBehaviour
 
     public bool playAudio = false;
 
-
-    //ANTONELLO
     public void Init()
     {
         if (_pidPars == null)
@@ -247,7 +213,6 @@ public class TrafAIMotor : MonoBehaviour
             }
         }
 
-        //if(Physics.Raycast(raycastOrigin.position, raycastOrigin.forward, out blockedInfo, brakeDistance, ~(1 << LayerMask.NameToLayer("BridgeRoad"))))
         if (Physics.Raycast(raycastOrigin.position, raycastOrigin.forward, out blockedInfo, 50f, ~(1 << LayerMask.NameToLayer("BridgeRoad"))) ||
             Physics.Raycast(raggioDestra.transform.position, raggioDestra.transform.forward, out blockedInfo, 50f, ~(1 << LayerMask.NameToLayer("BridgeRoad"))) ||
             Physics.Raycast(raggioSinistra.transform.position, raggioSinistra.transform.forward, out blockedInfo, 50f, ~(1 << LayerMask.NameToLayer("BridgeRoad"))))
@@ -298,7 +263,6 @@ public class TrafAIMotor : MonoBehaviour
 
         Guida();
 
-        //ANTONELLO
         if (!this.tag.Equals("Player"))
         {
             controllaAccensioneLuceStop(targetSpeedIniziale);
@@ -317,11 +281,6 @@ public class TrafAIMotor : MonoBehaviour
                 MoveCarUtenteSterzata();
             }
         }
-
-
-        
-
-
     }
 
     float targetSpeedPrecedente = 0;
@@ -356,7 +315,7 @@ public class TrafAIMotor : MonoBehaviour
     private float velocitàInizialeSicurezza = 0;
     private float distanzaInizialeSicurezza = 0;
     private bool autoDavantiFrenata = false;
-    private float velocitaAttuale = 0;
+    public float velocitaAttuale = 0;
     private float velocitaPrecedente = 0;
     public float accelerazione = 0;
     private float accelerazionePrecedente = 0;
@@ -365,10 +324,6 @@ public class TrafAIMotor : MonoBehaviour
     //PER DARIO
     public bool hasNextEntry50 = false;
     public TrafEntry nextEntry50 = null;
-
-
-
-    
 
     void Guida()
     {
@@ -453,11 +408,6 @@ public class TrafAIMotor : MonoBehaviour
                         
             }
 
-
-
-            //last waypoint in this entry, grab the next path when we are in range
-            //ANTONELLO
-            //if(Vector3.Distance(nose.transform.position, currentEntry.waypoints[currentEntry.waypoints.Count - 1]) <= giveWayRegisterDistance)
             if (Vector3.Distance(nose.transform.position, currentEntry.waypoints[currentEntry.waypoints.Count - 1]) <= giveWayRegisterDistance) //era a 20
             {
                 var node = system.roadGraph.GetNode(currentEntry.identifier, currentEntry.subIdentifier);
@@ -477,8 +427,6 @@ public class TrafAIMotor : MonoBehaviour
 
                 if (newNode == null)
                 {
-                    //Debug.Log("no edges on " + currentEntry.identifier + "_" + currentEntry.subIdentifier);
-                    //ANTONELLO
                     if (!this.tag.Equals("Player"))
                     {
                         Destroy(gameObject);
@@ -486,7 +434,6 @@ public class TrafAIMotor : MonoBehaviour
                     else
                     {
                         Property = "9999";
-                        //inchioda();
                         return;
                     }
 
@@ -494,18 +441,13 @@ public class TrafAIMotor : MonoBehaviour
                     return;
                 }
 
-                //TrafEntry prossimaStrada = system.GetEntry(fixedPath[currentFixedNode].id, fixedPath[currentFixedNode].subId);
                 nextEntry = system.GetEntry(newNode.id, newNode.subId);
                 nextTarget = nextEntry.waypoints[0];
                 hasNextEntry = true;
-
-
                 nextEntry.RegisterInterest(this);
 
                 //see if we need to slow down for this intersection
                 intersectionCornerSpeed = Mathf.Clamp(1 - Vector3.Angle(nextEntry.path.start.transform.forward, nextEntry.path.end.transform.forward) / 90f, 0.4f, 1f);
-
-
             }
 
         }
@@ -549,8 +491,6 @@ public class TrafAIMotor : MonoBehaviour
                     distanzaWaypoint = 0;
                     contatore = 0;
                     modificaTarget(true);
-                    //hasStopTarget = false;
-                    //hasGiveWayTarget = false;
                 }
 
             }
@@ -582,15 +522,6 @@ public class TrafAIMotor : MonoBehaviour
                     hasStopTarget = false;
                     stopEnd = 0f;
                     float distanza = Vector3.Distance(this.transform.position, stopTarget);
-                    if (distanza < 10f)
-                    {
-                        //evita che quando ci fermiamo a uno stop (un pochino prima dello stopTarget), riparte e si riferma allo stopTarget effettivo
-                        //nextEntry.intersection.stopSign = false;
-                        /*currentEntry = nextEntry;
-                        nextEntry = null;
-                        hasNextEntry = false;
-                        inizioValutazioneSemaforo = false;*/
-                    }
                 }
             }
         }
@@ -626,7 +557,6 @@ public class TrafAIMotor : MonoBehaviour
             if (!hasStopTarget && nextEntry.light.State == TrafLightState.RED)
             {
                 //light is red, stop here           
-                //ANTONELLO
                 if (!autoScorretta)
                 {
                     hasStopTarget = true;
@@ -640,36 +570,28 @@ public class TrafAIMotor : MonoBehaviour
             else if (hasStopTarget && nextEntry.light.State == TrafLightState.GREEN)
             {
 
-                //green light, go!   
-                //ANTONELLO           
+                //green light, go!          
                 hasStopTarget = false;
-
             }
             else if (!hasStopTarget && nextEntry.light.State == TrafLightState.YELLOW)
             {
                 //yellow, stop if we aren't zooming on through
                 //TODO: carry on if we are too fast/close
-                //calcolo la decellerazione necessaria per fermarci al semaforo
+                //calcolo la riduzione di velocita necessaria per fermarci al semaforo
                 float riduzioneVelocitaNecessaria = velocitaAttuale / Vector3.Distance(nextTarget, nose.transform.position);
                 // if (Vector3.Distance(nextTarget, nose.transform.position) > yellowLightGoDistance)
                 
                if (riduzioneVelocitaNecessaria < 0.7f)
                 {
-                    //ANTONELLO
                     hasStopTarget = true;
                     velocitaInizialeFrenata = velocitaAttuale;
                     stopTarget = nextTarget;
-
                     calcolaDistanzaIniziale();
-
                 } //altrimenti non riesco a fermarmi, continuo
             }
-
-
         }
 
         float targetSpeed = maxSpeed;
-        //float targetSpeed = Mathf.MoveTowards(currentSpeed, maxSpeed, 100f * Time.deltaTime);
 
         //lancio il raggio per vedere cosa ho davanti
         if (Time.time > nextRaycast)
@@ -824,7 +746,6 @@ public class TrafAIMotor : MonoBehaviour
             if (frenata)
             {
                 autoDavanti = false;
-                //if ((!somethingInFront) || (somethingInFront && hitInfo.distance >= 2f && velocitaAttuale <= 1f) && (hitInfo.rigidbody.tag.Equals("TrafficCar") || hitInfo.rigidbody.tag.Equals("Player")))
                 if (hitInfo.rigidbody == null)
                 {
                     frenata = false;
@@ -845,25 +766,11 @@ public class TrafAIMotor : MonoBehaviour
                         //se invece c'è qualcosa davanti, frenata è true, ma la distanza è maggiore di 4f (piu è basso piu riparte prima quando si ferma dietro un'auto)
                         //e l'auto è ferma, significa che l'auto davanti a me sta ripartendo quindi posso ripartire anche io
                         frenata = false;
-                        /*autoDavanti = true;
-                        distanzaSicurezza = (Math.Pow((velocitaAttuale * 3.6f / 10f), 2) + 3.5f); //+ questo valore perchè la distanza viene calcolata dal centro dell'auto del traffico
-                        //distanzaSicurezza = (Math.Pow((frontSpeed * 3.6f / 10f), 2) + 3.5f); //+ questo valore perchè la distanza viene calcolata dal centro dell'auto del traffico
-
-                        autoDavanti = true;
-                        distanzaInizialeSicurezza = hitInfo.distance;
-                        velocitàInizialeSicurezza = velocitaAttuale;*/
                     }
                 }
             }
-
-
-
         }
 
-        /*if (autoDavanti)
-        {
-            return;
-        }*/
 
         if (frenata)
         {
@@ -889,35 +796,16 @@ public class TrafAIMotor : MonoBehaviour
             }
 
             Debug.DrawLine(frenataTarget, transform.position);
-            //if (velocitaInizialeFrenata >= 6f)
-            //{
             targetSpeed = velocitaInizialeFrenata * distanzaCorrente / distanzaInizialeInchiodata;
-            /*} else
-            {
-                targetSpeed = 6f * distanzaCorrente / distanzaInizialeInchiodata;
-            }*/
 
             if (targetSpeed <= _pidPars.sogliaFermata)
             {
                 targetSpeed = 0;
-                //Debug.Log("target < 2");
-            }
-            //else
-            //Debug.Log("distanza Iniziale Inchiodata = " + distanzaInizialeInchiodata + "; distanzaCorrente = " + distanzaCorrente + "; targetSpeed: " + targetSpeed);
-
+            }           
         }
 
         if (!frenata && !autoDavantiFrenata && (hasStopTarget || hasGiveWayTarget))
         {
-            /*Vector3 targetVec = (stopTarget - nose.transform.position);
-
-            float stopSpeed = Mathf.Clamp(targetVec.magnitude * (Vector3.Dot(targetVec, nose.transform.forward) > 0 ? 1f : 0f) / 3f, 0f, maxSpeed);
-            if(stopSpeed < 0.24f)
-                stopSpeed = 0f;
-
-            targetSpeed = Mathf.Min(targetSpeed, stopSpeed);
-            //Debug.Log("hasStopTarget true; targetSpeed: " + targetSpeed);*/
-
             //ANTONELLO
             //se ho come target quello di fermarmi, diminuisco la velocità proporzionalmente fino al punto in cui devo fermarmi
             Vector3 vettoreDifferenza = stopTarget - transform.position;
@@ -930,14 +818,9 @@ public class TrafAIMotor : MonoBehaviour
             {
                 distanzaCorrente = Math.Abs(vettoreDifferenza.z);
             }
-            if (nextEntry.intersection.stopSign)
+            if (!nextEntry.intersection.stopSign)
             {
-                //distanzaCorrente -= 2f;
-            } else
-            {
-                
-                distanzaCorrente -= 5f;
-                
+                distanzaCorrente -= 5f;              
             }
             
             Debug.DrawLine(stopTarget, transform.position);
@@ -947,15 +830,10 @@ public class TrafAIMotor : MonoBehaviour
             if (targetSpeed <= _pidPars.sogliaFermata)
             {
                 targetSpeed = 0;
-                //Debug.Log("target < 2");
-            } //else 
-            //Debug.Log("distanza Iniziale = " + distanzaIniziale + "; distanzaCorrente = " + distanzaCorrente + "; targetSpeed: " + targetSpeed);
+            } 
         }
 
-        //slow down if we need to turn
-        //if(currentEntry.isIntersection() || hasNextEntry)
-        //ANTONELLO
-        //if ((currentEntry.isIntersection() || hasNextEntry) && !hasStopTarget && !frenata)
+        //slow down if we need to turn      
         if ((currentEntry.isIntersection() || inizioValutazioneSemaforo) && !hasStopTarget && !hasGiveWayTarget && !frenata)
         {
             float min = 3;
@@ -964,19 +842,11 @@ public class TrafAIMotor : MonoBehaviour
                 min = targetSpeed;
             }
             targetSpeed = Mathf.Clamp(targetSpeed * intersectionCornerSpeed, min, maxSpeed);
-            /*targetSpeed = Mathf.MoveTowards(targetSpeed, targetSpeed * intersectionCornerSpeed, Time.fixedDeltaTime * 5f);
-            if (this.tag.Equals("Player"))
-            {
-                Debug.Log("IntersectionCornerSpeed: " + intersectionCornerSpeed + "; targetSpeed: " + targetSpeed);
-            }*/
-
         }
         else
         {
-            //DA TESTARE - ANTONELLO
             if ((currentTurn > 5f || currentTurn < -5f) && !sorpasso)
             {
-                //targetSpeed = targetSpeed * Mathf.Clamp(1 - (currentTurn / maxTurn), 0.1f, 1f);
                 targetSpeed = targetSpeed * Mathf.Clamp(1 - (Math.Abs(currentTurn) / maxTurn), 0.2f, 1f);
             }
 
@@ -997,8 +867,6 @@ public class TrafAIMotor : MonoBehaviour
                     distanzaCorrente = Math.Abs(vettoreDifferenza.z);
                 }
             }
-            //Debug.Log("distanza corrente ripartenza: " + distanzaCorrente + "; targetSpee:" +targetSpeed);
-            //if ((targetSpeed - currentSpeed) < 1 && (hasStopTarget || frenata) && distanzaCorrente < 3f)
             if ((hasStopTarget || hasGiveWayTarget) && distanzaCorrente < 6f)
             {
                 //fa si che quando ci fermiamo allo stop o per via di una inchiodata la macchina rimanga ferma
@@ -1006,7 +874,7 @@ public class TrafAIMotor : MonoBehaviour
             }
             else
                 //currentSpeed += Mathf.Min(maxAccell * Time.deltaTime, targetSpeed - currentSpeed);
-            currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, Time.fixedDeltaTime * _pidPars.velocitaAccelerazione);
+                currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, Time.fixedDeltaTime * _pidPars.velocitaAccelerazione);
 
         }
         else
@@ -1032,15 +900,6 @@ public class TrafAIMotor : MonoBehaviour
                 currentSpeed = 0;
             else
                 currentSpeed = targetSpeed;
-            //Debug.Log("CurrentSpeed: " + currentSpeed);
-
-
-            //if (this.tag.Equals("Player"))
-            //{
-            //    Debug.Log("TargetSpeedIniziale: " + targetSpeedIniziale + "; currentSpeed impsotato: " + currentSpeed);
-            //}
-
-
         }
 
         
@@ -1052,14 +911,12 @@ public class TrafAIMotor : MonoBehaviour
     {
         if (++currentIndex >= currentEntry.waypoints.Count)
         {
-            //Debug.Log("Numero waypoints: " + currentEntry.waypoints.Count + "; currentIndex: " + currentIndex);
             if (currentEntry.isIntersection())
             {
                 currentEntry.DeregisterInterest();
                 var node = system.roadGraph.GetNode(currentEntry.identifier, currentEntry.subIdentifier);
                 var newNode = node.SelectRandom();
 
-                //CONTROLLA QUESTO PEZZO DI CODICE; POTREBBE DISTRUGGERE LA MACCHINA
                 if (newNode == null)
                 {
                    if (this.tag.Equals("Player"))
@@ -1083,20 +940,18 @@ public class TrafAIMotor : MonoBehaviour
                     this.Property = "" + newNode.id;
                 }
 
-
                 targetTangent = (currentEntry.waypoints[1] - currentEntry.waypoints[0]).normalized;
-
             }
             else
             {
-                if ((hasStopTarget || hasGiveWayTarget) && !waypointSaltato) //ANTONELLO
+                if ((hasStopTarget || hasGiveWayTarget) && !waypointSaltato)
                 {
                     targetPrecedente = target;
                     target = nextEntry.waypoints[0];
                 }
                 else
                 {
-                    if (nextEntry != null && nextEntry.identifier != 0) //ANTONELLO
+                    if (nextEntry != null && nextEntry.identifier != 0)
                     {
                         currentEntry = nextEntry;
                         nextEntry = null;
@@ -1110,21 +965,16 @@ public class TrafAIMotor : MonoBehaviour
                         }
                     }
 
-                    //ANTONELLO
                     if (waypointSaltato && (hasStopTarget || hasGiveWayTarget))
                     {
                         hasStopTarget = false;
                         hasGiveWayTarget = false;
                     }
-
-
                 }
             }
 
             if ((!hasStopTarget && !hasGiveWayTarget) || waypointSaltato)
                 currentIndex = 0;
-
-
         }
         if (currentIndex > 1)
         {
@@ -1164,7 +1014,6 @@ public class TrafAIMotor : MonoBehaviour
         float steer = Vector3.Angle(transform.forward, steerVector);
         if (steer > 140f)
         {
-            //steer = currentTurn;
             steer = 0;
         }
         steer = Mathf.Clamp((Vector3.Cross(transform.forward, steerVector).y < 0 ? -steer : steer), -maxTurn, maxTurn);
@@ -1180,9 +1029,7 @@ public class TrafAIMotor : MonoBehaviour
         }
 
         float steeringAngle = steer;
-
         bool sterzataAmpia = false;
-        //Debug.Log("indice: " + indice);
 
         if (ridottoMaxSpeed && this.tag.Equals("Player"))
         {
@@ -1230,7 +1077,6 @@ public class TrafAIMotor : MonoBehaviour
                 }
                 
             }
-            //steeringAngle = -45f;
             sterzataAmpia = true;
         }
 
@@ -1239,14 +1085,8 @@ public class TrafAIMotor : MonoBehaviour
             steeringAngle = PIDControllerSterzata.UpdatePars(steer, turnPrecedente, Time.fixedDeltaTime);
         }
 
-
-
         //Limit the steering angle
         steeringAngle = Mathf.Clamp(steeringAngle, -45, 45);
-
-        
-
-
 
 
         float indice = 0;
@@ -1258,48 +1098,17 @@ public class TrafAIMotor : MonoBehaviour
         }
         else
         {
-            /*if (trattoStradaDritto) //|| differenzaTurn > 5f)
-            {
-                indice = _pidPars.indiceSterzataDritto;
-            }
-            else
-            {
-                indice = _pidPars.indiceSterzataCurva;
-            }*/
             indice = _pidPars.indiceSterzataDritto;
         }
-        //indice = indice1;
-
-        //Debug.Log("indice settato: " + indice + "; indice secondo regola: " + indice1);
 
         averageSteeringAngle = averageSteeringAngle + ((steeringAngle - averageSteeringAngle) / indice);
         if (Mathf.Abs(averageSteeringAngle - turnPrecedente) <= _pidPars.puntoMortoSterzata)
         {
             averageSteeringAngle = turnPrecedente;
         }
+
         currentTurn = averageSteeringAngle;
-
-
-        /*bool trattoStradaDritto = false;
-
-        if (Math.Abs(this.transform.position.x - target.x) <= 1 || Math.Abs(this.transform.position.z - target.z) <= 1)
-        {
-            trattoStradaDritto = true;
-        }*/
         currentTurn = Mathf.Clamp(Mathf.Lerp(turnPrecedente, currentTurn, steerSpeed * Time.deltaTime), -45f, 45f);
-        /*
-        if (trattoStradaDritto)
-        {
-            currentTurn = Mathf.Clamp(Mathf.Lerp(turnPrecedente, currentTurn, steerSpeed * Time.deltaTime), -45f, 45f);
-        } else
-        {
-            currentTurn = Mathf.Clamp(Mathf.Lerp(turnPrecedente, currentTurn, steerSpeedCurva * Time.deltaTime), -45f, 45f);
-        }
-        */
-        
-
-
-
     }
 
     public float maxThrottle = 0.7f; //era a 0.8
@@ -1332,13 +1141,6 @@ public class TrafAIMotor : MonoBehaviour
 
         float speedDifference = currentSpeed - velocitaAttuale;
 
-        /*if (currentSpeed <= velocitaAttuale && velocitaAttuale <= 0.001f)
-        {
-            //sono fermo e devo stare fermo
-            vehicleController.accellInput = 0f;
-            return;
-        }*/
-        //currentThrottle = PIDControllerAccelerazione.UpdatePars(currentSpeed, velocitaAttuale, Time.deltaTime);
         currentThrottle = PIDControllerAccelerazione.UpdatePars(currentSpeed, velocitaAttuale, Time.fixedDeltaTime);
         if (velocitaAttuale > currentSpeed)
         {
@@ -1354,9 +1156,6 @@ public class TrafAIMotor : MonoBehaviour
                 {
                     currentThrottle = frenataPrecedente;
                 }
-                /*currentThrottle = ((velocitaAttuale - currentSpeed) / (Time.deltaTime * -2.2f));
-                currentThrottle = Mathf.Clamp(currentThrottle, -1f, 0f);
-               *///Debug.Log("Sto frenando; throttle (target): " + currentThrottle + "; velocita attuale: " + velocitaAttuale + "; velocita Target: " + currentSpeed);
             }
             else
             {
@@ -1373,9 +1172,6 @@ public class TrafAIMotor : MonoBehaviour
             }
             currentThrottle = Mathf.Clamp(currentThrottle, 0f, maxThrottle);
         }
-
-
-
 
         float differenzaThrottle = Math.Abs(currentThrottle - throttlePrecedente);
         if (differenzaThrottle < _pidPars.puntoMortoFrenata)
@@ -1397,16 +1193,11 @@ public class TrafAIMotor : MonoBehaviour
             }
         }
 
-
-
-
         vehicleController.accellInput = Mathf.MoveTowards(throttlePrecedente, currentThrottle, throttleSpeed * Time.fixedDeltaTime);
-        //vehicleController.accellInput = currentThrottle; 
     }
 
     void MoveCarUtenteSterzata()
     {
-
         if (AppController.Instance.UserInput is SteeringWheelInputController)
         {
             DirectInputWrapper.PlaySpringForce(0, Mathf.RoundToInt(currentTurn / 45f * 10000f), _pidPars.saturazione, _pidPars.coefficiente);            
@@ -1416,10 +1207,7 @@ public class TrafAIMotor : MonoBehaviour
 
 
     private void MoveCar()
-    {
-        //GetComponent<Rigidbody>().MoveRotation(Quaternion.FromToRotation(Vector3.up, heightHit.normal) * Quaternion.Euler(0f, transform.eulerAngles.y + currentTurn * Time.fixedDeltaTime, 0f));
-        //GetComponent<Rigidbody>().MovePosition(transform.position + transform.forward * currentSpeed * Time.deltaTime);
-
+    {       
         transform.Translate(Vector3.forward * currentSpeed * Time.fixedDeltaTime);
         transform.Rotate(Vector3.up * currentTurn * Time.fixedDeltaTime);
     }
@@ -1467,7 +1255,6 @@ public class TrafAIMotor : MonoBehaviour
         //calcolo la quantita di freno necessaria
         float riduzioneVelocitaNecessaria = velocitaAttuale / Vector3.Distance(ostacoloEvitare.transform.position, nose.transform.position);
 
-
         //currentThrottle = Mathf.Clamp(-riduzioneVelocitaNecessaria, -1f, -0.5f);
         currentThrottle = Mathf.Clamp(-riduzioneVelocitaNecessaria, -1f, 0f);
         vehicleController.accellInput = currentThrottle;
@@ -1479,11 +1266,6 @@ public class TrafAIMotor : MonoBehaviour
 
         currentSpeed = velocitaAttuale;
 
-        /*if (velocitaAttuale < 2.5f && !inizioSosta)
-        {
-            inizioSostaDopoPericolo = DateTime.Now;
-            inizioSosta = true;
-        }*/
         if (inizioSosta)
         {
             SteerCar();
@@ -1529,21 +1311,13 @@ public class TrafAIMotor : MonoBehaviour
         Vector3 vettoreDifferenza = stopTarget - transform.position;
         if (Math.Abs(vettoreDifferenza.x) > Math.Abs(vettoreDifferenza.z))
         {
-            distanzaIniziale = Math.Abs(vettoreDifferenza.x); // + 2f;
+            distanzaIniziale = Math.Abs(vettoreDifferenza.x);
             //il +2 garantisce che si fermi un po prima
         }
         else
         {
-            distanzaIniziale = Math.Abs(vettoreDifferenza.z); // + 2f;
-            //stopTarget.z -= 1f;
-        }
-        //Debug.Log("distanzaIniziale = " + distanzaIniziale);
-
-        //if (maxThrottle == throttleDopoPericolo)
-        //{
-        //    distanzaIniziale -= 5;
-        //}
-        
+            distanzaIniziale = Math.Abs(vettoreDifferenza.z); 
+        }        
     }
 
     //ANTONELLO
@@ -1554,15 +1328,12 @@ public class TrafAIMotor : MonoBehaviour
         Vector3 vettoreDifferenza = frenataTarget - transform.position;
         if (Math.Abs(vettoreDifferenza.x) > Math.Abs(vettoreDifferenza.z))
         {
-            distanzaInizialeInchiodata = Math.Abs(vettoreDifferenza.x); // + 5f;
-            //il +2 garantisce che si fermi un po prima
+            distanzaInizialeInchiodata = Math.Abs(vettoreDifferenza.x);
         }
         else
         {
-            distanzaInizialeInchiodata = Math.Abs(vettoreDifferenza.z); // + 5f;
-            //stopTarget.z -= 1f;
+            distanzaInizialeInchiodata = Math.Abs(vettoreDifferenza.z); 
         }
-        //Debug.Log("distanzaInizialeInchiodata = " + distanzaInizialeInchiodata);
         distanzaInizialeInchiodata -= 6f;
     }
 
@@ -1608,27 +1379,12 @@ public class TrafAIMotor : MonoBehaviour
 
     internal class GestoreCollisioni : MonoBehaviour
     {
-
         TrafAIMotor motor = null;
 
         public void setMotor(TrafAIMotor motor)
         {
             this.motor = motor;
         }
-
-        // Use this for initialization
-        void Start()
-        {
-
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
-
-
 
         //ANTONELLO
         void OnTriggerEnter(Collider other)
@@ -1645,17 +1401,9 @@ public class TrafAIMotor : MonoBehaviour
                 //}
                 return;
             }
-            //float distanza = Vector3.Distance(motor.transform.position, other.gameObject.transform.position);
-
-            /*double spazioFrenata = (Math.Pow(motor.GetComponent<Rigidbody>().velocity.magnitude, 2)) / (2 * 2.3f);
-            if (distanza < spazioFrenata)
-            {*/
-                //l'ostacolo è troppo vicino, non riesco a inchiodare, lo evito
                 motor.evitare = true;
                 motor.ostacoloEvitare = other.gameObject;
 
-                //PS: se l'ostacolo improvvisamente compare davanti l'auto significa che è in movimento
-                //float angolo = Vector3.SignedAngle(motor.transform.position, other.gameObject.transform.position, motor.transform.forward);
                 float angolo = Vector3.SignedAngle(transform.forward, other.gameObject.transform.position - transform.position, Vector3.up);
                 if (angolo >= 0)
                 {
@@ -1667,14 +1415,7 @@ public class TrafAIMotor : MonoBehaviour
                     //l'oggetto è a sinistra ma si sta spostando (verso destra), lo evito buttandomi a sinsitra
                     motor.direzioneSpostamentoDestra = false;
                 }
-
-            /*}
-            else
-            {
-                motor.inchiodata = true;
-            }*/
         }
-
 
         //ANTONELLO
         void OnTriggerExit(Collider other)
@@ -1718,13 +1459,7 @@ public class TrafAIMotor : MonoBehaviour
                 {
                     motor.durataSosta = 4.99f;
                 }
-            }
-            
+            }           
         }
-
-
-
-
     }
-
 }
