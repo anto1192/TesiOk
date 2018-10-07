@@ -133,7 +133,6 @@ public class RiskAssessment
         if (trafAIMotor.hasNextEntry) //If I am waiting at the intersection
         {
             float dist = Vector3.Distance(rayCastPos.position, trafAIMotor.currentEntry.waypoints[trafAIMotor.currentEntry.waypoints.Count - 1]);
-            //Debug.Log(dist);
 
             if (dist <= 6.0f) //and I am located near the line that defines the intersection. This second condition is necessary since hasNextEntry is set earlier, not in correspondence with the line of the crossing.
             {
@@ -250,27 +249,26 @@ public class RiskAssessment
                 anim.SetFloat("Multiplier", 3.0f);
                 anim.SetBool("BlinkLoop", blink);
 
-                //Debug.Log("obstacle is: " + cubesAndTags.other.name + dstToTargetEncoded / distToWarnEncoded);
-
                 PlayAudio(audio, dstToTargetEncoded / distToWarnEncoded, cubesAndTags);
 
                 cubesAndTags.prevState = dstToTargetEncoded / distToWarnEncoded;
 
-                cubesAndTags.gradient = CubesAndTags.Gradient.ON;
+                cubesAndTags.dangerState = CubesAndTags.DangerState.YES;
             }
             else
             {
                 bool blink = false;
                 float value = 0f;
-                if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
+                if (cubesAndTags.dangerState == CubesAndTags.DangerState.YES)
                 {
                     value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
                     cubesAndTags.prevState = value;
+                    if (value >= 0.99f)
+                        cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
                 }
                 else
                     value = 1;
 
-                //Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
                 Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
                 Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
 
@@ -280,28 +278,22 @@ public class RiskAssessment
                 cubeRend.material.SetColor("_Color2", bottomColor);
 
                 anim.SetBool("BlinkLoop", false);
-
-                cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
-
-                if (cubesAndTags.prevState >= 0.99f)
-                {
-                    cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
-                }
             }
         }
         else
         {
             bool blink = false;
             float value = 0f;
-            if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
+            if (cubesAndTags.dangerState == CubesAndTags.DangerState.YES)
             {
                 value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
                 cubesAndTags.prevState = value;
+                if (value >= 0.99f)
+                    cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
             }
             else
                 value = 1;
 
-            //Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
             Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
             Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
 
@@ -311,13 +303,6 @@ public class RiskAssessment
             cubeRend.material.SetColor("_Color2", bottomColor);
 
             anim.SetBool("BlinkLoop", false);
-
-            cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
-
-            if (cubesAndTags.prevState >= 0.99f)
-            {
-                cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
-            }
         }
     }//this is for dynamic objects
 
@@ -647,68 +632,68 @@ public class RiskAssessment
 
                 cubesAndTags.prevState = dstToTarget / distToWarn/*ResourceHandler.instance.visualisationVars.obstacleDistToWarn*/;
 
-                cubesAndTags.gradient = CubesAndTags.Gradient.ON;
+                //cubesAndTags.gradient = CubesAndTags.Gradient.ON;
             }
-            else
-            {
-                bool blink = false;
-                float value = 0f;
-                if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
-                {
-                    value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
-                    cubesAndTags.prevState = value;
-                }
-                else
-                    value = 1;
+        //    else
+        //    {
+        //        bool blink = false;
+        //        float value = 0f;
+        //        if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
+        //        {
+        //            value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
+        //            cubesAndTags.prevState = value;
+        //        }
+        //        else
+        //            value = 1;
 
-                //Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
-                Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
-                Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
+        //        //Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
+        //        Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
+        //        Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
 
-                topColor.a = 0;
-                bottomColor.a = 0x51;
-                cubeRend.material.SetColor("_Color1", topColor);
-                cubeRend.material.SetColor("_Color2", bottomColor);
+        //        topColor.a = 0;
+        //        bottomColor.a = 0x51;
+        //        cubeRend.material.SetColor("_Color1", topColor);
+        //        cubeRend.material.SetColor("_Color2", bottomColor);
 
-                anim.SetBool("BlinkLoop", false);
-
-
-
-                cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
-
-                if (value == 1)
-                    cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
-            }
-        }
-        else
-        {
-            bool blink = false;
-            float value = 0f;
-            if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
-            {
-                value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
-                cubesAndTags.prevState = value;
-            }
-            else
-                value = 1;
-
-            //Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
-            Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
-            Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
-
-            topColor.a = 0;
-            bottomColor.a = 0x51;
-            cubeRend.material.SetColor("_Color1", topColor);
-            cubeRend.material.SetColor("_Color2", bottomColor);
-
-            anim.SetBool("BlinkLoop", false);
+        //        anim.SetBool("BlinkLoop", false);
 
 
 
-            cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
+        //        cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
 
-            if (value == 1)
-                cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
+        //        if (value == 1)
+        //            cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
+        //    }
+        //}
+        //else
+        //{
+        //    bool blink = false;
+        //    float value = 0f;
+        //    if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
+        //    {
+        //        value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
+        //        cubesAndTags.prevState = value;
+        //    }
+        //    else
+        //        value = 1;
+
+        //    //Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
+        //    Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
+        //    Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
+
+        //    topColor.a = 0;
+        //    bottomColor.a = 0x51;
+        //    cubeRend.material.SetColor("_Color1", topColor);
+        //    cubeRend.material.SetColor("_Color2", bottomColor);
+
+        //    anim.SetBool("BlinkLoop", false);
+
+
+
+        //    cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
+
+        //    if (value == 1)
+        //        cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
         }
     } //this is for dynamic objects
 
@@ -751,68 +736,68 @@ public class RiskAssessment
 
                 cubesAndTags.prevState = dstToTargetEncoded / Mathf.Abs(distToWarnEncoded);
 
-                cubesAndTags.gradient = CubesAndTags.Gradient.ON;
+                //cubesAndTags.gradient = CubesAndTags.Gradient.ON;
             }
-            else
-            {
-                bool blink = false;
-                float value = 0f;
-                if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
-                {
-                    value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
-                    cubesAndTags.prevState = value;
-                }
-                else
-                    value = 1;
+        //    else
+        //    {
+        //        bool blink = false;
+        //        float value = 0f;
+        //        if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
+        //        {
+        //            value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
+        //            cubesAndTags.prevState = value;
+        //        }
+        //        else
+        //            value = 1;
 
-                //Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
-                Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
-                Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
+        //        //Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
+        //        Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
+        //        Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
 
-                topColor.a = 0;
-                bottomColor.a = 0x51;
-                cubeRend.material.SetColor("_Color1", topColor);
-                cubeRend.material.SetColor("_Color2", bottomColor);
+        //        topColor.a = 0;
+        //        bottomColor.a = 0x51;
+        //        cubeRend.material.SetColor("_Color1", topColor);
+        //        cubeRend.material.SetColor("_Color2", bottomColor);
 
-                anim.SetBool("BlinkLoop", false);
-
-
-
-                cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
-
-                if (value == 1)
-                    cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
-            }
-        }
-        else
-        {
-            bool blink = false;
-            float value = 0f;
-            if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
-            {
-                value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
-                cubesAndTags.prevState = value;
-            }
-            else
-                value = 1;
-
-            //Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
-            Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
-            Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
-
-            topColor.a = 0;
-            bottomColor.a = 0x51;
-            cubeRend.material.SetColor("_Color1", topColor);
-            cubeRend.material.SetColor("_Color2", bottomColor);
-
-            anim.SetBool("BlinkLoop", false);
+        //        anim.SetBool("BlinkLoop", false);
 
 
 
-            cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
+        //        cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
 
-            if (value == 1)
-                cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
+        //        if (value == 1)
+        //            cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
+        //    }
+        //}
+        //else
+        //{
+        //    bool blink = false;
+        //    float value = 0f;
+        //    if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
+        //    {
+        //        value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
+        //        cubesAndTags.prevState = value;
+        //    }
+        //    else
+        //        value = 1;
+
+        //    //Debug.Log("obstacle is: " + cubesAndTags.other.name + value);
+        //    Color32 topColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
+        //    Color32 bottomColor = linesUtils.ChangeMatByDistance(value, ref blink, ref cubesAndTags);
+
+        //    topColor.a = 0;
+        //    bottomColor.a = 0x51;
+        //    cubeRend.material.SetColor("_Color1", topColor);
+        //    cubeRend.material.SetColor("_Color2", bottomColor);
+
+        //    anim.SetBool("BlinkLoop", false);
+
+
+
+        //    cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
+
+        //    if (value == 1)
+        //        cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
         }
     } //this is for dynamic objects
 
@@ -915,6 +900,7 @@ public class RiskAssessment
             if ((cubesAndTags.other.gameObject.layer.Equals(LayerMask.NameToLayer("obstacle")) && gameObject.transform.root.GetComponent<TrafAIMotor>().playAudio) || (cubesAndTags.other.gameObject.layer.Equals(LayerMask.NameToLayer("Traffic")) && normDist <= 0.2f))
             {
                 audio.PlayOneShot(ResourceHandler.instance.audioClips[9]);
+                Debug.Log("audio played");
                 cubesAndTags.alreadyPlayed = true;
             }
         }

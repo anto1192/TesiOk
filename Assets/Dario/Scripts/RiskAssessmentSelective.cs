@@ -17,8 +17,9 @@ public class RiskAssessmentSelective
     private DriverCamera driverCam;
     private AnimationCurve infoTagResize;
     private VisualisationVars visualisationVars;
+    private EnvironmentSensingAltUrbanTriggerSelective envSensingUrban;
 
-    public RiskAssessmentSelective(Vector3 infoTagStartScale, DriverCamera driverCam, AnimationCurve infoTagResize, Transform rayCastPos, GameObject gameObject, LayerMask mask, LinesUtils linesUtils)
+    public RiskAssessmentSelective(Vector3 infoTagStartScale, DriverCamera driverCam, AnimationCurve infoTagResize, Transform rayCastPos, GameObject gameObject, LayerMask mask, LinesUtils linesUtils, EnvironmentSensingAltUrbanTriggerSelective envSensingUrban)
     {
         this.infoTagStartScale = infoTagStartScale;
         this.driverCam = driverCam;
@@ -27,6 +28,7 @@ public class RiskAssessmentSelective
         this.gameObject = gameObject;
         this.mask = mask;
         this.linesUtils = linesUtils;
+        this.envSensingUrban = envSensingUrban;
 
         this.rigidbody = gameObject.transform.parent.GetComponent<Rigidbody>();
         this.vehicleController = gameObject.transform.parent.GetComponent<VehicleController>();
@@ -254,7 +256,7 @@ public class RiskAssessmentSelective
 
                 cubesAndTags.prevState = dstToTargetEncoded / distToWarnEncoded;
 
-                cubesAndTags.gradient = CubesAndTags.Gradient.ON;
+                cubesAndTags.dangerState = CubesAndTags.DangerState.YES;
 
                 TrafficCarNavigationLineUrban trafficCarNavigationLineUrban = cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>();
 
@@ -272,10 +274,23 @@ public class RiskAssessmentSelective
             {
                 bool blink = false;
                 float value = 0f;
-                if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
+                if (cubesAndTags.dangerState == CubesAndTags.DangerState.YES)
                 {
                     value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
                     cubesAndTags.prevState = value;
+                    if (value >= 0.99f)
+                    {
+                        cubesAndTags.alreadyEvaluated = true;
+                        cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
+                        if (cubesAndTags.alreadyEvaluated)
+                            envSensingUrban.StartCoroutine(WaitAndDisable(canvas, cubeRend, cubesAndTags));
+                        if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
+                        {
+                            Transform lineRenderer = cubesAndTags.other.transform.root.Find("TrafLineRenderer");
+                            if (lineRenderer)
+                                lineRenderer.GetComponent<LineRenderer>().enabled = false;
+                        }
+                    }
                 }
                 else
                     value = 1;
@@ -289,14 +304,22 @@ public class RiskAssessmentSelective
                 cubeRend.material.SetColor("_Color2", bottomColor);
 
                 anim.SetBool("BlinkLoop", false);
-
-                cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
-
-                if (cubesAndTags.prevState >= 0.99f)
+            }
+        }
+        else
+        {
+            bool blink = false;
+            float value = 0f;
+            if (cubesAndTags.dangerState == CubesAndTags.DangerState.YES)
+            {
+                value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
+                cubesAndTags.prevState = value;
+                if (value >= 0.99f)
                 {
-                    cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
-                    cubeRend.enabled = false;
-                    canvas.enabled = false;
+                    cubesAndTags.alreadyEvaluated = true;
+                    cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
+                    if (cubesAndTags.alreadyEvaluated)
+                        envSensingUrban.StartCoroutine(WaitAndDisable(canvas, cubeRend, cubesAndTags));
                     if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
                     {
                         Transform lineRenderer = cubesAndTags.other.transform.root.Find("TrafLineRenderer");
@@ -304,16 +327,6 @@ public class RiskAssessmentSelective
                             lineRenderer.GetComponent<LineRenderer>().enabled = false;
                     }
                 }
-            }
-        }
-        else
-        {
-            bool blink = false;
-            float value = 0f;
-            if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
-            {
-                value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
-                cubesAndTags.prevState = value;
             }
             else
                 value = 1;
@@ -327,21 +340,6 @@ public class RiskAssessmentSelective
             cubeRend.material.SetColor("_Color2", bottomColor);
 
             anim.SetBool("BlinkLoop", false);
-
-            cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
-
-            if (cubesAndTags.prevState >= 0.99f)
-            {
-                cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
-                cubeRend.enabled = false;
-                canvas.enabled = false;
-                if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
-                {
-                    Transform lineRenderer = cubesAndTags.other.transform.root.Find("TrafLineRenderer");
-                    if (lineRenderer)
-                    lineRenderer.GetComponent<LineRenderer>().enabled = false;
-                }    
-            }    
         }   
     }//this is for dynamic objects
 
@@ -503,16 +501,23 @@ public class RiskAssessmentSelective
 
                 cubesAndTags.prevState = dstToTargetEncoded / distToWarnEncoded;
 
-                cubesAndTags.gradient = CubesAndTags.Gradient.ON;   
+                cubesAndTags.dangerState = CubesAndTags.DangerState.YES;
             }
             else
             {
                 bool blink = false;
                 float value = 0f;
-                if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
+                if (cubesAndTags.dangerState == CubesAndTags.DangerState.YES)
                 {
                     value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
                     cubesAndTags.prevState = value;
+                    if (value >= 0.99f)
+                    {
+                        cubesAndTags.alreadyEvaluated = true;
+                        cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
+                        cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
+                        cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
+                    }
                 }
                 else
                     value = 1;
@@ -526,25 +531,23 @@ public class RiskAssessmentSelective
                 cubeRend.material.SetColor("_Color2", bottomColor);
 
                 anim.SetBool("BlinkLoop", false);
-
-                cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
-
-                if (cubesAndTags.prevState >= 0.99f)
-                {
-                    cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
-                    cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
-                    cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
-                }
             }
         }
         else
         {
             bool blink = false;
             float value = 0f;
-            if (cubesAndTags.gradient == CubesAndTags.Gradient.ON)
+            if (cubesAndTags.dangerState == CubesAndTags.DangerState.YES)
             {
                 value = Mathf.Pow(cubesAndTags.prevState, 0.7f);
                 cubesAndTags.prevState = value;
+                if (value >= 0.99f)
+                {
+                    cubesAndTags.alreadyEvaluated = true;
+                    cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
+                    cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
+                    cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
+                }
             }
             else
                 value = 1;
@@ -558,16 +561,6 @@ public class RiskAssessmentSelective
             cubeRend.material.SetColor("_Color2", bottomColor);
 
             anim.SetBool("BlinkLoop", false);
-
-            cubesAndTags.dangerState = CubesAndTags.DangerState.NONE;
-
-            if (cubesAndTags.prevState >= 0.99f)
-            {
-                cubesAndTags.gradient = CubesAndTags.Gradient.OFF;
-                cubeRend.material.SetColor("_Color1", new Color32(0x00, 0x80, 0xFF, 0x00));
-                cubeRend.material.SetColor("_Color2", new Color32(0x00, 0x80, 0xFF, 0x51));
-
-            }
         }
     }//this is for dynamic objects
 
@@ -667,8 +660,23 @@ public class RiskAssessmentSelective
             if ((cubesAndTags.other.gameObject.layer.Equals(LayerMask.NameToLayer("obstacle")) && gameObject.transform.root.GetComponent<TrafAIMotor>().playAudio) || (cubesAndTags.other.gameObject.layer.Equals(LayerMask.NameToLayer("Traffic")) && normDist <= 0.2f))
             {
                 audio.PlayOneShot(ResourceHandler.instance.audioClips[9]);
+                Debug.Log("audio played");
                 cubesAndTags.alreadyPlayed = true;
             }
+        }
+    }
+
+    IEnumerator WaitAndDisable(Canvas canvas, Renderer cubeRend, CubesAndTags cubesAndTags)
+    {
+        cubesAndTags.alreadyEvaluated = false;
+        yield return new WaitForSeconds(3f);
+        canvas.enabled = false;
+        cubeRend.enabled = false;
+        if (cubesAndTags.other.transform.root.GetComponent<TrafficCarNavigationLineUrban>())
+        {
+            Transform lineRenderer = cubesAndTags.other.transform.root.Find("TrafLineRenderer");
+            if (lineRenderer)
+                lineRenderer.GetComponent<LineRenderer>().enabled = false;
         }
     }
 }

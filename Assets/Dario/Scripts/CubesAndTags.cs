@@ -18,10 +18,7 @@ public class CubesAndTags
     public float obstaclePrevTime; //this is to compute the speed with some delay, otherwise the value printed on screen flickers if computed based on Update time
     public float obstacleNextTime; //this is to compute the speed with some delay, otherwise the value printed on screen flickers if computed based on Update time
 
-    public enum Gradient { OFF, ON }
-    public Gradient gradient; //this is to establish dashboard alert color 
-
-    public enum DangerState { NONE, YELLOW, RED } 
+    public enum DangerState { NONE, YES } 
     public DangerState dangerState; //this is to establish dashboard alert color
 
     public CubesAndTags()
@@ -30,7 +27,6 @@ public class CubesAndTags
         this.infoTag = new List<GameObject>();
         this.bounds = new List<Bounds>();
         this.dangerState = DangerState.NONE;
-        this.gradient = Gradient.OFF;
         this.alreadyEvaluated = false;
         this.alreadyPlayed = false;
         this.prevState = 1.0f;

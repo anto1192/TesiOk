@@ -43,6 +43,7 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
     public Rigidbody Rb { get { return rb; } }
     public VehicleController Vc { get { return vehicleController; } }
     public LayerMask Mask { get { return mask; } }
+    public bool readyToStart = false;
 
     void Awake()
     {
@@ -68,10 +69,11 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
 
     void Update()
     {
-        SetSpeed();
-
-        EnvironmentDetect();
-
+        if(readyToStart)
+        {
+            SetSpeed();
+            EnvironmentDetect();
+        }
     }
 
     void LateUpdate()
@@ -601,6 +603,20 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
         return true;
     }
 
+    float CalculateOffset(RectTransform rectTr1, RectTransform rectTr2)
+    {
+        Vector3[] item1Points = new Vector3[4];
+        Vector3[] item2Points = new Vector3[4];
+        float offset = 0;
+        rectTr1.GetWorldCorners(item1Points);
+        rectTr2.GetWorldCorners(item2Points);
+        if (item1Points[0].y > item2Points[0].y)
+            offset = item2Points[2].y - item1Points[0].y;
+        else
+            offset = item2Points[0].y - item1Points[2].y;
+        return Mathf.Abs(offset);
+    }
+
     void RearrangeInfoTags()
     {
         List<CubesAndTags> orderedIDsAndGos = IDsAndGos.Values.Where(x => x.infoTag[0].GetComponent<Canvas>().enabled == true).OrderByDescending(x => x.infoTag[0].transform.position.y).ToList();
@@ -623,9 +639,8 @@ public class EnvironmentSensingAltUrbanTrigger : MonoBehaviour
                         {
                             float item1Height = rect1.height; /*item1.infoTag[i].GetComponent<RectTransform>().rect.height * item1.infoTag[i].transform.localScale.y*/;
                             float item2Height = rect2.height; /*item2.infoTag[i].GetComponent<RectTransform>().rect.height * item2.infoTag[i].transform.localScale.y*/;
-                            //var p = item1.infoTag[i].transform.position;
-                            //p.y += 3.0f;
-                            item1.infoTag[0].transform.position += item1.infoTag[0].transform.up * (item2Height + item1Height) * 0.5f;
+                            float dist = CalculateOffset(RectTr1, RectTr2);
+                            item1.infoTag[0].transform.position += item1.infoTag[0].transform.up * dist;
                         }
                     }
                 }
