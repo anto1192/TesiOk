@@ -1203,6 +1203,10 @@ public class ScenarioTestUrbano : MonoBehaviour
         entry3.waypoints[1] = entry2.waypoints[1];
         macchinaTagliaStrada.target = entry2.waypoints[1];
         macchinaTagliaStrada.currentEntry = entry3;
+        if (macchinaTagliaStrada.nextEntry != null)
+        {
+            macchinaTagliaStrada.nextEntry.waypoints[0] = entry2.waypoints[1];
+        }
         //Debug.DrawLine(macchinaTagliaStrada.transform.position, entry3.waypoints[1]);
     }
 
@@ -4673,13 +4677,13 @@ public class ScenarioTestUrbano : MonoBehaviour
         EnvironmentSensingAltUrbanTriggerSelective selective = car.GetComponentInChildren<EnvironmentSensingAltUrbanTriggerSelective>();
         if (selective != null)
         {
-            selective.enabled = true;
+            selective.readyToStart = true;
         } else
         {
             EnvironmentSensingAltUrbanTrigger omni = car.GetComponentInChildren<EnvironmentSensingAltUrbanTrigger>();
             if (omni != null)
             {
-                omni.enabled = true;
+                omni.readyToStart = true;
             }
         }
     }

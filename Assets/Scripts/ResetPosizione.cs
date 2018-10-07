@@ -19,6 +19,13 @@ public class ResetPosizione : MonoBehaviour {
             GameObject center = driverCamera.transform.Find("Center").gameObject;
             center.GetComponent<Camera>().enabled = true;
             driverCamera.GetComponent<AudioListener>().enabled = true;
+
+            ResetPosizioneVisore(CenterEyeAnchor, posizioneAnterioreSinistra);
+            ultimaPosizione = transform.localPosition;
+            ultimaRotazione = transform.localRotation.eulerAngles;
+            interventoAllaGuidaConsentito = true;
+
+
         } else
         {
             //disabilito la driverCamera
@@ -119,6 +126,17 @@ public class ResetPosizione : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.Keypad4) || state.rgdwPOV[0] == 27000)  //tasto / sulla tastiera oppure freccia sinistra sul volante
         {
             transform.Translate(-0.001f, 0, 0);
+            //transform.Translate(0, 0, 0.001f);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Keypad9)) //tasto 9 sulla tastiera
+        {
+            transform.Translate(0, 0.01f, 0);
+            //transform.Translate(0, 0, 0.001f);
+        }
+        if (Input.GetKeyDown(KeyCode.Keypad3)) //tasto 3 sulla tastiera oppure freccia sinistra sul volante
+        {
+            transform.Translate(0, -0.01f, 0);
             //transform.Translate(0, 0, 0.001f);
         }
 
