@@ -11,15 +11,11 @@ public class DashBoardControllerUrban : MonoBehaviour
     private GameObject turnLeft;
     private GameObject turnRight;
    
-    private GameObject laneWarning;
-    private GameObject laneWarningLeft;
     private bool hasPlayedON = false;
     private bool hasPlayedOFF = false;
 
     private AudioSource turnLeftAudioSource;
     private AudioSource turnRightAudioSource;
-
-    
 
     private Transform rayCastPos;
     private VehicleController vehicleController;
@@ -70,9 +66,6 @@ public class DashBoardControllerUrban : MonoBehaviour
 
         if (trafAIMotor != null)
         {
-            AudioSource currentAudioSource = null;
-            Animator currentAnim = null;
-
             if (trafAIMotor.hasNextEntry) //this used to exclude the first road which is the only exception which I cannot exclude by the angle
             {//I am waiting at the intersection
                 float dstToTarget = Vector3.Distance(rayCastPos.position, trafAIMotor.nextEntry.waypoints[0]);
@@ -84,52 +77,51 @@ public class DashBoardControllerUrban : MonoBehaviour
                     
                     if (angle < -20f)
                     {
-                        currentAnim = turnLeftAnim;
-                        currentAudioSource = turnLeftAudioSource;
-                        currentAnim.SetBool("Turn", true);
+                        if (!hasPlayedON)
+                        {
+                            turnLeftAudioSource.PlayOneShot(ResourceHandler.instance.audioClips[7]);
+                            hasPlayedON = true;
+                        }
+                        turnLeftAnim.SetBool("Turn", true);
                         lastTurnSignal = TurnSignal.LEFT;
+                        hasPlayedOFF = false;
                     }
                     else if (angle > 20f)
                     {
-                        
-                        currentAnim = turnRightAnim;
-                        currentAudioSource = turnRightAudioSource;
-                        currentAnim.SetBool("Turn", true);
+                        if (!hasPlayedON)
+                        {
+                            turnRightAudioSource.PlayOneShot(ResourceHandler.instance.audioClips[7]);
+                            hasPlayedON = true;
+                        }
+                        turnRightAnim.SetBool("Turn", true);
                         lastTurnSignal = TurnSignal.RIGHT;
+                        hasPlayedOFF = false;
                     }
-
-                    hasPlayedOFF = false;
-                    if (!hasPlayedON)
-                    {
-                        if (currentAudioSource)
-                            currentAudioSource.PlayOneShot(ResourceHandler.instance.audioClips[7]);
-                        hasPlayedON = true;
-                    }  
                 }
             }
-            else if ((!trafAIMotor.hasNextEntry && !trafAIMotor.currentEntry.isIntersection()) && Mathf.Abs(vehicleController.steerInput) <= 0.02f && hasPlayedON == true) //With the steerInput condition I assure that the turn signal is set off when steer has more or less angle equal to zero
+            else if ((!trafAIMotor.hasNextEntry && !trafAIMotor.currentEntry.isIntersection()) && Mathf.Abs(vehicleController.steerInput) <= 0.02f) //With the steerInput condition I assure that the turn signal is set off when steer has more or less angle equal to zero
             {
                 if (lastTurnSignal.Equals(TurnSignal.LEFT))
                 {
-                    currentAnim = turnLeftAnim;
-                    currentAudioSource = turnLeftAudioSource;
-                    currentAnim.SetBool("Turn", false);
+                    turnLeftAnim.SetBool("Turn", false);
+                    hasPlayedON = false;
+                    if (!hasPlayedOFF)
+                    {
+                        turnLeftAudioSource.PlayOneShot(ResourceHandler.instance.audioClips[6]);
+                        hasPlayedOFF = true;
+                    }
                 }
                     
                 else if (lastTurnSignal.Equals(TurnSignal.RIGHT))
                 {
-                    currentAnim = turnRightAnim;
-                    currentAudioSource = turnRightAudioSource;
-                    currentAnim.SetBool("Turn", false);
+                    turnRightAnim.SetBool("Turn", false);
+                    hasPlayedON = false;
+                    if (!hasPlayedOFF)
+                    {
+                        turnRightAudioSource.PlayOneShot(ResourceHandler.instance.audioClips[6]);
+                        hasPlayedOFF = true;
+                    }
                 }
-
-                hasPlayedON = false;
-                if (!hasPlayedOFF)
-                {
-                    if (currentAudioSource)
-                        currentAudioSource.PlayOneShot(ResourceHandler.instance.audioClips[6]);
-                    hasPlayedOFF = true;
-                } 
             }
         }
     }
