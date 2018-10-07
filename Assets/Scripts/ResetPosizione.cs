@@ -47,6 +47,7 @@ public class ResetPosizione : MonoBehaviour {
     public Transform volanteSinistra;
     private Vector3 ultimaPosizione = Vector3.zero;
     private Vector3 ultimaRotazione = Vector3.zero;
+    public GameObject gambe;
 
 
     public bool interventoAllaGuidaConsentito = false;
@@ -75,6 +76,7 @@ public class ResetPosizione : MonoBehaviour {
                 ultimaRotazione = transform.localRotation.eulerAngles;
                 interventoAllaGuidaConsentito = true;
                 Debug.Log("Reset posizione tramite posizione visore");
+                gambe.transform.localPosition = new Vector3(-0.407f, -0.296f, 0.469f);
             }
             else
             {
@@ -97,6 +99,7 @@ public class ResetPosizione : MonoBehaviour {
                 ultimaPosizione = transform.localPosition;
                 ultimaRotazione = transform.localRotation.eulerAngles;
                 interventoAllaGuidaConsentito = true;
+                gambe.transform.localPosition = new Vector3(-0.407f, -0.296f, 0.469f);
             }
             return;
         }
@@ -146,6 +149,7 @@ public class ResetPosizione : MonoBehaviour {
             {
                 ResetPosizioneVisore(CenterEyeAnchor, posizioneAnterioreDestra);                
                 interventoAllaGuidaConsentito = false;
+                gambe.transform.localPosition = new Vector3(0.407f, -0.296f, 0.469f);
             }
             return;
         }
