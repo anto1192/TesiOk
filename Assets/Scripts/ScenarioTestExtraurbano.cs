@@ -181,22 +181,11 @@ public class ScenarioTestExtraurbano : MonoBehaviour
 
     //LISTA EVENTI
 
-    //SBACCHETTAMENTI
-    
+    //SBACCHETTAMENTI   
     public void evento1564()
     {
         guidaAutomatica.sbacchettamento = true;
     }
-
-   /* public void evento1600()
-    {
-        guidaAutomatica.sbacchettamento = false;
-    }
-
-    public void evento1635()
-    {
-        guidaAutomatica.sbacchettamento = true;
-    }*/
 
     public void evento1701()
     {
@@ -329,17 +318,6 @@ public class ScenarioTestExtraurbano : MonoBehaviour
         guidaAutomatica.sbacchettamentoForte = false;
     }
 
-    //sbacchettamentoForte settato prima
-    //public void evento1838() 
-    //{
-    //    guidaAutomatica.sbacchettamentoForte = true;
-    //}
-
-    //public void evento1859()
-    //{
-    //    guidaAutomatica.sbacchettamentoForte = false;
-    //}
-
     public void evento1910()
     {
         guidaAutomatica.sbacchettamentoForte = true;
@@ -370,21 +348,9 @@ public class ScenarioTestExtraurbano : MonoBehaviour
         guidaAutomatica.sbacchettamentoForte = false;
     }
 
-    //1580 1600
-    //1625 1700
-    //1716 1740
-    //1800 1812
-    //1838 1860
-    //1910 1920
-    //2040 2055
-    //2078 2087
-
-
 
 
     //EVENTI
-
-
     public void evento1565()
     {
         macchinaTraffico[0] = CreaMacchinaTraffico(1170);
@@ -428,11 +394,6 @@ public class ScenarioTestExtraurbano : MonoBehaviour
         guidaAutomatica.maxSpeed = 5f;
     }
 
-    //public void evento1710()
-    //{
-    //  guidaAutomatica.maxSpeed = 5f;
-    //}
-
     public void evento1712()
     {
         guidaAutomatica.maxSpeed = 15f;
@@ -468,7 +429,6 @@ public class ScenarioTestExtraurbano : MonoBehaviour
     {
         macchinaTraffico[6] = CreaMacchinaTraffico(885);
         macchinaTraffico[7] = CreaMacchinaTraffico(875);
-       // macchinaTraffico[8] = CreaMacchinaTraffico(850);
     }
 
     GameObject macchinaTrafficoSorpasso;
@@ -574,11 +534,6 @@ public class ScenarioTestExtraurbano : MonoBehaviour
         macchinaTraffico[9].GetComponent<TrafPCH>().maxSpeed = 25f;
     }
 
-    //public void evento2055()
-    //{
-    //    TrackController.Instance.TriggerObstacle1();
-    //}
-
     public void evento2065()
     {
         guidaAutomatica.maxSpeed = 2f;
@@ -649,7 +604,6 @@ public class ScenarioTestExtraurbano : MonoBehaviour
             var motor = go.GetComponent<TrafPCH>();
             motor.currentNode = currentNode;
             motor.currentWaypointIndex = currentIndex;
-            //            Debug.Log("IDX " + currentIndex);
             motor.path = carAutoPath;
             go.transform.LookAt(currentNode.position);
             motor.Init();
@@ -745,7 +699,5 @@ public class ScenarioTestExtraurbano : MonoBehaviour
             Destroy(macchinaTraffico[i]);
         }
     }
-
-   
 
 }
